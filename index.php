@@ -13,32 +13,32 @@ include_once 'frontend/components/header.php';
         <h1>Campeonato de Futsala Villavicencio</h1>
         <p>Toda la información del campeonato en un solo lugar</p>
         <div class="hero-buttons">
-            <a href="<?php echo $base_path; ?>/frontend/pages/partidos.php" class="btn btn-primary">Ver Próximos Partidos</a>
-            <a href="<?php echo $base_path; ?>/frontend/pages/clasificaciones.php" class="btn btn-secondary">Ver Clasificaciones</a>
+            <a href="./frontend/pages/partidos.php" class="btn btn-primary">Ver Próximos Partidos</a>
+            <a href="./frontend/pages/clasificaciones.php" class="btn btn-secondary">Ver Clasificaciones</a>
         </div>
     </div>
 </section>
 
 <section class="home-features">
     <div class="feature">
-        <img src="<?php echo $base_path; ?>/frontend/assets/images/equipos-icon.png" alt="Equipos">
+        <img src="./frontend/assets/images/equipos-icon.png" alt="Equipos">
         <h2>Equipos</h2>
         <p>Conoce los equipos participantes en el campeonato</p>
-        <a href="<?php echo $base_path; ?>/frontend/pages/equipos.php" class="btn">Ver Equipos</a>
+        <a href="./frontend/pages/equipos.php" class="btn">Ver Equipos</a>
     </div>
     
     <div class="feature">
-        <img src="<?php echo $base_path; ?>/frontend/assets/images/jugadores-icon.png" alt="Jugadores">
+        <img src="./frontend/assets/images/jugadores-icon.png" alt="Jugadores">
         <h2>Jugadores</h2>
         <p>Información detallada de todos los jugadores del torneo</p>
-        <a href="<?php echo $base_path; ?>/frontend/pages/jugadores.php" class="btn">Ver Jugadores</a>
+        <a href="./frontend/pages/jugadores.php" class="btn">Ver Jugadores</a>
     </div>
     
     <div class="feature">
-        <img src="<?php echo $base_path; ?>/frontend/assets/images/partidos-icon.png" alt="Partidos">
+        <img src="./frontend/assets/images/partidos-icon.png" alt="Partidos">
         <h2>Partidos</h2>
         <p>Calendario y resultados de todos los encuentros</p>
-        <a href="<?php echo $base_path; ?>/frontend/pages/partidos.php" class="btn">Ver Partidos</a>
+        <a href="./frontend/pages/partidos.php" class="btn">Ver Partidos</a>
     </div>
 </section>
 
@@ -53,18 +53,18 @@ include_once 'frontend/components/header.php';
             <div class="match-date">15 Mayo, 2023 - 18:00</div>
             <div class="match-teams">
                 <div class="team">
-                    <img src="<?php echo $base_path; ?>/frontend/assets/images/team-placeholder.png" alt="Equipo Local">
+                    <img src="./frontend/assets/images/team-placeholder.png" alt="Equipo Local">
                     <span>Equipo Local</span>
                 </div>
                 <div class="match-score">
                     <span>3 - 2</span>
                 </div>
                 <div class="team">
-                    <img src="<?php echo $base_path; ?>/frontend/assets/images/team-placeholder.png" alt="Equipo Visitante">
+                    <img src="./frontend/assets/images/team-placeholder.png" alt="Equipo Visitante">
                     <span>Equipo Visitante</span>
                 </div>
             </div>
-            <a href="<?php echo $base_path; ?>/frontend/pages/detalle-partido.php?id=1" class="btn btn-small">Ver Detalles</a>
+            <a href="./frontend/pages/detalle-partido.php?id=1" class="btn btn-small">Ver Detalles</a>
         </div>
         <!-- Fin del ejemplo -->
     </div>

@@ -1,9 +1,11 @@
 <?php
-
-// Incluir el archivo de configuración global si no está incluido
-$config_path = dirname(dirname(dirname(__FILE__))) . '/config.php';
-if (file_exists($config_path) && !defined('DB_HOST')) {
-    include_once $config_path;
+// Definir parámetros de conexión directamente si no están definidos
+if (!defined('DB_HOST')) {
+    define('DB_HOST', 'localhost');
+    define('DB_PORT', '5432');
+    define('DB_NAME', 'futsala');
+    define('DB_USER', 'postgres');
+    define('DB_PASS', 'postgres');
 }
 
 /**
@@ -19,7 +21,7 @@ class Conexion
     // Conexión PDO
     private $conexion;
     
-    // Datos de conexión (ahora usando constantes)
+    // Datos de conexión
     private $host;
     private $db;
     private $usuario;
@@ -31,12 +33,12 @@ class Conexion
      */
     private function __construct()
     {
-        // Inicializar datos de conexión desde constantes o valores por defecto
-        $this->host = defined('DB_HOST') ? DB_HOST : 'localhost';
-        $this->db = defined('DB_NAME') ? DB_NAME : 'futsala';
-        $this->usuario = defined('DB_USER') ? DB_USER : 'postgres';
-        $this->password = defined('DB_PASS') ? DB_PASS : 'postgres';
-        $this->puerto = defined('DB_PORT') ? DB_PORT : '5432';
+        // Inicializar datos de conexión desde constantes
+        $this->host = DB_HOST;
+        $this->db = DB_NAME;
+        $this->usuario = DB_USER;
+        $this->password = DB_PASS;
+        $this->puerto = DB_PORT;
         
         try {
             // Crear conexión PDO a PostgreSQL

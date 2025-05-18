@@ -21,7 +21,7 @@ $cod_user = $_SESSION['usuario_id'];
 $username = $_SESSION['usuario_nombre'];
 $email = $_SESSION['usuario_email'];
 $rol = $_SESSION['usuario_rol'];
-$foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : $base_path . '/frontend/assets/images/default-profile.png';
+$foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : '../assets/images/default-profile.png';
 ?>
 
 <div class="profile-container">
@@ -59,7 +59,7 @@ $foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : $base_path . '/f
         </div>
         
         <div class="profile-actions">
-            <a href="<?php echo $base_path; ?>/backend/controllers/logout.php" class="btn btn-danger">Cerrar Sesión</a>
+            <a href="../../backend/controllers/logout.php" class="btn btn-danger">Cerrar Sesión</a>
         </div>
     </div>
 </div>

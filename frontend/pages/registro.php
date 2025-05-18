@@ -12,7 +12,7 @@ include_once '../components/notificaciones.php';
 // Verificar si ya hay una sesión activa
 if (isset($_SESSION['usuario_id'])) {
     // Redireccionar a la página de inicio
-    header('Location: ' . $base_path . '/index.php');
+    header('Location: ../../index.php');
     exit;
 }
 ?>
@@ -26,7 +26,7 @@ if (isset($_SESSION['usuario_id'])) {
         mostrarNotificaciones(['error_registro', 'exito_registro']);
         ?>
         
-        <form action="<?php echo $base_path; ?>/backend/controllers/register.php" method="POST" onsubmit="return validarFormulario(this)" enctype="multipart/form-data">
+        <form action="../../backend/controllers/register.php" method="POST" onsubmit="return validarFormulario(this)" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="username">Nombre de Usuario</label>
                 <input type="text" id="username" name="username" required>

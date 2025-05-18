@@ -2,22 +2,6 @@
 // Iniciar la sesión
 session_start();
 
-// Calcular la ruta base relativa
-$current_dir = dirname(__FILE__);
-$project_root = dirname(dirname(dirname($current_dir)));
-$relative_path = '';
-
-// Si estamos en un subdirectorio del servidor (localhost/proyecto)
-if (isset($_SERVER['HTTP_HOST']) && !empty($_SERVER['HTTP_HOST'])) {
-    $project_folder = basename(dirname(dirname(dirname(__FILE__))));
-    $relative_path = '';
-    
-    // Determinar si estamos en un subdirectorio o en la raíz
-    if ($project_folder != 'www' && $project_folder != 'htdocs') {
-        $relative_path = '/' . $project_folder;
-    }
-}
-
 // Incluir el archivo de conexión para cerrar la conexión a la base de datos
 require_once '../database/connection.php';
 
@@ -45,6 +29,6 @@ if (ini_get("session.use_cookies")) {
 session_destroy();
 
 // Redireccionar al inicio
-header('Location: ' . $relative_path . '/index.php');
+header('Location: ../../index.php');
 exit;
 ?> 
