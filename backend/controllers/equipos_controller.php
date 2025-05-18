@@ -22,7 +22,7 @@ switch ($accion) {
             if ($e['escudo']) {
                 $e['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($e['escudo']);
             } else {
-                $e['escudo_base64'] = '../assets/images/team-placeholder.png';
+                $e['escudo_base64'] = '../assets/images/team.png';
             }
         }
         
@@ -65,7 +65,7 @@ switch ($accion) {
         if ($datos_equipo['escudo']) {
             $datos_equipo['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($datos_equipo['escudo']);
         } else {
-            $datos_equipo['escudo_base64'] = '../assets/images/team-placeholder.png';
+            $datos_equipo['escudo_base64'] = '../assets/images/team.png';
         }
         
         // Obtener los jugadores del equipo
@@ -76,7 +76,7 @@ switch ($accion) {
             if ($jugador['foto']) {
                 $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
             } else {
-                $jugador['foto_base64'] = '../assets/images/player-placeholder.png';
+                $jugador['foto_base64'] = '../assets/images/player.png';
             }
         }
         

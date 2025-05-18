@@ -52,7 +52,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['usuario_nombre'] = $resultado['usuario']['username'];
         $_SESSION['usuario_email'] = $resultado['usuario']['email'];
         $_SESSION['usuario_rol'] = $resultado['usuario']['rol'];
-        $_SESSION['usuario_foto'] = null; // No hay foto de perfil al inicio
+        
+        // Si hay foto_perfil_base64, usarla, de lo contrario usar imagen predeterminada
+        if(isset($resultado['usuario']['foto_perfil_base64'])) {
+            $_SESSION['usuario_foto'] = $resultado['usuario']['foto_perfil_base64'];
+        } else {
+            $_SESSION['usuario_foto'] = './frontend/assets/images/user.png';
+        }
 
         // Guardar mensaje de éxito en la sesión
         $_SESSION['exito_login'] = '¡Registro exitoso! Bienvenido/a ' . $username;

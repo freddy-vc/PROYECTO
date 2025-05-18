@@ -21,7 +21,7 @@ $cod_user = $_SESSION['usuario_id'];
 $username = $_SESSION['usuario_nombre'];
 $email = $_SESSION['usuario_email'];
 $rol = $_SESSION['usuario_rol'];
-$foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : '../assets/images/default-profile.png';
+$foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : '../assets/images/user.png';
 ?>
 
 <div class="profile-container">

@@ -42,7 +42,7 @@ class Equipo
                 if ($equipo['escudo']) {
                     $equipo['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($equipo['escudo']);
                 } else {
-                    $equipo['escudo_base64'] = '../assets/images/default-team.png';
+                    $equipo['escudo_base64'] = '../assets/images/team.png';
                 }
             }
             
@@ -321,7 +321,7 @@ class Equipo
                 if ($equipo['escudo']) {
                     $equipo['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($equipo['escudo']);
                 } else {
-                    $equipo['escudo_base64'] = '../assets/images/default-team.png';
+                    $equipo['escudo_base64'] = '../assets/images/team.png';
                 }
             }
             

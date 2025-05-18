@@ -25,13 +25,13 @@ switch ($accion) {
             if ($p['local_escudo']) {
                 $p['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($p['local_escudo']);
             } else {
-                $p['local_escudo_base64'] = '../assets/images/team-placeholder.png';
+                $p['local_escudo_base64'] = '../assets/images/team.png';
             }
             
             if ($p['visitante_escudo']) {
                 $p['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($p['visitante_escudo']);
             } else {
-                $p['visitante_escudo_base64'] = '../assets/images/team-placeholder.png';
+                $p['visitante_escudo_base64'] = '../assets/images/team.png';
             }
             
             // Si el partido está finalizado, agregar resultados
@@ -90,13 +90,13 @@ switch ($accion) {
         if ($datos_partido['local_escudo']) {
             $datos_partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($datos_partido['local_escudo']);
         } else {
-            $datos_partido['local_escudo_base64'] = '../assets/images/team-placeholder.png';
+            $datos_partido['local_escudo_base64'] = '../assets/images/team.png';
         }
         
         if ($datos_partido['visitante_escudo']) {
             $datos_partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($datos_partido['visitante_escudo']);
         } else {
-            $datos_partido['visitante_escudo_base64'] = '../assets/images/team-placeholder.png';
+            $datos_partido['visitante_escudo_base64'] = '../assets/images/team.png';
         }
         
         // Formatear la fecha para mostrar

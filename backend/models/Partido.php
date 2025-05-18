@@ -472,13 +472,13 @@ class Partido
                 if ($partido['local_escudo']) {
                     $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);
                 } else {
-                    $partido['local_escudo_base64'] = './frontend/assets/images/default-team.png';
+                    $partido['local_escudo_base64'] = './frontend/assets/images/team.png';
                 }
                 
                 if ($partido['visitante_escudo']) {
                     $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);
                 } else {
-                    $partido['visitante_escudo_base64'] = './frontend/assets/images/default-team.png';
+                    $partido['visitante_escudo_base64'] = './frontend/assets/images/team.png';
                 }
                 
                 // Obtener los goles
@@ -516,29 +516,15 @@ class Partido
                     fe.fase,
                     CASE 
                         WHEN fe.fase = 'cuartos' THEN
-                            CASE
-                                WHEN (SELECT COUNT(*) FROM Partidos p2
-                                      JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)
-                                      WHERE fe2.fase = 'cuartos' AND fe2.fase = fe.fase
-                                      AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
-                                THEN (SELECT COUNT(*) FROM Partidos p2
-                                      JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)
-                                      WHERE fe2.fase = 'cuartos' AND fe2.fase = fe.fase
-                                      AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
-                                ELSE 0
-                            END
+                            (SELECT COUNT(*) FROM Partidos p2
+                            JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)
+                            WHERE fe2.fase = 'cuartos'
+                            AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
                         WHEN fe.fase = 'semis' THEN
-                            CASE
-                                WHEN (SELECT COUNT(*) FROM Partidos p2
-                                      JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)
-                                      WHERE fe2.fase = 'semis' AND fe2.fase = fe.fase
-                                      AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
-                                THEN (SELECT COUNT(*) FROM Partidos p2
-                                      JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)
-                                      WHERE fe2.fase = 'semis' AND fe2.fase = fe.fase
-                                      AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
-                                ELSE 0
-                            END
+                            (SELECT COUNT(*) FROM Partidos p2
+                            JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)
+                            WHERE fe2.fase = 'semis'
+                            AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
                         ELSE 1
                     END as orden
                 FROM Partidos p
@@ -547,7 +533,8 @@ class Partido
                 JOIN Canchas c ON p.cod_cancha = c.cod_cancha
                 JOIN FaseEquipo fe ON (p.equ_local = fe.cod_equ OR p.equ_visitante = fe.cod_equ)
                 WHERE fe.fase IN ($fasesStr)
-                GROUP BY p.cod_par, e1.cod_equ, e1.nombre, e1.escudo,
+                GROUP BY p.cod_par, p.fecha, p.hora, p.estado, 
+                         e1.cod_equ, e1.nombre, e1.escudo,
                          e2.cod_equ, e2.nombre, e2.escudo,
                          c.nombre, fe.fase
                 ORDER BY 
@@ -570,13 +557,13 @@ class Partido
                 if ($partido['local_escudo']) {
                     $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);
                 } else {
-                    $partido['local_escudo_base64'] = '../assets/images/default-team.png';
+                    $partido['local_escudo_base64'] = '../assets/images/team.png';
                 }
                 
                 if ($partido['visitante_escudo']) {
                     $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);
                 } else {
-                    $partido['visitante_escudo_base64'] = '../assets/images/default-team.png';
+                    $partido['visitante_escudo_base64'] = '../assets/images/team.png';
                 }
                 
                 // Si el partido está finalizado, añadir conteo de goles

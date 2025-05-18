@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Variable para controlar si ya se cargaron los equipos
+    window.equiposCargados = false;
+    
     // Cargar jugadores al iniciar la página
     cargarJugadores();
     
@@ -23,6 +26,7 @@ function cargarJugadores() {
     fetch('../../backend/controllers/jugadores_controller.php?accion=listar')
         .then(response => response.json())
         .then(data => {
+            console.log('Respuesta del servidor (jugadores):', data);
             if (data.estado) {
                 mostrarJugadores(data.jugadores);
             } else {
@@ -31,7 +35,7 @@ function cargarJugadores() {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Error al cargar jugadores:', error);
             document.getElementById('jugadores-container').innerHTML = 
                 '<div class="no-results">No hay jugadores para mostrar.</div>';
         });
@@ -41,18 +45,34 @@ function cargarJugadores() {
  * Función para cargar los equipos para el filtro
  */
 function cargarEquiposParaFiltro() {
+    // Si ya se cargaron los equipos, no volver a cargarlos
+    if (window.equiposCargados) {
+        console.log('Equipos ya cargados, evitando duplicación');
+        return;
+    }
+
     fetch('../../backend/controllers/equipos_controller.php?accion=listar')
         .then(response => response.json())
         .then(data => {
+            console.log('Respuesta del servidor (equipos):', data);
             if (data.estado) {
                 const selectEquipo = document.getElementById('filtro-equipo');
                 
+                // Limpiar todas las opciones excepto la primera
+                selectEquipo.innerHTML = '<option value="">Todos los equipos</option>';
+                
+                // Agregar las opciones de equipos
                 data.equipos.forEach(equipo => {
                     const option = document.createElement('option');
                     option.value = equipo.cod_equ;
                     option.textContent = equipo.nombre;
                     selectEquipo.appendChild(option);
                 });
+                
+                console.log('Opciones de equipo cargadas:', selectEquipo.options.length - 1);
+                
+                // Marcar que ya se cargaron los equipos
+                window.equiposCargados = true;
             }
         })
         .catch(error => {

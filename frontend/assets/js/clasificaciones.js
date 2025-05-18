@@ -191,12 +191,12 @@ function generarPartidosFase(fase, partidos, equipos, lado) {
                 <div class="match">
                     <div class="match-teams">
                         <div class="team ${equipoGanador === equipoLocal ? 'winner' : ''}">
-                            <img src="${equipoLocal ? equipoLocal.escudo_base64 : '../assets/images/default-team.png'}" alt="${equipoLocal ? equipoLocal.nombre : 'Por definir'}" class="team-logo">
+                            <img src="${equipoLocal ? equipoLocal.escudo_base64 : '../assets/images/team.png'}" alt="${equipoLocal ? equipoLocal.nombre : 'Por definir'}" class="team-logo">
                             <div class="team-name">${equipoLocal ? equipoLocal.nombre : 'Por definir'}</div>
                             <div class="team-score">${partido.estado === 'finalizado' ? (partido.goles_local || 0) : '-'}</div>
                         </div>
                         <div class="team ${equipoGanador === equipoVisitante ? 'winner' : ''}">
-                            <img src="${equipoVisitante ? equipoVisitante.escudo_base64 : '../assets/images/default-team.png'}" alt="${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}" class="team-logo">
+                            <img src="${equipoVisitante ? equipoVisitante.escudo_base64 : '../assets/images/team.png'}" alt="${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}" class="team-logo">
                             <div class="team-name">${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}</div>
                             <div class="team-score">${partido.estado === 'finalizado' ? (partido.goles_visitante || 0) : '-'}</div>
                         </div>
@@ -249,12 +249,12 @@ function generarPartidoFinal(partidos, equipos) {
     return `
         <div class="match-teams">
             <div class="team ${equipoGanador === equipoLocal ? 'winner' : ''}">
-                <img src="${equipoLocal ? equipoLocal.escudo_base64 : '../assets/images/default-team.png'}" alt="${equipoLocal ? equipoLocal.nombre : 'Por definir'}" class="team-logo">
+                <img src="${equipoLocal ? equipoLocal.escudo_base64 : '../assets/images/team.png'}" alt="${equipoLocal ? equipoLocal.nombre : 'Por definir'}" class="team-logo">
                 <div class="team-name">${equipoLocal ? equipoLocal.nombre : 'Por definir'}</div>
                 <div class="team-score">${partidoFinal.estado === 'finalizado' ? (partidoFinal.goles_local || 0) : '-'}</div>
             </div>
             <div class="team ${equipoGanador === equipoVisitante ? 'winner' : ''}">
-                <img src="${equipoVisitante ? equipoVisitante.escudo_base64 : '../assets/images/default-team.png'}" alt="${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}" class="team-logo">
+                <img src="${equipoVisitante ? equipoVisitante.escudo_base64 : '../assets/images/team.png'}" alt="${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}" class="team-logo">
                 <div class="team-name">${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}</div>
                 <div class="team-score">${partidoFinal.estado === 'finalizado' ? (partidoFinal.goles_visitante || 0) : '-'}</div>
             </div>

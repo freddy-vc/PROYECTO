@@ -30,11 +30,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['usuario_email'] = $resultado['usuario']['email'];
         $_SESSION['usuario_rol'] = $resultado['usuario']['rol'];
         
-        // Si tiene foto de perfil, convertir el BLOB a base64 para mostrarlo
-        if ($resultado['usuario']['foto_perfil']) {
+        // Si tiene foto de perfil, usar la versión base64 ya procesada por el modelo
+        if (isset($resultado['usuario']['foto_perfil_base64'])) {
+            $_SESSION['usuario_foto'] = $resultado['usuario']['foto_perfil_base64'];
+        } else if ($resultado['usuario']['foto_perfil']) {
             $_SESSION['usuario_foto'] = 'data:image/jpeg;base64,' . base64_encode($resultado['usuario']['foto_perfil']);
         } else {
-            $_SESSION['usuario_foto'] = null;
+            // Asegurarnos de que se use la ruta correcta para la imagen por defecto
+            $_SESSION['usuario_foto'] = './frontend/assets/images/user.png';
         }
         
         // Guardar mensaje de éxito en la sesión

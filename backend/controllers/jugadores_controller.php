@@ -12,8 +12,8 @@ $accion = isset($_GET['accion']) ? $_GET['accion'] : 'listar';
 switch ($accion) {
     case 'listar':
         try {
-            // Obtener todos los jugadores
-            $jugadores = $jugador->obtenerTodos();
+            // Obtener todos los jugadores con estadísticas
+            $jugadores = $jugador->obtenerTodosConEstadisticas();
             
             // Preparar los datos para devolverlos en formato JSON
             header('Content-Type: application/json');

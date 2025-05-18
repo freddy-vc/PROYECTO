@@ -121,11 +121,22 @@ session_set_cookie_params([
                 <div class="user-section">
                     <?php if(isset($_SESSION['usuario_id'])): ?>
                         <div class="user-profile">
-                            <img src="<?php echo $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : (
-                                strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false ? "../assets/images/default-profile.png" : 
-                                (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false ? "./assets/images/default-profile.png" : 
-                                "./frontend/assets/images/default-profile.png")
-                            ); ?>" alt="Foto de perfil">
+                            <img src="<?php 
+                            if (isset($_SESSION['usuario_foto']) && $_SESSION['usuario_foto'] && 
+                                (strpos($_SESSION['usuario_foto'], 'data:') === 0)) {
+                                // Si es una imagen en base64, usarla directamente
+                                echo $_SESSION['usuario_foto'];
+                            } else {
+                                // De lo contrario, determinar la ruta correcta según la ubicación actual
+                                if (strpos($_SERVER['PHP_SELF'], 'index.php') !== false || $_SERVER['PHP_SELF'] == '/') {
+                                    echo "./frontend/assets/images/user.png";
+                                } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+                                    echo "../assets/images/user.png";
+                                } else {
+                                    echo "./assets/images/user.png";
+                                }
+                            }
+                            ?>" alt="Foto de perfil">
                             <span><?php echo $_SESSION['usuario_nombre']; ?></span>
                             <div class="user-dropdown">
                                                                 <ul>                                    <li><a href="<?php                                     if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {                                        echo "./perfil.php";                                    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {                                        echo "./pages/perfil.php";                                    } else {                                        echo "./frontend/pages/perfil.php";                                    }                                    ?>">Mi Perfil</a></li>                                    <?php if(isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'admin'): ?>                                    <li><a href="<?php                                     if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {                                        echo "./admin/index.php";                                    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {                                        echo "./pages/admin/index.php";                                    } else {                                        echo "./frontend/pages/admin/index.php";                                    }                                    ?>" class="admin-link">Panel de Administración</a></li>                                    <?php endif; ?>                                    <li><a href="<?php                                     if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {                                        echo "../../backend/controllers/logout.php";                                    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {                                        echo "../backend/controllers/logout.php";                                    } else {                                        echo "./backend/controllers/logout.php";                                    }                                    ?>">Cerrar Sesión</a></li>                                </ul>

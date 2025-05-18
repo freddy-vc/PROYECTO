@@ -140,6 +140,9 @@ class Usuario
             
             // Verificar si existe el usuario
             if ($usuario) {
+                // Procesar la foto de perfil
+                $usuario = $this->procesarFotoPerfil($usuario);
+                
                 return [
                     'estado' => true,
                     'usuario' => $usuario,
@@ -171,11 +174,43 @@ class Usuario
             $stmt->bindParam(':cod_user', $cod_user);
             $stmt->execute();
             
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Si existe el usuario, procesar la foto de perfil
+            if ($usuario) {
+                $usuario = $this->procesarFotoPerfil($usuario);
+            }
+            
+            return $usuario;
             
         } catch (PDOException $e) {
             return null;
         }
+    }
+    
+    /**
+     * Procesar la foto de perfil
+     */
+    private function procesarFotoPerfil($usuario)
+    {
+        if (isset($usuario['foto_perfil']) && $usuario['foto_perfil']) {
+            $usuario['foto_perfil_base64'] = 'data:image/jpeg;base64,' . base64_encode($usuario['foto_perfil']);
+        } else {
+            // Determinamos la ruta correcta según el contexto
+            if (strpos($_SERVER['PHP_SELF'], '/backend/controllers/') !== false) {
+                $usuario['foto_perfil_base64'] = '../../frontend/assets/images/user.png';
+            } else if (strpos($_SERVER['PHP_SELF'], '/backend/') !== false) {
+                $usuario['foto_perfil_base64'] = '../frontend/assets/images/user.png';
+            } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+                $usuario['foto_perfil_base64'] = '../assets/images/user.png';
+            } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
+                $usuario['foto_perfil_base64'] = './assets/images/user.png';
+            } else {
+                $usuario['foto_perfil_base64'] = './frontend/assets/images/user.png';
+            }
+        }
+        
+        return $usuario;
     }
     
     /**
