@@ -53,10 +53,19 @@ include_once 'frontend/components/notificaciones.php';
     </div>
 </section>
 
-<section class="recent-matches">
+<!-- Esta sección se mostrará solo si hay partidos finalizados -->
+<section class="recent-matches" style="display: none;">
     <h2>Últimos Resultados</h2>
     <div class="matches-container" id="ultimos-partidos">
         <div class="loading-matches">Cargando últimos resultados...</div>
+    </div>
+</section>
+
+<!-- Esta sección se mostrará solo si hay jugadores con goles o asistencias -->
+<section class="featured-players" style="display: none;">
+    <h2>Jugadores Destacados</h2>
+    <div class="players-container" id="jugadores-destacados">
+        <div class="loading-players">Cargando jugadores destacados...</div>
     </div>
 </section>
 

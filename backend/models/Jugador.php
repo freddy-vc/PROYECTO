@@ -381,4 +381,93 @@ class Jugador {
             return 0;
         }
     }
+    
+    /**
+     * Obtiene al jugador con más goles (goleador del torneo)
+     */
+    public function obtenerGoleador() {
+        try {
+            $query = "SELECT j.cod_jug, j.nombres, j.apellidos, j.dorsal, j.posicion, j.foto,
+                           e.nombre as nombre_equipo, e.escudo as escudo_equipo,
+                           COUNT(g.cod_gol) as total_goles
+                     FROM Jugadores j
+                     JOIN Equipos e ON j.cod_equ = e.cod_equ
+                     JOIN Goles g ON j.cod_jug = g.cod_jug
+                     WHERE g.tipo IN ('normal', 'penal')
+                     GROUP BY j.cod_jug, j.nombres, j.apellidos, j.dorsal, j.posicion, j.foto, e.nombre, e.escudo
+                     ORDER BY total_goles DESC
+                     LIMIT 1";
+            
+            $stmt = $this->db->prepare($query);
+            $stmt->execute();
+            
+            $goleador = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$goleador) {
+                return null;
+            }
+            
+            // Procesar la foto del jugador
+            if ($goleador['foto']) {
+                $goleador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($goleador['foto']);
+            } else {
+                $goleador['foto_base64'] = './frontend/assets/images/default-player.png';
+            }
+            
+            // Procesar el escudo del equipo
+            if ($goleador['escudo_equipo']) {
+                $goleador['escudo_equipo_base64'] = 'data:image/jpeg;base64,' . base64_encode($goleador['escudo_equipo']);
+            } else {
+                $goleador['escudo_equipo_base64'] = './frontend/assets/images/default-team.png';
+            }
+            
+            return $goleador;
+        } catch (PDOException $e) {
+            return null;
+        }
+    }
+    
+    /**
+     * Obtiene al jugador con más asistencias
+     */
+    public function obtenerMaximoAsistidor() {
+        try {
+            $query = "SELECT j.cod_jug, j.nombres, j.apellidos, j.dorsal, j.posicion, j.foto,
+                           e.nombre as nombre_equipo, e.escudo as escudo_equipo,
+                           COUNT(a.cod_asis) as total_asistencias
+                     FROM Jugadores j
+                     JOIN Equipos e ON j.cod_equ = e.cod_equ
+                     JOIN Asistencias a ON j.cod_jug = a.cod_jug
+                     GROUP BY j.cod_jug, j.nombres, j.apellidos, j.dorsal, j.posicion, j.foto, e.nombre, e.escudo
+                     ORDER BY total_asistencias DESC
+                     LIMIT 1";
+            
+            $stmt = $this->db->prepare($query);
+            $stmt->execute();
+            
+            $asistidor = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$asistidor) {
+                return null;
+            }
+            
+            // Procesar la foto del jugador
+            if ($asistidor['foto']) {
+                $asistidor['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($asistidor['foto']);
+            } else {
+                $asistidor['foto_base64'] = './frontend/assets/images/default-player.png';
+            }
+            
+            // Procesar el escudo del equipo
+            if ($asistidor['escudo_equipo']) {
+                $asistidor['escudo_equipo_base64'] = 'data:image/jpeg;base64,' . base64_encode($asistidor['escudo_equipo']);
+            } else {
+                $asistidor['escudo_equipo_base64'] = './frontend/assets/images/default-team.png';
+            }
+            
+            return $asistidor;
+        } catch (PDOException $e) {
+            return null;
+        }
+    }
 } 

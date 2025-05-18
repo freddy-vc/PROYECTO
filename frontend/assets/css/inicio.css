@@ -95,4 +95,126 @@
     .matches-container {
         grid-template-columns: 1fr;
     }
+}
+
+/* Jugadores destacados */
+.featured-players {
+    margin-bottom: 40px;
+}
+
+.featured-players h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--primary-color);
+}
+
+.players-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    justify-content: center;
+}
+
+.player-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.player-card:hover {
+    transform: translateY(-5px);
+}
+
+.player-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.player-header img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+    margin-right: 15px;
+}
+
+.player-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.2rem;
+    color: var(--dark-color);
+}
+
+.player-team {
+    display: flex;
+    align-items: center;
+    color: #777;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.player-team img {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+}
+
+.player-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 10px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #777;
+}
+
+.player-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--primary-color);
+    color: white;
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.player-badge i {
+    margin-right: 5px;
+}
+
+@media (max-width: 768px) {
+    .players-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .player-header img {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
 } 
