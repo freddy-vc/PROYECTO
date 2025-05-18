@@ -37,6 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['usuario_foto'] = null;
         }
         
+        // Guardar mensaje de éxito en la sesión
+        $_SESSION['exito_login'] = '¡Sesión iniciada correctamente! Bienvenido/a ' . $username;
+        
         // Redireccionar al inicio
         header('Location: ../../index.php');
         exit;

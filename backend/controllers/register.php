@@ -47,9 +47,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $resultado = $usuario->registrar($username, $email, $password, $foto_perfil);
     
     if ($resultado['estado']) {
-        // Registro exitoso, guardar mensaje y redireccionar a login
-        $_SESSION['exito_registro'] = $resultado['mensaje'];
-        header('Location: ../../frontend/pages/login.php');
+        // Registro exitoso, iniciar sesión automáticamente
+        $_SESSION['usuario_id'] = $resultado['usuario']['cod_user'];
+        $_SESSION['usuario_nombre'] = $resultado['usuario']['username'];
+        $_SESSION['usuario_email'] = $resultado['usuario']['email'];
+        $_SESSION['usuario_rol'] = $resultado['usuario']['rol'];
+        $_SESSION['usuario_foto'] = null; // No hay foto de perfil al inicio
+
+        // Guardar mensaje de éxito en la sesión
+        $_SESSION['exito_login'] = '¡Registro exitoso! Bienvenido/a ' . $username;
+        
+        // Redireccionar al inicio
+        header('Location: ../../index.php');
         exit;
     } else {
         // Registro fallido, mostrar mensaje de error

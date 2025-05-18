@@ -50,9 +50,6 @@ class Usuario
                 ];
             }
             
-            // Hashear la contraseña
-            $password_hash = password_hash($password, PASSWORD_DEFAULT);
-            
             // Preparar la consulta SQL
             $sql = "INSERT INTO Usuarios (username, email, password, rol, foto_perfil) 
                     VALUES (:username, :email, :password, :rol, :foto_perfil)";
@@ -64,16 +61,23 @@ class Usuario
             
             $stmt->bindParam(':username', $username);
             $stmt->bindParam(':email', $email);
-            $stmt->bindParam(':password', $password_hash);
+            $stmt->bindParam(':password', $password);
             $stmt->bindParam(':rol', $rol);
             $stmt->bindParam(':foto_perfil', $foto_perfil, PDO::PARAM_LOB);
             
             // Ejecutar la consulta
             $stmt->execute();
             
+            // Obtener el ID del usuario recién creado
+            $cod_user = $this->conexion->lastInsertId();
+            
+            // Devolver el usuario recién creado para iniciar sesión automáticamente
+            $usuario = $this->obtenerPorId($cod_user);
+            
             return [
                 'estado' => true,
-                'mensaje' => 'Usuario registrado correctamente'
+                'mensaje' => 'Usuario registrado correctamente',
+                'usuario' => $usuario
             ];
             
         } catch (PDOException $e) {
@@ -126,18 +130,20 @@ class Usuario
     public function login($username, $password)
     {
         try {
-            $sql = "SELECT * FROM Usuarios WHERE username = :username";
+            $sql = "SELECT * FROM Usuarios WHERE username = :username AND password = :password";
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':username', $username);
+            $stmt->bindParam(':password', $password);
             $stmt->execute();
             
             $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            // Verificar si existe el usuario y la contraseña es correcta
-            if ($usuario && password_verify($password, $usuario['password'])) {
+            // Verificar si existe el usuario
+            if ($usuario) {
                 return [
                     'estado' => true,
-                    'usuario' => $usuario
+                    'usuario' => $usuario,
+                    'mensaje' => 'Inicio de sesión exitoso'
                 ];
             } else {
                 return [
@@ -243,20 +249,17 @@ class Usuario
             $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
             
             // Verificar si la contraseña actual es correcta
-            if (!password_verify($password_actual, $usuario['password'])) {
+            if ($password_actual !== $usuario['password']) {
                 return [
                     'estado' => false,
                     'mensaje' => 'La contraseña actual es incorrecta'
                 ];
             }
             
-            // Hashear la nueva contraseña
-            $password_hash = password_hash($nueva_password, PASSWORD_DEFAULT);
-            
             // Actualizar la contraseña
             $sql = "UPDATE Usuarios SET password = :password WHERE cod_user = :cod_user";
             $stmt = $this->conexion->prepare($sql);
-            $stmt->bindParam(':password', $password_hash);
+            $stmt->bindParam(':password', $nueva_password);
             $stmt->bindParam(':cod_user', $cod_user);
             $stmt->execute();
             

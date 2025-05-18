@@ -30,7 +30,7 @@ $foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : '../assets/image
         
         <?php 
         // Mostrar notificaciones de error y éxito
-        mostrarNotificaciones(['error_perfil', 'exito_perfil']);
+        mostrarNotificaciones(['error_perfil', 'exito_perfil', 'exito_login']);
         ?>
         
         <div class="profile-content">
@@ -38,6 +38,16 @@ $foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : '../assets/image
                 <img src="<?php echo $foto; ?>" alt="Foto de perfil">
                 <h2><?php echo $username; ?></h2>
                 <p class="profile-role"><?php echo $rol === 'admin' ? 'Administrador' : 'Usuario'; ?></p>
+                
+                <!-- Formulario para cambiar foto de perfil -->
+                <form action="../../backend/controllers/actualizar_foto.php" method="POST" enctype="multipart/form-data" class="foto-form">
+                    <div class="form-group">
+                        <label for="foto_perfil">Cambiar foto de perfil</label>
+                        <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" required>
+                        <small>Formatos permitidos: JPG, PNG, GIF. Máximo 2MB.</small>
+                    </div>
+                    <button type="submit" class="btn btn-small">Subir Foto</button>
+                </form>
             </div>
             
             <div class="profile-details">
@@ -110,6 +120,31 @@ $foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : '../assets/image
     .profile-role {
         color: #777;
         margin-top: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .foto-form {
+        margin-top: 15px;
+        padding: 15px;
+        background: var(--light-color);
+        border-radius: 8px;
+    }
+    
+    .foto-form .form-group {
+        margin-bottom: 10px;
+    }
+    
+    .foto-form label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+    
+    .foto-form small {
+        display: block;
+        margin-top: 5px;
+        color: #777;
     }
     
     .profile-details {

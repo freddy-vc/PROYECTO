@@ -5,7 +5,15 @@ $pagina_actual = 'inicio';
 
 // Incluir el header
 include_once 'frontend/components/header.php';
+
+// Incluir el componente de notificaciones
+include_once 'frontend/components/notificaciones.php';
 ?>
+
+<!-- Mostrar notificaciones de éxito -->
+<div class="container">
+    <?php mostrarNotificaciones(['exito_login']); ?>
+</div>
 
 <!-- Contenido principal de la página de inicio -->
 <section class="hero">

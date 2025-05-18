@@ -26,7 +26,7 @@ if (isset($_SESSION['usuario_id'])) {
         mostrarNotificaciones(['error_registro', 'exito_registro']);
         ?>
         
-        <form action="../../backend/controllers/register.php" method="POST" onsubmit="return validarFormulario(this)" enctype="multipart/form-data">
+        <form action="../../backend/controllers/register.php" method="POST" onsubmit="return validarFormulario(this)">
             <div class="form-group">
                 <label for="username">Nombre de Usuario</label>
                 <input type="text" id="username" name="username" required>
@@ -47,12 +47,6 @@ if (isset($_SESSION['usuario_id'])) {
             <div class="form-group">
                 <label for="confirmar_password">Confirmar Contraseña</label>
                 <input type="password" id="confirmar_password" name="confirmar_password" required minlength="6">
-            </div>
-            
-            <div class="form-group">
-                <label for="foto_perfil">Foto de Perfil (opcional)</label>
-                <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*">
-                <small>Formatos permitidos: JPG, PNG, GIF. Máximo 2MB.</small>
             </div>
             
             <div class="form-actions">
