@@ -2,69 +2,68 @@
  * JavaScript para el panel de administración
  */
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicialización para los íconos de Font Awesome
-    if (typeof FontAwesome !== 'undefined') {
-        FontAwesome.dom.i2svg();
-    }
-    
-    // Agregar listeners para los botones de eliminación si existen
+    // Configurar los botones de eliminación
     setupDeleteButtons();
     
-    // Configurar validación de formularios si existen
+    // Configurar validación de formularios
     setupFormValidation();
+    
+    // Configurar filtros y búsqueda
+    setupFilters();
 });
 
 /**
- * Configurar los botones de eliminación para mostrar confirmación
+ * Configura los botones de eliminación para mostrar un diálogo de confirmación
  */
 function setupDeleteButtons() {
-    const deleteButtons = document.querySelectorAll('.action-btn.delete');
+    const deleteButtons = document.querySelectorAll('.delete-btn');
     
     deleteButtons.forEach(button => {
         button.addEventListener('click', function(e) {
             e.preventDefault();
             
-            const confirmMessage = this.getAttribute('data-confirm') || '¿Estás seguro de que deseas eliminar este elemento?';
+            const itemName = this.getAttribute('data-name');
+            const confirmMessage = `¿Estás seguro de que deseas eliminar "${itemName}"? Esta acción no se puede deshacer.`;
             
             if (confirm(confirmMessage)) {
-                // Si se confirma, seguir con la acción de eliminación
-                window.location.href = this.getAttribute('href');
+                // Si el usuario confirma, enviar el formulario o realizar la acción
+                const form = this.closest('form');
+                if (form) {
+                    form.submit();
+                } else {
+                    window.location.href = this.getAttribute('href');
+                }
             }
         });
     });
 }
 
 /**
- * Configurar validación básica de formularios
+ * Configura la validación básica de formularios
  */
 function setupFormValidation() {
-    const adminForms = document.querySelectorAll('.admin-form');
+    const forms = document.querySelectorAll('.admin-form');
     
-    adminForms.forEach(form => {
+    forms.forEach(form => {
         form.addEventListener('submit', function(e) {
+            const requiredFields = form.querySelectorAll('[required]');
             let isValid = true;
             
-            // Validar campos requeridos
-            const requiredFields = form.querySelectorAll('[required]');
             requiredFields.forEach(field => {
                 if (!field.value.trim()) {
                     isValid = false;
-                    field.classList.add('is-invalid');
+                    field.classList.add('error');
                     
                     // Crear mensaje de error si no existe
                     let errorMessage = field.nextElementSibling;
                     if (!errorMessage || !errorMessage.classList.contains('error-message')) {
                         errorMessage = document.createElement('div');
-                        errorMessage.className = 'error-message';
-                        errorMessage.style.fontSize = '0.8rem';
-                        errorMessage.style.color = 'var(--danger-color)';
-                        errorMessage.style.marginTop = '5px';
+                        errorMessage.classList.add('error-message');
+                        errorMessage.textContent = 'Este campo es obligatorio';
                         field.parentNode.insertBefore(errorMessage, field.nextSibling);
                     }
-                    
-                    errorMessage.textContent = 'Este campo es requerido';
                 } else {
-                    field.classList.remove('is-invalid');
+                    field.classList.remove('error');
                     
                     // Eliminar mensaje de error si existe
                     const errorMessage = field.nextElementSibling;
@@ -82,46 +81,59 @@ function setupFormValidation() {
 }
 
 /**
- * Función para manejar la paginación
+ * Configura los filtros y la búsqueda en las tablas
  */
-function cambiarPagina(pagina) {
-    // Obtener la URL actual
-    const url = new URL(window.location.href);
+function setupFilters() {
+    const searchInputs = document.querySelectorAll('.admin-search input');
+    const filterSelects = document.querySelectorAll('.admin-filter-select');
     
-    // Establecer el parámetro de página
-    url.searchParams.set('pagina', pagina);
+    // Configurar búsqueda
+    searchInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const tableId = this.getAttribute('data-table');
+            const table = document.getElementById(tableId);
+            
+            if (table) {
+                const rows = table.querySelectorAll('tbody tr');
+                
+                rows.forEach(row => {
+                    let found = false;
+                    const cells = row.querySelectorAll('td');
+                    
+                    cells.forEach(cell => {
+                        if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                            found = true;
+                        }
+                    });
+                    
+                    row.style.display = found ? '' : 'none';
+                });
+            }
+        });
+    });
     
-    // Redirigir a la nueva URL
-    window.location.href = url.toString();
-}
-
-/**
- * Función para manejar la búsqueda
- */
-function buscar(formElement) {
-    const busqueda = document.getElementById('busqueda').value.trim();
-    
-    if (busqueda !== '') {
-        formElement.submit();
-    }
-    
-    return false;
-}
-
-/**
- * Función para previsualización de imágenes antes de subirlas
- */
-function previsualizarImagen(input, previewId) {
-    const preview = document.getElementById(previewId);
-    
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-        };
-        
-        reader.readAsDataURL(input.files[0]);
-    }
+    // Configurar filtros
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const filterValue = this.value;
+            const filterColumn = this.getAttribute('data-column');
+            const tableId = this.getAttribute('data-table');
+            const table = document.getElementById(tableId);
+            
+            if (table) {
+                const rows = table.querySelectorAll('tbody tr');
+                
+                rows.forEach(row => {
+                    const cell = row.querySelector(`td[data-column="${filterColumn}"]`);
+                    
+                    if (filterValue === '' || (cell && cell.textContent === filterValue)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+        });
+    });
 } 

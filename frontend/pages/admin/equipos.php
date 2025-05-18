@@ -15,6 +15,13 @@ if (!isset($_SESSION['usuario_id']) || !isset($_SESSION['usuario_rol']) || $_SES
 
 // Incluir el componente de notificaciones
 include_once '../../components/notificaciones.php';
+
+// Incluir el modelo de Equipo
+require_once '../../../backend/models/Equipo.php';
+
+// Obtener los equipos
+$equipoModel = new Equipo();
+$equipos = $equipoModel->obtenerTodos();
 ?>
 
 <!-- Incluir los estilos específicos para esta página -->
@@ -48,93 +55,80 @@ include_once '../../components/notificaciones.php';
     
     <!-- Sección de filtros y búsqueda -->
     <div class="admin-filters">
-        <form action="" method="GET" class="admin-search" onsubmit="return buscar(this)">
-            <input type="text" id="busqueda" name="busqueda" placeholder="Buscar equipo..." value="<?php echo isset($_GET['busqueda']) ? htmlspecialchars($_GET['busqueda']) : ''; ?>">
+        <div class="admin-search">
+            <input type="text" placeholder="Buscar equipo..." data-table="equipos-table">
             <i class="fas fa-search"></i>
-        </form>
+        </div>
         
-        <select name="filtro_ciudad" id="filtro_ciudad" class="admin-filter-select" onchange="this.form.submit()">
+        <select class="admin-filter-select" data-table="equipos-table" data-column="ciudad">
             <option value="">Todas las ciudades</option>
             <?php
-            // Aquí iría el código para cargar las ciudades desde la base de datos
+            // Obtener ciudades únicas de los equipos
+            $ciudades = [];
+            foreach ($equipos as $equipo) {
+                if (!in_array($equipo['ciudad_nombre'], $ciudades)) {
+                    $ciudades[] = $equipo['ciudad_nombre'];
+                    echo '<option value="' . $equipo['ciudad_nombre'] . '">' . $equipo['ciudad_nombre'] . '</option>';
+                }
+            }
             ?>
         </select>
+        
+        <a href="./equipos_form.php" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nuevo Equipo
+        </a>
     </div>
     
     <!-- Tabla de equipos -->
     <div class="admin-table-container">
-        <div class="admin-table-header">
-            <h2>Listado de Equipos</h2>
-            <a href="./equipos_form.php" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Nuevo Equipo
-            </a>
-        </div>
-        
-        <table class="admin-table">
+        <table class="admin-table" id="equipos-table">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Escudo</th>
                     <th>Nombre</th>
-                    <th>Ciudad</th>
+                    <th data-column="ciudad">Ciudad</th>
                     <th>Director Técnico</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <?php
-                // Aquí iría el código para cargar los equipos desde la base de datos
-                // Por ahora, mostraremos datos de ejemplo
-                $equipos_ejemplo = [
-                    [
-                        'id' => 1,
-                        'escudo' => '../../assets/images/default-team.png',
-                        'nombre' => 'Los Halcones',
-                        'ciudad' => 'Villavicencio',
-                        'director' => 'Juan Pérez'
-                    ],
-                    [
-                        'id' => 2,
-                        'escudo' => '../../assets/images/default-team.png',
-                        'nombre' => 'Águilas FC',
-                        'ciudad' => 'Acacías',
-                        'director' => 'Ana Gómez'
-                    ],
-                    [
-                        'id' => 3,
-                        'escudo' => '../../assets/images/default-team.png',
-                        'nombre' => 'Deportivo Meta',
-                        'ciudad' => 'Villavicencio',
-                        'director' => 'Carlos Rodríguez'
-                    ]
-                ];
+                <?php foreach ($equipos as $equipo): ?>
+                <tr>
+                    <td><?php echo $equipo['cod_equ']; ?></td>
+                    <td>
+                        <img src="<?php echo $equipo['escudo_base64'] ?? '../../assets/images/team.png'; ?>" 
+                             alt="<?php echo $equipo['nombre']; ?>" 
+                             class="admin-table-img">
+                    </td>
+                    <td><?php echo $equipo['nombre']; ?></td>
+                    <td data-column="ciudad"><?php echo $equipo['ciudad_nombre']; ?></td>
+                    <td><?php echo $equipo['dt_nombres'] . ' ' . $equipo['dt_apellidos']; ?></td>
+                    <td class="admin-actions">
+                        <a href="../../pages/detalle-equipo.php?id=<?php echo $equipo['cod_equ']; ?>" class="action-btn view" title="Ver detalle">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="./equipos_form.php?id=<?php echo $equipo['cod_equ']; ?>" class="action-btn edit" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form action="../../../backend/controllers/admin/equipos_controller.php" method="POST" style="display: inline;">
+                            <input type="hidden" name="accion" value="eliminar">
+                            <input type="hidden" name="id" value="<?php echo $equipo['cod_equ']; ?>">
+                            <button type="button" class="action-btn delete delete-btn" title="Eliminar" data-name="<?php echo $equipo['nombre']; ?>">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
                 
-                foreach ($equipos_ejemplo as $equipo) {
-                    echo '<tr>';
-                    echo '<td>' . $equipo['id'] . '</td>';
-                    echo '<td><img src="' . $equipo['escudo'] . '" alt="Escudo" width="40" height="40"></td>';
-                    echo '<td>' . $equipo['nombre'] . '</td>';
-                    echo '<td>' . $equipo['ciudad'] . '</td>';
-                    echo '<td>' . $equipo['director'] . '</td>';
-                    echo '<td class="admin-actions">';
-                    echo '<a href="./equipos_ver.php?id=' . $equipo['id'] . '" class="action-btn view"><i class="fas fa-eye"></i> Ver</a>';
-                    echo '<a href="./equipos_form.php?id=' . $equipo['id'] . '" class="action-btn edit"><i class="fas fa-edit"></i> Editar</a>';
-                    echo '<a href="../../backend/controllers/admin/equipos_controller.php?accion=eliminar&id=' . $equipo['id'] . '" class="action-btn delete" data-confirm="¿Estás seguro de que deseas eliminar este equipo?"><i class="fas fa-trash"></i> Eliminar</a>';
-                    echo '</td>';
-                    echo '</tr>';
-                }
-                ?>
+                <?php if (empty($equipos)): ?>
+                <tr>
+                    <td colspan="6" class="no-results">No hay equipos registrados</td>
+                </tr>
+                <?php endif; ?>
             </tbody>
         </table>
-    </div>
-    
-    <!-- Paginación -->
-    <div class="admin-pagination">
-        <a href="javascript:cambiarPagina(1)" class="pagination-btn <?php echo isset($_GET['pagina']) && $_GET['pagina'] == 1 ? 'active' : ''; ?>">1</a>
-        <a href="javascript:cambiarPagina(2)" class="pagination-btn <?php echo isset($_GET['pagina']) && $_GET['pagina'] == 2 ? 'active' : ''; ?>">2</a>
-        <a href="javascript:cambiarPagina(3)" class="pagination-btn <?php echo isset($_GET['pagina']) && $_GET['pagina'] == 3 ? 'active' : ''; ?>">3</a>
-        <span class="pagination-btn disabled">...</span>
-        <a href="javascript:cambiarPagina(10)" class="pagination-btn">10</a>
     </div>
 </div>
 

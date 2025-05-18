@@ -16,40 +16,33 @@ if (!isset($_SESSION['usuario_id']) || !isset($_SESSION['usuario_rol']) || $_SES
 // Incluir el componente de notificaciones
 include_once '../../components/notificaciones.php';
 
+// Incluir los modelos necesarios
+require_once '../../../backend/models/Equipo.php';
+require_once '../../../backend/models/Ciudad.php';
+require_once '../../../backend/models/Director.php';
+
+// Instanciar los modelos
+$equipoModel = new Equipo();
+$ciudadModel = new Ciudad();
+$directorModel = new Director();
+
 // Variables para los datos del formulario
 $equipo = null;
-$ciudades = [];
-$directores = [];
+$ciudades = $ciudadModel->obtenerTodas();
+$directores = $directorModel->obtenerTodos();
 
 // Si es una edición, cargar los datos del equipo
 if (isset($_GET['id'])) {
     $equipo_id = intval($_GET['id']);
+    $equipo = $equipoModel->obtenerPorId($equipo_id);
     
-    // Aquí iría el código para cargar los datos del equipo desde la base de datos
-    // Por ahora, usamos datos de ejemplo
-    $equipo = [
-        'id' => $equipo_id,
-        'nombre' => 'Los Halcones',
-        'ciudad_id' => 1,
-        'director_id' => 2,
-        'escudo' => '../../assets/images/default-team.png'
-    ];
+    // Si no se encuentra el equipo, redirigir
+    if (!$equipo) {
+        $_SESSION['error_equipos'] = 'No se encontró el equipo solicitado';
+        header('Location: ./equipos.php');
+        exit;
+    }
 }
-
-// Cargar ciudades y directores para los selects
-// Aquí iría el código para cargar estos datos desde la base de datos
-// Por ahora, usamos datos de ejemplo
-$ciudades = [
-    ['id' => 1, 'nombre' => 'Villavicencio'],
-    ['id' => 2, 'nombre' => 'Acacías'],
-    ['id' => 3, 'nombre' => 'Granada']
-];
-
-$directores = [
-    ['id' => 1, 'nombre' => 'Juan Pérez'],
-    ['id' => 2, 'nombre' => 'Ana Gómez'],
-    ['id' => 3, 'nombre' => 'Carlos Rodríguez']
-];
 ?>
 
 <!-- Incluir los estilos específicos para esta página -->
@@ -82,66 +75,74 @@ $directores = [
     ?>
     
     <!-- Formulario de equipo -->
-    <form class="admin-form" action="../../backend/controllers/admin/equipos_controller.php" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="accion" value="<?php echo isset($_GET['id']) ? 'actualizar' : 'crear'; ?>">
-        <?php if (isset($_GET['id'])): ?>
-        <input type="hidden" name="id" value="<?php echo $equipo['id']; ?>">
-        <?php endif; ?>
-        
-        <div class="form-row">
-            <div class="form-col">
-                <div class="admin-form-group">
-                    <label for="nombre">Nombre del Equipo</label>
-                    <input type="text" id="nombre" name="nombre" required value="<?php echo isset($equipo) ? htmlspecialchars($equipo['nombre']) : ''; ?>">
+    <div class="admin-form">
+        <form action="../../../backend/controllers/admin/equipos_controller.php" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="accion" value="<?php echo isset($_GET['id']) ? 'actualizar' : 'crear'; ?>">
+            <?php if (isset($_GET['id'])): ?>
+                <input type="hidden" name="id" value="<?php echo $equipo['cod_equ']; ?>">
+            <?php endif; ?>
+            
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="admin-form-group">
+                        <label for="nombre">Nombre del Equipo</label>
+                        <input type="text" id="nombre" name="nombre" value="<?php echo isset($equipo) ? $equipo['nombre'] : ''; ?>" required>
+                    </div>
                 </div>
                 
-                <div class="admin-form-group">
-                    <label for="ciudad">Ciudad</label>
-                    <select id="ciudad" name="ciudad_id" required>
-                        <option value="">Seleccione una ciudad</option>
-                        <?php foreach ($ciudades as $ciudad): ?>
-                        <option value="<?php echo $ciudad['id']; ?>" <?php echo isset($equipo) && $equipo['ciudad_id'] == $ciudad['id'] ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($ciudad['nombre']); ?>
-                        </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                
-                <div class="admin-form-group">
-                    <label for="director">Director Técnico</label>
-                    <select id="director" name="director_id">
-                        <option value="">Sin director técnico</option>
-                        <?php foreach ($directores as $director): ?>
-                        <option value="<?php echo $director['id']; ?>" <?php echo isset($equipo) && $equipo['director_id'] == $director['id'] ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($director['nombre']); ?>
-                        </option>
-                        <?php endforeach; ?>
-                    </select>
+                <div class="form-col">
+                    <div class="admin-form-group">
+                        <label for="ciudad">Ciudad</label>
+                        <select id="ciudad" name="ciudad_id" required>
+                            <option value="">Seleccione una ciudad</option>
+                            <?php foreach ($ciudades as $ciudad): ?>
+                                <option value="<?php echo $ciudad['cod_ciu']; ?>" <?php echo (isset($equipo) && $equipo['cod_ciu'] == $ciudad['cod_ciu']) ? 'selected' : ''; ?>>
+                                    <?php echo $ciudad['nombre']; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                 </div>
             </div>
             
-            <div class="form-col">
-                <div class="admin-form-group">
-                    <label for="escudo">Escudo del Equipo</label>
-                    <input type="file" id="escudo" name="escudo" accept="image/*" onchange="previsualizarImagen(this, 'preview-escudo')">
-                    
-                    <div style="margin-top: 15px; text-align: center;">
-                        <img id="preview-escudo" src="<?php echo isset($equipo) ? $equipo['escudo'] : '../../assets/images/default-team.png'; ?>" alt="Vista previa del escudo" style="max-width: 150px; max-height: 150px; border: 1px solid #ddd; padding: 5px;">
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="admin-form-group">
+                        <label for="director">Director Técnico</label>
+                        <select id="director" name="director_id">
+                            <option value="">Sin director asignado</option>
+                            <?php foreach ($directores as $director): ?>
+                                <option value="<?php echo $director['cod_dt']; ?>" <?php echo (isset($equipo) && $equipo['cod_dt'] == $director['cod_dt']) ? 'selected' : ''; ?>>
+                                    <?php echo $director['nombres'] . ' ' . $director['apellidos']; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
-                    <p style="font-size: 0.8rem; color: #777; margin-top: 5px; text-align: center;">
-                        Imagen recomendada: formato cuadrado, PNG o JPG
-                    </p>
+                </div>
+                
+                <div class="form-col">
+                    <div class="admin-form-group">
+                        <label for="escudo">Escudo del Equipo</label>
+                        <?php if (isset($equipo) && $equipo['escudo_base64']): ?>
+                            <div class="current-image">
+                                <img src="<?php echo $equipo['escudo_base64']; ?>" alt="Escudo actual" style="max-width: 100px; margin-bottom: 10px;">
+                                <p>Escudo actual</p>
+                            </div>
+                        <?php endif; ?>
+                        <input type="file" id="escudo" name="escudo" accept="image/*">
+                        <small>Formatos permitidos: JPG, PNG, GIF. Máximo 2MB.</small>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="admin-form-actions">
-            <a href="./equipos.php" class="btn cancel-btn">Cancelar</a>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> <?php echo isset($_GET['id']) ? 'Actualizar Equipo' : 'Crear Equipo'; ?>
-            </button>
-        </div>
-    </form>
+            
+            <div class="admin-form-actions">
+                <a href="./equipos.php" class="btn cancel-btn">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <?php echo isset($_GET['id']) ? 'Actualizar Equipo' : 'Crear Equipo'; ?>
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- Incluir los scripts específicos para esta página -->
