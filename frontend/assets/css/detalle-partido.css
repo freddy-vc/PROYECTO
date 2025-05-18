@@ -1,0 +1,239 @@
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.back-link {
+    margin-bottom: 20px;
+}
+
+.back-link a {
+    display: inline-flex;
+    align-items: center;
+    color: var(--primary-color);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.back-link a:hover {
+    opacity: 0.8;
+}
+
+.back-link i {
+    margin-right: 5px;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #777;
+}
+
+.error-message {
+    background-color: rgba(229, 57, 53, 0.1);
+    color: var(--danger-color);
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.partido-detalle {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.partido-header {
+    background: var(--primary-color);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.partido-fecha {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.partido-cancha {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.partido-estado {
+    font-size: 0.9rem;
+    padding: 5px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.partido-estado.finalizado {
+    background: var(--success-color);
+}
+
+.partido-estado.programado {
+    background: #2196F3;
+}
+
+.partido-marcador {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 30px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.equipo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 40%;
+}
+
+.equipo-logo {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: 15px;
+}
+
+.equipo-nombre {
+    font-weight: bold;
+    color: var(--dark-color);
+    text-align: center;
+}
+
+.equipo-goles {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-top: 10px;
+}
+
+.vs {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #aaa;
+}
+
+.partido-detalles {
+    padding: 20px;
+}
+
+.detalle-seccion {
+    margin-bottom: 30px;
+}
+
+.detalle-seccion h3 {
+    color: var(--primary-color);
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.detalle-lista {
+    list-style-type: none;
+    padding: 0;
+}
+
+.detalle-lista li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 5px;
+}
+
+.minuto {
+    background: var(--primary-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: bold;
+    margin-right: 15px;
+    min-width: 30px;
+    text-align: center;
+}
+
+.jugador {
+    font-weight: 500;
+    flex: 1;
+}
+
+.equipo {
+    color: #777;
+    width: auto;
+    display: inline;
+    margin-right: 10px;
+}
+
+.tipo-falta {
+    font-size: 0.85rem;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: #f5f5f5;
+    margin-left: 10px;
+}
+
+.tipo-falta.amarilla {
+    background: #FFC107;
+    color: #7E6000;
+}
+
+.tipo-falta.roja {
+    background: #E53935;
+    color: white;
+}
+
+.partido-programado {
+    padding: 30px;
+    text-align: center;
+    font-style: italic;
+    color: #777;
+}
+
+@media (max-width: 768px) {
+    .partido-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .partido-estado {
+        margin-top: 10px;
+        align-self: flex-end;
+    }
+    
+    .partido-marcador {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .equipo {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    
+    .vs {
+        margin: 10px 0;
+    }
+    
+    .detalle-lista li {
+        flex-wrap: wrap;
+    }
+    
+    .minuto {
+        margin-bottom: 5px;
+    }
+    
+    .jugador, .equipo {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+} 

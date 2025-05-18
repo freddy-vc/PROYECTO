@@ -10,6 +10,9 @@ include_once 'frontend/components/header.php';
 include_once 'frontend/components/notificaciones.php';
 ?>
 
+<!-- Incluir los estilos específicos para esta página -->
+<link rel="stylesheet" href="./frontend/assets/css/inicio.css">
+
 <!-- Mostrar notificaciones de éxito -->
 <div class="container">
     <?php mostrarNotificaciones(['exito_login']); ?>
@@ -52,31 +55,13 @@ include_once 'frontend/components/notificaciones.php';
 
 <section class="recent-matches">
     <h2>Últimos Resultados</h2>
-    <div class="matches-container">
-        <!-- Aquí se cargarán los últimos partidos desde la base de datos -->
-        <?php
-        // Ejemplo de cómo se mostrará (esto se reemplazará con datos reales)
-        ?>
-        <div class="match-card">
-            <div class="match-date">15 Mayo, 2023 - 18:00</div>
-            <div class="match-teams">
-                <div class="team">
-                    <img src="./frontend/assets/images/team-placeholder.png" alt="Equipo Local">
-                    <span>Equipo Local</span>
-                </div>
-                <div class="match-score">
-                    <span>3 - 2</span>
-                </div>
-                <div class="team">
-                    <img src="./frontend/assets/images/team-placeholder.png" alt="Equipo Visitante">
-                    <span>Equipo Visitante</span>
-                </div>
-            </div>
-            <a href="./frontend/pages/detalle-partido.php?id=1" class="btn btn-small">Ver Detalles</a>
-        </div>
-        <!-- Fin del ejemplo -->
+    <div class="matches-container" id="ultimos-partidos">
+        <div class="loading-matches">Cargando últimos resultados...</div>
     </div>
 </section>
+
+<!-- Incluir el script específico para esta página -->
+<script src="./frontend/assets/js/inicio.js"></script>
 
 <?php
 // Incluir el footer

@@ -452,6 +452,29 @@ img {
     font-weight: 500;
 }
 
+/* Estilos para mensajes de error generales */
+.error-message {
+    color: var(--danger-color);
+    background-color: rgba(229, 57, 53, 0.05);
+    text-align: center;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* Estilos para enlace de administración */
+.admin-link {
+    color: var(--primary-color) !important;
+    font-weight: bold !important;
+    display: flex;
+    align-items: center;
+}
+
+.admin-link::before {
+    content: '⚙️';
+    margin-right: 5px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .header-content {
