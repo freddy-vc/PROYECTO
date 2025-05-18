@@ -25,13 +25,13 @@ require_once '../models/Usuario.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Obtener los datos del formulario
-    $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : '';
+    $username = isset($_POST['username']) ? trim($_POST['username']) : '';
     $email = isset($_POST['email']) ? trim($_POST['email']) : '';
     $password = isset($_POST['password']) ? $_POST['password'] : '';
     $confirmar_password = isset($_POST['confirmar_password']) ? $_POST['confirmar_password'] : '';
     
     // Validar que los campos obligatorios no estén vacíos
-    if (empty($nombre) || empty($email) || empty($password) || empty($confirmar_password)) {
+    if (empty($username) || empty($email) || empty($password) || empty($confirmar_password)) {
         $_SESSION['error_registro'] = 'Todos los campos obligatorios deben ser completados';
         header('Location: ' . $relative_path . '/frontend/pages/registro.php');
         exit;
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Intentar registrar al usuario
     $usuario = new Usuario();
-    $resultado = $usuario->registrar($nombre, $email, $password, $foto_perfil);
+    $resultado = $usuario->registrar($username, $email, $password, $foto_perfil);
     
     if ($resultado['estado']) {
         // Registro exitoso, guardar mensaje y redireccionar a login

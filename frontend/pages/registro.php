@@ -28,8 +28,9 @@ if (isset($_SESSION['usuario_id'])) {
         
         <form action="<?php echo $base_path; ?>/backend/controllers/register.php" method="POST" onsubmit="return validarFormulario(this)" enctype="multipart/form-data">
             <div class="form-group">
-                <label for="nombre">Nombre</label>
-                <input type="text" id="nombre" name="nombre" required>
+                <label for="username">Nombre de Usuario</label>
+                <input type="text" id="username" name="username" required>
+                <small>Este será tu identificador para iniciar sesión</small>
             </div>
             
             <div class="form-group">

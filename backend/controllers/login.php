@@ -25,31 +25,24 @@ require_once '../models/Usuario.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Obtener los datos del formulario
-    $email = isset($_POST['email']) ? trim($_POST['email']) : '';
+    $username = isset($_POST['username']) ? trim($_POST['username']) : '';
     $password = isset($_POST['password']) ? $_POST['password'] : '';
     
     // Validar que los campos no estén vacíos
-    if (empty($email) || empty($password)) {
+    if (empty($username) || empty($password)) {
         $_SESSION['error_login'] = 'Todos los campos son obligatorios';
-        header('Location: ' . $relative_path . '/frontend/pages/login.php');
-        exit;
-    }
-    
-    // Validar formato de email
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $_SESSION['error_login'] = 'El formato del correo electrónico es inválido';
         header('Location: ' . $relative_path . '/frontend/pages/login.php');
         exit;
     }
     
     // Intentar iniciar sesión
     $usuario = new Usuario();
-    $resultado = $usuario->login($email, $password);
+    $resultado = $usuario->login($username, $password);
     
     if ($resultado['estado']) {
         // Login exitoso, guardar datos en la sesión
-        $_SESSION['usuario_id'] = $resultado['usuario']['id_usuario'];
-        $_SESSION['usuario_nombre'] = $resultado['usuario']['nombre'];
+        $_SESSION['usuario_id'] = $resultado['usuario']['cod_user'];
+        $_SESSION['usuario_nombre'] = $resultado['usuario']['username'];
         $_SESSION['usuario_email'] = $resultado['usuario']['email'];
         $_SESSION['usuario_rol'] = $resultado['usuario']['rol'];
         

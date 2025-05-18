@@ -28,8 +28,8 @@ if (isset($_SESSION['usuario_id'])) {
         
         <form action="<?php echo $base_path; ?>/backend/controllers/login.php" method="POST" onsubmit="return validarFormulario(this)">
             <div class="form-group">
-                <label for="email">Correo Electrónico</label>
-                <input type="email" id="email" name="email" required>
+                <label for="username">Nombre de Usuario</label>
+                <input type="text" id="username" name="username" required>
             </div>
             
             <div class="form-group">

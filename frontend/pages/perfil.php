@@ -17,8 +17,8 @@ if (!isset($_SESSION['usuario_id'])) {
 }
 
 // Obtener los datos del usuario desde la sesión
-$id_usuario = $_SESSION['usuario_id'];
-$nombre = $_SESSION['usuario_nombre'];
+$cod_user = $_SESSION['usuario_id'];
+$username = $_SESSION['usuario_nombre'];
 $email = $_SESSION['usuario_email'];
 $rol = $_SESSION['usuario_rol'];
 $foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : $base_path . '/frontend/assets/images/default-profile.png';
@@ -36,19 +36,19 @@ $foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : $base_path . '/f
         <div class="profile-content">
             <div class="profile-image">
                 <img src="<?php echo $foto; ?>" alt="Foto de perfil">
-                <h2><?php echo $nombre; ?></h2>
+                <h2><?php echo $username; ?></h2>
                 <p class="profile-role"><?php echo $rol === 'admin' ? 'Administrador' : 'Usuario'; ?></p>
             </div>
             
             <div class="profile-details">
                 <div class="detail-group">
-                    <label>Correo Electrónico:</label>
-                    <p><?php echo $email; ?></p>
+                    <label>Nombre de Usuario:</label>
+                    <p><?php echo $username; ?></p>
                 </div>
                 
                 <div class="detail-group">
-                    <label>Nombre:</label>
-                    <p><?php echo $nombre; ?></p>
+                    <label>Correo Electrónico:</label>
+                    <p><?php echo $email; ?></p>
                 </div>
                 
                 <div class="detail-group">
