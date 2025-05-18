@@ -1,0 +1,61 @@
+<?php
+// Iniciar la sesión
+session_start();
+
+// Incluir el modelo de Usuario
+require_once '../models/Usuario.php';
+
+// Verificar si se envió el formulario por POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+    // Obtener los datos del formulario
+    $email = isset($_POST['email']) ? trim($_POST['email']) : '';
+    $password = isset($_POST['password']) ? $_POST['password'] : '';
+    
+    // Validar que los campos no estén vacíos
+    if (empty($email) || empty($password)) {
+        $_SESSION['error_login'] = 'Todos los campos son obligatorios';
+        header('Location: /frontend/pages/login.php');
+        exit;
+    }
+    
+    // Validar formato de email
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['error_login'] = 'El formato del correo electrónico es inválido';
+        header('Location: /frontend/pages/login.php');
+        exit;
+    }
+    
+    // Intentar iniciar sesión
+    $usuario = new Usuario();
+    $resultado = $usuario->login($email, $password);
+    
+    if ($resultado['estado']) {
+        // Login exitoso, guardar datos en la sesión
+        $_SESSION['usuario_id'] = $resultado['usuario']['id_usuario'];
+        $_SESSION['usuario_nombre'] = $resultado['usuario']['nombre'];
+        $_SESSION['usuario_email'] = $resultado['usuario']['email'];
+        $_SESSION['usuario_rol'] = $resultado['usuario']['rol'];
+        
+        // Si tiene foto de perfil, convertir el BLOB a base64 para mostrarlo
+        if ($resultado['usuario']['foto_perfil']) {
+            $_SESSION['usuario_foto'] = 'data:image/jpeg;base64,' . base64_encode($resultado['usuario']['foto_perfil']);
+        } else {
+            $_SESSION['usuario_foto'] = null;
+        }
+        
+        // Redireccionar al inicio
+        header('Location: /index.php');
+        exit;
+    } else {
+        // Login fallido, mostrar mensaje de error
+        $_SESSION['error_login'] = $resultado['mensaje'];
+        header('Location: /frontend/pages/login.php');
+        exit;
+    }
+} else {
+    // Si no es POST, redireccionar al formulario de login
+    header('Location: /frontend/pages/login.php');
+    exit;
+}
+?> 

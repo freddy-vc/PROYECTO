@@ -1,0 +1,487 @@
+/* Estilos generales */
+:root {
+    --primary-color: #1e88e5;
+    --secondary-color: #26a69a;
+    --dark-color: #212121;
+    --light-color: #f5f5f5;
+    --success-color: #66bb6a;
+    --danger-color: #e53935;
+    --text-color: #333333;
+    --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: #f9f9f9;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+ul {
+    list-style: none;
+}
+
+img {
+    max-width: 100%;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    font-size: 16px;
+}
+
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+}
+
+.btn-small {
+    padding: 5px 10px;
+    font-size: 14px;
+}
+
+.btn-login {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-register {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+}
+
+/* Estilos de notificaciones */
+.mensaje-error {
+    background-color: rgba(229, 57, 53, 0.1);
+    color: var(--danger-color);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.mensaje-exito {
+    background-color: rgba(102, 187, 106, 0.1);
+    color: var(--success-color);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Estilos del header */
+.header {
+    background-color: white;
+    box-shadow: var(--shadow);
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo a {
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.logo img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+/* Navegación */
+.main-nav ul {
+    display: flex;
+}
+
+.main-nav ul li {
+    margin-left: 20px;
+}
+
+.main-nav ul li a {
+    color: var(--dark-color);
+    font-weight: 500;
+    position: relative;
+    padding-bottom: 5px;
+}
+
+.main-nav ul li a:hover,
+.main-nav ul li a.active {
+    color: var(--primary-color);
+}
+
+.main-nav ul li a.active::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--primary-color);
+    border-radius: 5px;
+}
+
+/* Sección de usuario */
+.user-section {
+    display: flex;
+    align-items: center;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.user-profile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.user-profile img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    box-shadow: var(--shadow);
+    border-radius: 5px;
+    padding: 10px;
+    min-width: 150px;
+    display: none;
+}
+
+.user-profile:hover .user-dropdown {
+    display: block;
+}
+
+.user-dropdown ul li {
+    padding: 8px 0;
+}
+
+.user-dropdown ul li:not(:last-child) {
+    border-bottom: 1px solid #eee;
+}
+
+/* Contenido principal */
+.main-content {
+    min-height: calc(100vh - 200px);
+    padding: 30px 0;
+}
+
+/* Hero section */
+.hero {
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/frontend/assets/images/hero-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    text-align: center;
+    padding: 100px 0;
+    margin-bottom: 40px;
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+}
+
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Home features */
+.home-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.feature {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.feature img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+}
+
+.feature h2 {
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+
+.feature p {
+    margin-bottom: 20px;
+}
+
+/* Recent matches */
+.recent-matches {
+    margin-bottom: 40px;
+}
+
+.recent-matches h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--primary-color);
+}
+
+.matches-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.match-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.match-date {
+    font-size: 0.9rem;
+    color: #777;
+    margin-bottom: 15px;
+}
+
+.match-teams {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 40%;
+}
+
+.team img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.match-score {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Footer */
+.footer {
+    background-color: var(--dark-color);
+    color: white;
+    padding: 40px 0 20px;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.footer-logo img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+.footer-links ul li {
+    margin-bottom: 10px;
+}
+
+.footer-links ul li a:hover {
+    color: var(--primary-color);
+}
+
+.footer-info p {
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+/* Estilos para formularios de autenticación */
+.auth-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 30px;
+}
+
+.auth-card h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--primary-color);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.form-group small {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #777;
+}
+
+.form-actions {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.form-actions button {
+    width: 100%;
+    padding: 12px;
+}
+
+.auth-links {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.auth-links a {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .main-nav ul {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .main-nav ul li {
+        margin: 5px 10px;
+    }
+    
+    .user-section {
+        margin-top: 10px;
+    }
+    
+    .hero {
+        padding: 60px 0;
+    }
+    
+    .hero h1 {
+        font-size: 2rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+} 
