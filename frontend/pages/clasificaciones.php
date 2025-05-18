@@ -14,7 +14,7 @@ include_once '../components/notificaciones.php';
 <link rel="stylesheet" href="../assets/css/clasificaciones.css">
 
 <div class="container">
-    <h1 class="page-title">Cuadro de Clasificación</h1>
+    <h1 class="page-title">Clasificaciones</h1>
     
     <?php 
     // Mostrar notificaciones si las hay
@@ -22,12 +22,12 @@ include_once '../components/notificaciones.php';
     ?>
     
     <div class="bracket-container">
-        <div class="loading">Cargando cuadro de clasificación...</div>
+        <div class="loading">Cargando clasificaciones...</div>
     </div>
 </div>
 
 <!-- Incluir los scripts específicos para esta página -->
-<script src="../assets/js/clasificaciones.js"></script>
+<script src="../assets/js/clasificaciones.js?v=<?php echo time(); ?>"></script>
 
 <?php
 // Incluir el footer

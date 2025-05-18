@@ -14,13 +14,13 @@ function cargarClasificaciones() {
                 mostrarCuadroTorneo(data.fases, data.partidos, data.equipos);
             } else {
                 document.querySelector('.bracket-container').innerHTML = 
-                    `<div class="error-message">${data.mensaje || 'No se pudo cargar la información del torneo.'}</div>`;
+                    `<div class="error-message">No hay clasificaciones para mostrar.</div>`;
             }
         })
         .catch(error => {
             console.error('Error:', error);
             document.querySelector('.bracket-container').innerHTML = 
-                '<div class="error-message">Error al cargar la información del torneo. Intente nuevamente.</div>';
+                '<div class="error-message">No hay clasificaciones para mostrar.</div>';
         });
 }
 

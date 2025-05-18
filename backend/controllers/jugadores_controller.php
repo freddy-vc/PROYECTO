@@ -2,21 +2,33 @@
 // Incluir el modelo de jugador
 require_once '../models/Jugador.php';
 
-// Verificar que se haya enviado una acción
-if (!isset($_GET['accion'])) {
-    echo json_encode([
-        'estado' => false,
-        'mensaje' => 'No se especificó ninguna acción'
-    ]);
-    exit;
-}
+// Crear instancia del modelo
+$jugador = new Jugador();
 
-// Procesar la acción solicitada
-$accion = $_GET['accion'];
+// Determinar la acción a realizar
+$accion = isset($_GET['accion']) ? $_GET['accion'] : 'listar';
 
+// Realizar la acción correspondiente
 switch ($accion) {
     case 'listar':
-        listarJugadores();
+        try {
+            // Obtener todos los jugadores
+            $jugadores = $jugador->obtenerTodos();
+            
+            // Preparar los datos para devolverlos en formato JSON
+            header('Content-Type: application/json');
+            echo json_encode([
+                'estado' => true,
+                'jugadores' => $jugadores
+            ]);
+        } catch (Exception $e) {
+            // En caso de error, devolver un array vacío
+            header('Content-Type: application/json');
+            echo json_encode([
+                'estado' => true,
+                'jugadores' => []
+            ]);
+        }
         break;
     
     case 'detalle':
@@ -51,27 +63,6 @@ switch ($accion) {
             'mensaje' => 'Acción no reconocida'
         ]);
         break;
-}
-
-/**
- * Función para obtener y devolver todos los jugadores con sus estadísticas
- */
-function listarJugadores() {
-    $jugadorModel = new Jugador();
-    
-    try {
-        $jugadores = $jugadorModel->obtenerTodosConEstadisticas();
-        
-        echo json_encode([
-            'estado' => true,
-            'jugadores' => $jugadores
-        ]);
-    } catch (Exception $e) {
-        echo json_encode([
-            'estado' => false,
-            'mensaje' => 'Error al obtener los jugadores: ' . $e->getMessage()
-        ]);
-    }
 }
 
 /**

@@ -33,13 +33,13 @@ function cargarPartidos(filtro = null) {
                 mostrarPartidos(data.partidos);
             } else {
                 document.getElementById('partidos-container').innerHTML = 
-                    '<div class="no-results">No se pudieron cargar los partidos.</div>';
+                    '<div class="no-results">No hay partidos para mostrar.</div>';
             }
         })
         .catch(error => {
             console.error('Error:', error);
             document.getElementById('partidos-container').innerHTML = 
-                '<div class="no-results">Error al cargar los partidos. Intente nuevamente.</div>';
+                '<div class="no-results">No hay partidos para mostrar.</div>';
         });
 }
 

@@ -54,6 +54,17 @@ session_set_cookie_params([
     ?>">
     <?php endif; ?>
     
+    <!-- Cache Buster -->
+    <script src="<?php 
+    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+        echo "../assets/js/cache-buster.js";
+    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
+        echo "./assets/js/cache-buster.js";
+    } else {
+        echo "./frontend/assets/js/cache-buster.js";
+    }
+    ?>"></script>
+    
     <!-- JavaScript común -->
     <script src="<?php 
     if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {

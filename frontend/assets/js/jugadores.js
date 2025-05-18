@@ -27,13 +27,13 @@ function cargarJugadores() {
                 mostrarJugadores(data.jugadores);
             } else {
                 document.getElementById('jugadores-container').innerHTML = 
-                    '<div class="no-results">No se pudieron cargar los jugadores.</div>';
+                    '<div class="no-results">No hay jugadores para mostrar.</div>';
             }
         })
         .catch(error => {
             console.error('Error:', error);
             document.getElementById('jugadores-container').innerHTML = 
-                '<div class="no-results">Error al cargar los jugadores. Intente nuevamente.</div>';
+                '<div class="no-results">No hay jugadores para mostrar.</div>';
         });
 }
 

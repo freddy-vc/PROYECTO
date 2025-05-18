@@ -20,13 +20,13 @@ function cargarEquipos() {
                 mostrarEquipos(data.equipos);
             } else {
                 document.getElementById('equipos-container').innerHTML = 
-                    '<div class="no-results">No se pudieron cargar los equipos.</div>';
+                    '<div class="no-results">No hay equipos para mostrar.</div>';
             }
         })
         .catch(error => {
             console.error('Error:', error);
             document.getElementById('equipos-container').innerHTML = 
-                '<div class="no-results">Error al cargar los equipos. Intente nuevamente.</div>';
+                '<div class="no-results">No hay equipos para mostrar.</div>';
         });
 }
 

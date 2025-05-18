@@ -65,6 +65,10 @@ class Partido
             return $partidos;
             
         } catch (PDOException $e) {
+            error_log('Error al obtener partidos: ' . $e->getMessage());
+            return [];
+        } catch (Exception $e) {
+            error_log('Error general al obtener partidos: ' . $e->getMessage());
             return [];
         }
     }
@@ -438,6 +442,159 @@ class Partido
         }
     }
     
-        /**     * Obtener los últimos partidos finalizados     */    public function obtenerUltimosFinalizados($limite = 3) {        try {            $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado,                    e1.cod_equ as local_id, e1.nombre as local_nombre, e1.escudo as local_escudo,                    e2.cod_equ as visitante_id, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,                    c.nombre as cancha                    FROM Partidos p                    JOIN Equipos e1 ON p.equ_local = e1.cod_equ                    JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ                    JOIN Canchas c ON p.cod_cancha = c.cod_cancha                    WHERE p.estado = 'finalizado'                    ORDER BY p.fecha DESC, p.hora DESC                    LIMIT :limite";                        $stmt = $this->conexion->prepare($sql);            $stmt->bindParam(':limite', $limite, PDO::PARAM_INT);            $stmt->execute();                        $partidos = $stmt->fetchAll(PDO::FETCH_ASSOC);                        // Procesar los escudos y añadir conteo de goles            foreach ($partidos as &$partido) {                // Procesar escudos                if ($partido['local_escudo']) {                    $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);                } else {                    $partido['local_escudo_base64'] = './frontend/assets/images/default-team.png';                }                                if ($partido['visitante_escudo']) {                    $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);                } else {                    $partido['visitante_escudo_base64'] = './frontend/assets/images/default-team.png';                }                                // Obtener los goles                $partido['goles_local'] = $this->contarGoles($partido['cod_par'], $partido['local_id']);                $partido['goles_visitante'] = $this->contarGoles($partido['cod_par'], $partido['visitante_id']);                                // Formatear fecha                $fecha = new DateTime($partido['fecha']);                $hora = new DateTime($partido['hora']);                $partido['fecha_formateada'] = $fecha->format('d M, Y') . ' - ' . $hora->format('H:i');            }                        return $partidos;                    } catch (PDOException $e) {            return [];        }    }        /**     * Obtener partidos por fases (para el cuadro del torneo)     */    public function obtenerPartidosPorFases($fases) {        try {            // Convertir el array de fases a un string para la consulta SQL            $fasesStr = "'" . implode("','", $fases) . "'";                        $sql = "SELECT                     p.cod_par, p.fecha, p.hora, p.estado,                    e1.cod_equ as equ_local, e1.nombre as local_nombre, e1.escudo as local_escudo,                    e2.cod_equ as equ_visitante, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,                    c.nombre as cancha,                    fe.fase,                    CASE                         WHEN fe.fase = 'cuartos' THEN                             CASE                                 WHEN (SELECT COUNT(*) FROM Partidos p2                                       JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)                                       WHERE fe2.fase = 'cuartos' AND fe2.fase = fe.fase                                       AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)                                 THEN (SELECT COUNT(*) FROM Partidos p2                                       JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)                                       WHERE fe2.fase = 'cuartos' AND fe2.fase = fe.fase                                       AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)                                ELSE 0                            END                        WHEN fe.fase = 'semis' THEN                             CASE                                 WHEN (SELECT COUNT(*) FROM Partidos p2                                       JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)                                       WHERE fe2.fase = 'semis' AND fe2.fase = fe.fase                                       AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)                                 THEN (SELECT COUNT(*) FROM Partidos p2                                       JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)                                       WHERE fe2.fase = 'semis' AND fe2.fase = fe.fase                                       AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)                                ELSE 0                            END                        ELSE 1                    END as orden                FROM Partidos p                JOIN Equipos e1 ON p.equ_local = e1.cod_equ                JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ                JOIN Canchas c ON p.cod_cancha = c.cod_cancha                JOIN FaseEquipo fe ON (p.equ_local = fe.cod_equ OR p.equ_visitante = fe.cod_equ)                WHERE fe.fase IN ($fasesStr)                GROUP BY p.cod_par                ORDER BY                     CASE fe.fase                         WHEN 'final' THEN 1                         WHEN 'semis' THEN 2                         WHEN 'cuartos' THEN 3                         ELSE 4                     END,                    p.fecha, p.hora";                        $stmt = $this->conexion->prepare($sql);            $stmt->execute();                        $partidos = $stmt->fetchAll(PDO::FETCH_ASSOC);                        // Procesar los escudos y añadir conteo de goles para partidos finalizados            foreach ($partidos as &$partido) {                // Procesar escudos                if ($partido['local_escudo']) {                    $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);                } else {                    $partido['local_escudo_base64'] = '../assets/images/default-team.png';                }                                if ($partido['visitante_escudo']) {                    $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);                } else {                    $partido['visitante_escudo_base64'] = '../assets/images/default-team.png';                }                                // Si el partido está finalizado, añadir conteo de goles                if ($partido['estado'] === 'finalizado') {                    $partido['goles_local'] = $this->contarGoles($partido['cod_par'], $partido['equ_local']);                    $partido['goles_visitante'] = $this->contarGoles($partido['cod_par'], $partido['equ_visitante']);                }                                // Formatear fecha                $partido['fecha_formateada'] = date('d/m/Y', strtotime($partido['fecha']));            }                        return $partidos;                    } catch (PDOException $e) {            return [];        }    }
+    /**
+     * Obtener los últimos partidos finalizados
+     */
+    public function obtenerUltimosFinalizados($limite = 3) 
+    {
+        try {
+            $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado,
+                    e1.cod_equ as local_id, e1.nombre as local_nombre, e1.escudo as local_escudo,
+                    e2.cod_equ as visitante_id, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,
+                    c.nombre as cancha
+                    FROM Partidos p
+                    JOIN Equipos e1 ON p.equ_local = e1.cod_equ
+                    JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ
+                    JOIN Canchas c ON p.cod_cancha = c.cod_cancha
+                    WHERE p.estado = 'finalizado'
+                    ORDER BY p.fecha DESC, p.hora DESC
+                    LIMIT :limite";
+            
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':limite', $limite, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            $partidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Procesar los escudos y añadir conteo de goles
+            foreach ($partidos as &$partido) {
+                // Procesar escudos
+                if ($partido['local_escudo']) {
+                    $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);
+                } else {
+                    $partido['local_escudo_base64'] = './frontend/assets/images/default-team.png';
+                }
+                
+                if ($partido['visitante_escudo']) {
+                    $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);
+                } else {
+                    $partido['visitante_escudo_base64'] = './frontend/assets/images/default-team.png';
+                }
+                
+                // Obtener los goles
+                $partido['goles_local'] = $this->contarGoles($partido['cod_par'], $partido['local_id']);
+                $partido['goles_visitante'] = $this->contarGoles($partido['cod_par'], $partido['visitante_id']);
+                
+                // Formatear fecha
+                $fecha = new DateTime($partido['fecha']);
+                $hora = new DateTime($partido['hora']);
+                $partido['fecha_formateada'] = $fecha->format('d M, Y') . ' - ' . $hora->format('H:i');
+            }
+            
+            return $partidos;
+            
+        } catch (PDOException $e) {
+            error_log('Error al obtener últimos partidos: ' . $e->getMessage());
+            return [];
+        }
+    }
+    
+    /**
+     * Obtener partidos por fases (para el cuadro del torneo)
+     */
+    public function obtenerPartidosPorFases($fases) 
+    {
+        try {
+            // Convertir el array de fases a un string para la consulta SQL
+            $fasesStr = "'" . implode("','", $fases) . "'";
+            
+            $sql = "SELECT 
+                    p.cod_par, p.fecha, p.hora, p.estado,
+                    e1.cod_equ as equ_local, e1.nombre as local_nombre, e1.escudo as local_escudo,
+                    e2.cod_equ as equ_visitante, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,
+                    c.nombre as cancha,
+                    fe.fase,
+                    CASE 
+                        WHEN fe.fase = 'cuartos' THEN
+                            CASE
+                                WHEN (SELECT COUNT(*) FROM Partidos p2
+                                      JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)
+                                      WHERE fe2.fase = 'cuartos' AND fe2.fase = fe.fase
+                                      AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
+                                THEN (SELECT COUNT(*) FROM Partidos p2
+                                      JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)
+                                      WHERE fe2.fase = 'cuartos' AND fe2.fase = fe.fase
+                                      AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
+                                ELSE 0
+                            END
+                        WHEN fe.fase = 'semis' THEN
+                            CASE
+                                WHEN (SELECT COUNT(*) FROM Partidos p2
+                                      JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)
+                                      WHERE fe2.fase = 'semis' AND fe2.fase = fe.fase
+                                      AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
+                                THEN (SELECT COUNT(*) FROM Partidos p2
+                                      JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)
+                                      WHERE fe2.fase = 'semis' AND fe2.fase = fe.fase
+                                      AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
+                                ELSE 0
+                            END
+                        ELSE 1
+                    END as orden
+                FROM Partidos p
+                JOIN Equipos e1 ON p.equ_local = e1.cod_equ
+                JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ
+                JOIN Canchas c ON p.cod_cancha = c.cod_cancha
+                JOIN FaseEquipo fe ON (p.equ_local = fe.cod_equ OR p.equ_visitante = fe.cod_equ)
+                WHERE fe.fase IN ($fasesStr)
+                GROUP BY p.cod_par, e1.cod_equ, e1.nombre, e1.escudo,
+                         e2.cod_equ, e2.nombre, e2.escudo,
+                         c.nombre, fe.fase
+                ORDER BY 
+                    CASE fe.fase
+                        WHEN 'final' THEN 1
+                        WHEN 'semis' THEN 2
+                        WHEN 'cuartos' THEN 3
+                        ELSE 4
+                    END,
+                   p.fecha, p.hora";
+            
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute();
+            
+            $partidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Procesar los escudos y añadir conteo de goles para partidos finalizados
+            foreach ($partidos as &$partido) {
+                // Procesar escudos
+                if ($partido['local_escudo']) {
+                    $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);
+                } else {
+                    $partido['local_escudo_base64'] = '../assets/images/default-team.png';
+                }
+                
+                if ($partido['visitante_escudo']) {
+                    $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);
+                } else {
+                    $partido['visitante_escudo_base64'] = '../assets/images/default-team.png';
+                }
+                
+                // Si el partido está finalizado, añadir conteo de goles
+                if ($partido['estado'] === 'finalizado') {
+                    $partido['goles_local'] = $this->contarGoles($partido['cod_par'], $partido['equ_local']);
+                    $partido['goles_visitante'] = $this->contarGoles($partido['cod_par'], $partido['equ_visitante']);
+                }
+                
+                // Formatear fecha
+                $partido['fecha_formateada'] = date('d/m/Y', strtotime($partido['fecha']));
+            }
+            
+            return $partidos;
+            
+        } catch (PDOException $e) {
+            error_log('Error al obtener partidos por fases: ' . $e->getMessage());
+            return [];
+        }
+    }
 }
 ?> 

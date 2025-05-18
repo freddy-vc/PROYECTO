@@ -38,7 +38,7 @@ $partido_id = intval($_GET['id']);
 </div>
 
 <!-- Incluir el script específico para esta página -->
-<script src="../assets/js/detalle-partido.js"></script>
+<script src="../assets/js/detalle-partido.js?v=<?php echo time(); ?>"></script>
 
 <?php
 // Incluir el footer

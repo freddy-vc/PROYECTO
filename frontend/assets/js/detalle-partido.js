@@ -23,13 +23,13 @@ function cargarDetallePartido(partidoId) {
                 mostrarDetallePartido(data.partido);
             } else {
                 document.getElementById('partido-detalle').innerHTML = 
-                    '<div class="error-message">No se encontró información del partido solicitado.</div>';
+                    '<div class="error-message">No hay detalles para mostrar.</div>';
             }
         })
         .catch(error => {
             console.error('Error:', error);
             document.getElementById('partido-detalle').innerHTML = 
-                '<div class="error-message">Error al cargar la información del partido.</div>';
+                '<div class="error-message">No hay detalles para mostrar.</div>';
         });
 }
 

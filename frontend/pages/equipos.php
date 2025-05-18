@@ -14,7 +14,7 @@ include_once '../components/notificaciones.php';
 <link rel="stylesheet" href="../assets/css/equipos.css">
 
 <div class="container">
-    <h1 class="page-title">Equipos Participantes</h1>
+    <h1 class="page-title">Equipos</h1>
     
     <?php 
     // Mostrar notificaciones si las hay
@@ -35,7 +35,7 @@ include_once '../components/notificaciones.php';
 </div>
 
 <!-- Incluir los scripts específicos para esta página -->
-<script src="../assets/js/equipos.js"></script>
+<script src="../assets/js/equipos.js?v=<?php echo time(); ?>"></script>
 
 <?php
 // Incluir el footer

@@ -36,7 +36,7 @@ include_once '../components/notificaciones.php';
 </div>
 
 <!-- Incluir los scripts específicos para esta página -->
-<script src="../assets/js/partidos.js"></script>
+<script src="../assets/js/partidos.js?v=<?php echo time(); ?>"></script>
 
 <?php
 // Incluir el footer
