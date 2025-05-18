@@ -4,15 +4,15 @@ $titulo_pagina = 'Registro';
 $pagina_actual = 'registro';
 
 // Incluir el header
-include_once '../../frontend/components/header.php';
+include_once '../components/header.php';
 
 // Incluir el componente de notificaciones
-include_once '../../frontend/components/notificaciones.php';
+include_once '../components/notificaciones.php';
 
 // Verificar si ya hay una sesión activa
 if (isset($_SESSION['usuario_id'])) {
     // Redireccionar a la página de inicio
-    header('Location: /index.php');
+    header('Location: ' . $base_path . '/index.php');
     exit;
 }
 ?>
@@ -26,7 +26,7 @@ if (isset($_SESSION['usuario_id'])) {
         mostrarNotificaciones(['error_registro', 'exito_registro']);
         ?>
         
-        <form action="/backend/controllers/register.php" method="POST" onsubmit="return validarFormulario(this)" enctype="multipart/form-data">
+        <form action="<?php echo $base_path; ?>/backend/controllers/register.php" method="POST" onsubmit="return validarFormulario(this)" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="nombre">Nombre</label>
                 <input type="text" id="nombre" name="nombre" required>
@@ -60,12 +60,12 @@ if (isset($_SESSION['usuario_id'])) {
         </form>
         
         <div class="auth-links">
-            <p>¿Ya tienes una cuenta? <a href="/frontend/pages/login.php">Iniciar Sesión</a></p>
+            <p>¿Ya tienes una cuenta? <a href="login.php">Iniciar Sesión</a></p>
         </div>
     </div>
 </div>
 
 <?php
 // Incluir el footer
-include_once '../../frontend/components/footer.php';
+include_once '../components/footer.php';
 ?> 

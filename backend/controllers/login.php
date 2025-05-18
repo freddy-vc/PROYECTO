@@ -2,6 +2,9 @@
 // Iniciar la sesión
 session_start();
 
+// Calcular la ruta base
+$base_path = '../../..';
+
 // Incluir el modelo de Usuario
 require_once '../models/Usuario.php';
 
@@ -15,14 +18,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validar que los campos no estén vacíos
     if (empty($email) || empty($password)) {
         $_SESSION['error_login'] = 'Todos los campos son obligatorios';
-        header('Location: /frontend/pages/login.php');
+        header('Location: ' . $base_path . '/frontend/pages/login.php');
         exit;
     }
     
     // Validar formato de email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $_SESSION['error_login'] = 'El formato del correo electrónico es inválido';
-        header('Location: /frontend/pages/login.php');
+        header('Location: ' . $base_path . '/frontend/pages/login.php');
         exit;
     }
     
@@ -45,17 +48,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Redireccionar al inicio
-        header('Location: /index.php');
+        header('Location: ' . $base_path . '/index.php');
         exit;
     } else {
         // Login fallido, mostrar mensaje de error
         $_SESSION['error_login'] = $resultado['mensaje'];
-        header('Location: /frontend/pages/login.php');
+        header('Location: ' . $base_path . '/frontend/pages/login.php');
         exit;
     }
 } else {
     // Si no es POST, redireccionar al formulario de login
-    header('Location: /frontend/pages/login.php');
+    header('Location: ' . $base_path . '/frontend/pages/login.php');
     exit;
 }
 ?> 

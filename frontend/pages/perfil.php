@@ -4,15 +4,15 @@ $titulo_pagina = 'Mi Perfil';
 $pagina_actual = 'perfil';
 
 // Incluir el header
-include_once '../../frontend/components/header.php';
+include_once '../components/header.php';
 
 // Incluir el componente de notificaciones
-include_once '../../frontend/components/notificaciones.php';
+include_once '../components/notificaciones.php';
 
 // Verificar si hay sesión activa
 if (!isset($_SESSION['usuario_id'])) {
     // Redireccionar a login si no hay sesión
-    header('Location: /frontend/pages/login.php');
+    header('Location: login.php');
     exit;
 }
 
@@ -21,7 +21,7 @@ $id_usuario = $_SESSION['usuario_id'];
 $nombre = $_SESSION['usuario_nombre'];
 $email = $_SESSION['usuario_email'];
 $rol = $_SESSION['usuario_rol'];
-$foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : '/frontend/assets/images/default-profile.png';
+$foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : $base_path . '/frontend/assets/images/default-profile.png';
 ?>
 
 <div class="profile-container">
@@ -59,7 +59,7 @@ $foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : '/frontend/asset
         </div>
         
         <div class="profile-actions">
-            <a href="/backend/controllers/logout.php" class="btn btn-danger">Cerrar Sesión</a>
+            <a href="<?php echo $base_path; ?>/backend/controllers/logout.php" class="btn btn-danger">Cerrar Sesión</a>
         </div>
     </div>
 </div>
@@ -153,5 +153,5 @@ $foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : '/frontend/asset
 
 <?php
 // Incluir el footer
-include_once '../../frontend/components/footer.php';
+include_once '../components/footer.php';
 ?> 

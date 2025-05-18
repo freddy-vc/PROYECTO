@@ -5,17 +5,17 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-logo">
-                    <img src="/frontend/assets/images/logo.png" alt="Logo Futsala Villavicencio">
+                    <img src="<?php echo $base_path; ?>/frontend/assets/images/logo.png" alt="Logo Futsala Villavicencio">
                     <span>Futsala Villavicencio</span>
                 </div>
                 
                 <div class="footer-links">
                     <ul>
-                        <li><a href="/index.php">Inicio</a></li>
-                        <li><a href="/frontend/pages/clasificaciones.php">Clasificaciones</a></li>
-                        <li><a href="/frontend/pages/partidos.php">Partidos</a></li>
-                        <li><a href="/frontend/pages/equipos.php">Equipos</a></li>
-                        <li><a href="/frontend/pages/jugadores.php">Jugadores</a></li>
+                        <li><a href="<?php echo $base_path; ?>/index.php">Inicio</a></li>
+                        <li><a href="<?php echo $base_path; ?>/frontend/pages/clasificaciones.php">Clasificaciones</a></li>
+                        <li><a href="<?php echo $base_path; ?>/frontend/pages/partidos.php">Partidos</a></li>
+                        <li><a href="<?php echo $base_path; ?>/frontend/pages/equipos.php">Equipos</a></li>
+                        <li><a href="<?php echo $base_path; ?>/frontend/pages/jugadores.php">Jugadores</a></li>
                     </ul>
                 </div>
                 

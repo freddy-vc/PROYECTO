@@ -1,6 +1,14 @@
 <?php
 // Inicia la sesión en cada página
 session_start();
+
+// Calcular la ruta base para recursos
+$base_path = '';
+if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+    $base_path = '../..';
+} else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
+    $base_path = '..';
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -10,19 +18,19 @@ session_start();
     <title><?php echo isset($titulo_pagina) ? $titulo_pagina . ' - ' : ''; ?>Campeonato Futsala Villavicencio</title>
     
     <!-- CSS Común -->
-    <link rel="stylesheet" href="/frontend/assets/css/styles.css">
+    <link rel="stylesheet" href="<?php echo $base_path; ?>/frontend/assets/css/styles.css">
     
     <!-- CSS específico de la página actual -->
-    <?php if(isset($pagina_actual) && file_exists($_SERVER['DOCUMENT_ROOT'] . '/frontend/assets/css/' . $pagina_actual . '.css')): ?>
-    <link rel="stylesheet" href="/frontend/assets/css/<?php echo $pagina_actual; ?>.css">
+    <?php if(isset($pagina_actual) && file_exists($_SERVER['DOCUMENT_ROOT'] . dirname($_SERVER['SCRIPT_NAME']) . '/../assets/css/' . $pagina_actual . '.css')): ?>
+    <link rel="stylesheet" href="<?php echo $base_path; ?>/frontend/assets/css/<?php echo $pagina_actual; ?>.css">
     <?php endif; ?>
     
     <!-- JavaScript común -->
-    <script src="/frontend/assets/js/main.js" defer></script>
+    <script src="<?php echo $base_path; ?>/frontend/assets/js/main.js" defer></script>
     
     <!-- JavaScript específico de la página actual -->
-    <?php if(isset($pagina_actual) && file_exists($_SERVER['DOCUMENT_ROOT'] . '/frontend/assets/js/' . $pagina_actual . '.js')): ?>
-    <script src="/frontend/assets/js/<?php echo $pagina_actual; ?>.js" defer></script>
+    <?php if(isset($pagina_actual) && file_exists($_SERVER['DOCUMENT_ROOT'] . dirname($_SERVER['SCRIPT_NAME']) . '/../assets/js/' . $pagina_actual . '.js')): ?>
+    <script src="<?php echo $base_path; ?>/frontend/assets/js/<?php echo $pagina_actual; ?>.js" defer></script>
     <?php endif; ?>
 </head>
 <body>
@@ -30,30 +38,30 @@ session_start();
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <a href="/index.php">
-                        <img src="/frontend/assets/images/logo.png" alt="Logo Futsala Villavicencio">
+                    <a href="<?php echo $base_path; ?>/index.php">
+                        <img src="<?php echo $base_path; ?>/frontend/assets/images/logo.png" alt="Logo Futsala Villavicencio">
                         <span>Futsala Villavicencio</span>
                     </a>
                 </div>
                 
-                <?php include_once 'nav.php'; ?>
+                <?php include_once dirname(__FILE__) . '/nav.php'; ?>
                 
                 <div class="user-section">
                     <?php if(isset($_SESSION['usuario_id'])): ?>
                         <div class="user-profile">
-                            <img src="<?php echo $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : '/frontend/assets/images/default-profile.png'; ?>" alt="Foto de perfil">
+                            <img src="<?php echo $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : $base_path . '/frontend/assets/images/default-profile.png'; ?>" alt="Foto de perfil">
                             <span><?php echo $_SESSION['usuario_nombre']; ?></span>
                             <div class="user-dropdown">
                                 <ul>
-                                    <li><a href="/frontend/pages/perfil.php">Mi Perfil</a></li>
-                                    <li><a href="/backend/controllers/logout.php">Cerrar Sesión</a></li>
+                                    <li><a href="<?php echo $base_path; ?>/frontend/pages/perfil.php">Mi Perfil</a></li>
+                                    <li><a href="<?php echo $base_path; ?>/backend/controllers/logout.php">Cerrar Sesión</a></li>
                                 </ul>
                             </div>
                         </div>
                     <?php else: ?>
                         <div class="auth-buttons">
-                            <a href="/frontend/pages/login.php" class="btn btn-login">Iniciar Sesión</a>
-                            <a href="/frontend/pages/registro.php" class="btn btn-register">Registrarse</a>
+                            <a href="<?php echo $base_path; ?>/frontend/pages/login.php" class="btn btn-login">Iniciar Sesión</a>
+                            <a href="<?php echo $base_path; ?>/frontend/pages/registro.php" class="btn btn-register">Registrarse</a>
                         </div>
                     <?php endif; ?>
                 </div>
