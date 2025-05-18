@@ -2,12 +2,25 @@
 // Inicia la sesión en cada página
 session_start();
 
-// Calcular la ruta base para recursos
-$base_path = '';
-if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
-    $base_path = '../..';
-} else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
-    $base_path = '..';
+// Incluir el archivo de configuración global
+$config_path = dirname(dirname(dirname(__FILE__))) . '/config.php';
+if (file_exists($config_path)) {
+    include_once $config_path;
+}
+
+// Usar la configuración global si está disponible, o calcular las rutas si no
+if (!isset($base_path)) {
+    $current_path = $_SERVER['PHP_SELF'];
+    $project_folder = basename(dirname(dirname(dirname($current_path))));
+    
+    // Si el proyecto está en la raíz de localhost
+    if (strpos($current_path, '/frontend/pages/') !== false) {
+        $base_path = '../..';
+    } else if (strpos($current_path, '/frontend/') !== false) {
+        $base_path = '..';
+    } else {
+        $base_path = '';
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -15,13 +28,13 @@ if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($titulo_pagina) ? $titulo_pagina . ' - ' : ''; ?>Campeonato Futsala Villavicencio</title>
+    <title><?php echo isset($titulo_pagina) ? $titulo_pagina . ' - ' : ''; ?><?php echo defined('SITE_NAME') ? SITE_NAME : 'Campeonato Futsala Villavicencio'; ?></title>
     
     <!-- CSS Común -->
     <link rel="stylesheet" href="<?php echo $base_path; ?>/frontend/assets/css/styles.css">
     
     <!-- CSS específico de la página actual -->
-    <?php if(isset($pagina_actual) && file_exists($_SERVER['DOCUMENT_ROOT'] . dirname($_SERVER['SCRIPT_NAME']) . '/../assets/css/' . $pagina_actual . '.css')): ?>
+    <?php if(isset($pagina_actual) && file_exists(dirname(__FILE__) . '/../../frontend/assets/css/' . $pagina_actual . '.css')): ?>
     <link rel="stylesheet" href="<?php echo $base_path; ?>/frontend/assets/css/<?php echo $pagina_actual; ?>.css">
     <?php endif; ?>
     
@@ -29,7 +42,7 @@ if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
     <script src="<?php echo $base_path; ?>/frontend/assets/js/main.js" defer></script>
     
     <!-- JavaScript específico de la página actual -->
-    <?php if(isset($pagina_actual) && file_exists($_SERVER['DOCUMENT_ROOT'] . dirname($_SERVER['SCRIPT_NAME']) . '/../assets/js/' . $pagina_actual . '.js')): ?>
+    <?php if(isset($pagina_actual) && file_exists(dirname(__FILE__) . '/../../frontend/assets/js/' . $pagina_actual . '.js')): ?>
     <script src="<?php echo $base_path; ?>/frontend/assets/js/<?php echo $pagina_actual; ?>.js" defer></script>
     <?php endif; ?>
 </head>
