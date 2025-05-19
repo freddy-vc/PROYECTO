@@ -1,6 +1,6 @@
 <?php
 // Definir variables para la página
-$titulo_pagina = 'Clasificaciones';
+$titulo_pagina = 'Clasificaciones - Eliminatorias';
 $pagina_actual = 'clasificaciones';
 
 // Incluir el header
@@ -14,20 +14,18 @@ include_once '../components/notificaciones.php';
 <link rel="stylesheet" href="../assets/css/clasificaciones.css">
 
 <div class="container">
-    <h1 class="page-title">Clasificaciones</h1>
+    <h1 class="page-title">Clasificaciones - Eliminatorias</h1>
     
     <?php 
     // Mostrar notificaciones si las hay
     mostrarNotificaciones(['error_clasificaciones', 'exito_clasificaciones']);
     ?>
     
-    <div class="bracket-container">
-        <div class="loading">Cargando clasificaciones...</div>
-    </div>
+    <div id="clasificaciones-container"></div>
 </div>
 
 <!-- Incluir los scripts específicos para esta página -->
-<script src="../assets/js/clasificaciones.js?v=<?php echo time(); ?>"></script>
+<script src="../assets/js/clasificaciones.js"></script>
 
 <?php
 // Incluir el footer

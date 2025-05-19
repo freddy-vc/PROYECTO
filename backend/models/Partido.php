@@ -583,5 +583,20 @@ class Partido
             return [];
         }
     }
+
+    /**
+     * Obtener partidos por fase (cuartos, semis, final)
+     */
+    public function obtenerPorFase($fase) {
+        try {
+            $sql = "SELECT * FROM Partidos WHERE fase = :fase ORDER BY cod_par ASC";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':fase', $fase);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
 }
 ?> 

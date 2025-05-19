@@ -3,17 +3,9 @@
 require_once __DIR__ . '/../models/Equipo.php';
 require_once __DIR__ . '/../models/Partido.php';
 
-// Verificar que se haya enviado una acción
-if (!isset($_GET['accion'])) {
-    echo json_encode([
-        'estado' => false,
-        'mensaje' => 'No se especificó ninguna acción'
-    ]);
-    exit;
-}
+header('Content-Type: application/json');
 
-// Procesar la acción solicitada
-$accion = $_GET['accion'];
+$accion = isset($_GET['accion']) ? $_GET['accion'] : '';
 
 switch ($accion) {
     case 'cuadro_torneo':
@@ -24,10 +16,76 @@ switch ($accion) {
         obtenerTablaPosiciones();
         break;
     
+    case 'eliminatorias':
+        $partidoModel = new Partido();
+        $equipoModel = new Equipo();
+        function getEquipoData($id, $equipoModel) {
+            if (!$id) return null;
+            $equipo = $equipoModel->obtenerPorId($id);
+            return [
+                'id' => $equipo['cod_equ'],
+                'nombre' => $equipo['nombre'],
+                'escudo' => $equipo['escudo_base64']
+            ];
+        }
+        $clasificaciones = [
+            'cuartos' => [],
+            'semifinales' => [],
+            'final' => null
+        ];
+        $cuartos = $partidoModel->obtenerPorFase('cuartos');
+        for ($i = 0; $i < 4; $i++) {
+            if (isset($cuartos[$i])) {
+                $p = $cuartos[$i];
+                $clasificaciones['cuartos'][] = [
+                    'id' => $p['cod_par'],
+                    'local' => getEquipoData($p['equ_local'], $equipoModel),
+                    'visitante' => getEquipoData($p['equ_visitante'], $equipoModel),
+                    'goles_local' => $p['estado'] === 'finalizado' ? $partidoModel->contarGoles($p['cod_par'], $p['equ_local']) : '-',
+                    'goles_visitante' => $p['estado'] === 'finalizado' ? $partidoModel->contarGoles($p['cod_par'], $p['equ_visitante']) : '-',
+                    'estado' => $p['estado']
+                ];
+            } else {
+                $clasificaciones['cuartos'][] = null;
+            }
+        }
+        $semis = $partidoModel->obtenerPorFase('semis');
+        for ($i = 0; $i < 2; $i++) {
+            if (isset($semis[$i])) {
+                $p = $semis[$i];
+                $clasificaciones['semifinales'][] = [
+                    'id' => $p['cod_par'],
+                    'local' => getEquipoData($p['equ_local'], $equipoModel),
+                    'visitante' => getEquipoData($p['equ_visitante'], $equipoModel),
+                    'goles_local' => $p['estado'] === 'finalizado' ? $partidoModel->contarGoles($p['cod_par'], $p['equ_local']) : '-',
+                    'goles_visitante' => $p['estado'] === 'finalizado' ? $partidoModel->contarGoles($p['cod_par'], $p['equ_visitante']) : '-',
+                    'estado' => $p['estado']
+                ];
+            } else {
+                $clasificaciones['semifinales'][] = null;
+            }
+        }
+        $final = $partidoModel->obtenerPorFase('final');
+        if (isset($final[0])) {
+            $p = $final[0];
+            $clasificaciones['final'] = [
+                'id' => $p['cod_par'],
+                'local' => getEquipoData($p['equ_local'], $equipoModel),
+                'visitante' => getEquipoData($p['equ_visitante'], $equipoModel),
+                'goles_local' => $p['estado'] === 'finalizado' ? $partidoModel->contarGoles($p['cod_par'], $p['equ_local']) : '-',
+                'goles_visitante' => $p['estado'] === 'finalizado' ? $partidoModel->contarGoles($p['cod_par'], $p['equ_visitante']) : '-',
+                'estado' => $p['estado']
+            ];
+        } else {
+            $clasificaciones['final'] = null;
+        }
+        echo json_encode($clasificaciones);
+        break;
+    
     default:
         echo json_encode([
             'estado' => false,
-            'mensaje' => 'Acción no reconocida'
+            'mensaje' => 'No se especificó ninguna acción'
         ]);
         break;
 }

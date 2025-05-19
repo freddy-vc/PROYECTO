@@ -60,30 +60,20 @@ class Equipo
     public function obtenerPorId($id)
     {
         try {
-            $query = "SELECT e.*, c.nombre as ciudad_nombre, 
-                           d.nombres as dt_nombres, d.apellidos as dt_apellidos
-                     FROM Equipos e
-                     LEFT JOIN Ciudades c ON e.cod_ciu = c.cod_ciu
-                     LEFT JOIN Directores d ON e.cod_dt = d.cod_dt
-                     WHERE e.cod_equ = :id";
-            
+            $query = "SELECT e.*, c.nombre as ciudad_nombre, d.nombres as dt_nombres, d.apellidos as dt_apellidos FROM Equipos e LEFT JOIN Ciudades c ON e.cod_ciu = c.cod_ciu LEFT JOIN Directores d ON e.cod_dt = d.cod_dt WHERE e.cod_equ = :id";
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
-            
             $equipo = $stmt->fetch(PDO::FETCH_ASSOC);
-            
             if ($equipo) {
-                // Procesar el escudo para mostrarlo como imagen
+                $equipo['id'] = $equipo['cod_equ'];
                 if ($equipo['escudo']) {
                     $equipo['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($equipo['escudo']);
                 } else {
-                    $equipo['escudo_base64'] = '../../assets/images/team.png';
+                    $equipo['escudo_base64'] = '../assets/images/team.png';
                 }
             }
-            
             return $equipo;
-            
         } catch (PDOException $e) {
             return null;
         }

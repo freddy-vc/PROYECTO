@@ -316,4 +316,85 @@ function formatDate(dateStr) {
         month: '2-digit',
         year: 'numeric'
     });
-} 
+}
+
+function renderClasificaciones(clasificaciones) {
+    console.log('Respuesta clasificaciones:', clasificaciones);
+    const container = document.getElementById('clasificaciones-container');
+    container.innerHTML = '';
+
+    // Si no hay datos, mostrar mensaje
+    if (!clasificaciones || !clasificaciones.cuartos) {
+        container.innerHTML = '<div class="no-results">No hay datos de eliminatorias para mostrar.</div>';
+        return;
+    }
+
+    // Cuartos, Semis, Final
+    const fases = [
+        { key: 'cuartos', label: 'Cuartos de final', count: 4, extraClass: '' },
+        { key: 'semifinales', label: 'Semifinal', count: 2, extraClass: 'semis' },
+        { key: 'final', label: 'Final', count: 1, extraClass: 'final' }
+    ];
+
+    fases.forEach((fase, idx) => {
+        const col = document.createElement('div');
+        col.className = 'clasificaciones-col' + (fase.extraClass ? ' ' + fase.extraClass : '');
+        if (fase.key !== 'final') {
+            const title = document.createElement('div');
+            title.className = 'clasificaciones-fase-title';
+            title.innerText = fase.label;
+            col.appendChild(title);
+        }
+        for (let i = 0; i < fase.count; i++) {
+            let match = null;
+            if (fase.key === 'final') {
+                match = clasificaciones.final;
+            } else {
+                match = clasificaciones[fase.key][i] || null;
+            }
+            let matchClass = 'clasificaciones-match';
+            if (fase.key === 'semifinales') matchClass += ' semi-' + (i+1);
+            if (fase.key === 'final') matchClass += ' final';
+            const matchDiv = document.createElement('div');
+            matchDiv.className = matchClass;
+
+            if (!match) {
+                matchDiv.innerHTML = `<div class=\"clasificaciones-pending\">Pendiente</div>`;
+            } else {
+                const local = match.local ? match.local : { nombre: 'Por definir', escudo: '../assets/images/team.png' };
+                const visitante = match.visitante ? match.visitante : { nombre: 'Por definir', escudo: '../assets/images/team.png' };
+                let marcador_local = match.estado === 'finalizado' ? match.goles_local : '-';
+                let marcador_visitante = match.estado === 'finalizado' ? match.goles_visitante : '-';
+                matchDiv.innerHTML = `
+                    <div class=\"clasificaciones-teams-vertical\">
+                        <div class=\"clasificaciones-team-row\">
+                            <div class=\"clasificaciones-team\">
+                                <img class=\"clasificaciones-escudo\" src=\"${local.escudo}\" alt=\"${local.nombre}\">
+                                <span>${local.nombre}</span>
+                            </div>
+                            <div class=\"clasificaciones-score\">${marcador_local}</div>
+                        </div>
+                        <div class=\"clasificaciones-team-row\">
+                            <div class=\"clasificaciones-team\">
+                                <img class=\"clasificaciones-escudo\" src=\"${visitante.escudo}\" alt=\"${visitante.nombre}\">
+                                <span>${visitante.nombre}</span>
+                            </div>
+                            <div class=\"clasificaciones-score\">${marcador_visitante}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            col.appendChild(matchDiv);
+        }
+        container.appendChild(col);
+    });
+}
+
+// Polling para refrescar las clasificaciones
+function fetchClasificaciones() {
+    fetch('../../backend/controllers/clasificaciones_controller.php?accion=eliminatorias')
+        .then(res => res.json())
+        .then(data => renderClasificaciones(data));
+}
+fetchClasificaciones();
+setInterval(fetchClasificaciones, 10000); // refresca cada 10 segundos 

@@ -34,6 +34,7 @@ function cargarEquipos() {
  * Función para mostrar los equipos en la página
  */
 function mostrarEquipos(equipos) {
+    console.log('Equipos recibidos:', equipos);
     const container = document.getElementById('equipos-container');
     
     if (equipos.length === 0) {
@@ -44,6 +45,10 @@ function mostrarEquipos(equipos) {
     let html = '';
     
     equipos.forEach(equipo => {
+        let dt = 'No especificado';
+        if ((equipo.dt_nombres && equipo.dt_nombres.trim() !== '') || (equipo.dt_apellidos && equipo.dt_apellidos.trim() !== '')) {
+            dt = (equipo.dt_nombres ? equipo.dt_nombres : '') + (equipo.dt_apellidos ? ' ' + equipo.dt_apellidos : '');
+        }
         html += `
             <div class="equipo-card" data-nombre="${equipo.nombre.toLowerCase()}">
                 <div class="equipo-header">
@@ -51,8 +56,8 @@ function mostrarEquipos(equipos) {
                     <h2>${equipo.nombre}</h2>
                 </div>
                 <div class="equipo-info">
-                    <p><strong>Ciudad:</strong> ${equipo.ciudad || 'No especificada'}</p>
-                    <p><strong>Director Técnico:</strong> ${equipo.nombres ? equipo.nombres + ' ' + equipo.apellidos : 'No especificado'}</p>
+                    <p><strong>Ciudad:</strong> ${equipo.ciudad_nombre || 'No especificada'}</p>
+                    <p><strong>Director Técnico:</strong> ${dt}</p>
                 </div>
                 <div class="equipo-footer">
                     <a href="detalle-equipo.php?id=${equipo.cod_equ}">Ver Detalles</a>

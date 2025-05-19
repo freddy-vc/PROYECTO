@@ -151,3 +151,128 @@ CREATE TABLE Usuarios (
     foto_perfil BYTEA DEFAULT NULL, -- Foto de perfil del usuario
     CHECK (rol IN ('admin', 'usuario'))
 );
+
+-- ----------------------
+-- 1. Insertar Ciudades
+-- ----------------------
+INSERT INTO Ciudades (nombre) VALUES
+('Madrid'),
+('Barcelona'),
+('Buenos Aires'),
+('São Paulo'),
+('Londres'),
+('Munich'),
+('Roma'),
+('Amsterdam')
+RETURNING *;
+
+-- ----------------------
+-- 2. Insertar Directores Técnicos
+-- ----------------------
+INSERT INTO Directores (nombres, apellidos) VALUES
+('Carlo', 'Ancelotti'),
+('Ronald', 'Koeman'),
+('Marcelo', 'Gallardo'),
+('Tite', 'da Silva'),
+('Pep', 'Guardiola'),
+('Hansi', 'Flick'),
+('José', 'Mourinho'),
+('Frank', 'de Boer')
+RETURNING *;
+
+-- ----------------------
+-- 3. Insertar Equipos
+-- ----------------------
+INSERT INTO Equipos (nombre, cod_ciu, cod_dt) VALUES
+('Real Madrid', 1, 1),
+('FC Barcelona', 2, 2),
+('River Plate', 3, 3),
+('Corinthians', 4, 4),
+('Manchester City', 5, 5),
+('Bayern Munich', 6, 6),
+('AS Roma', 7, 7),
+('Ajax Amsterdam', 8, 8)
+RETURNING *;
+
+-- ----------------------
+-- 4. Insertar Jugadores por Equipo
+-- ----------------------
+-- Real Madrid (cod_equ = 1)
+INSERT INTO Jugadores (nombres, apellidos, posicion, dorsal, cod_equ) VALUES
+('Thibaut', 'Courtois', 'arquero', 1, 1),
+('David', 'Alaba', 'defensa', 4, 1),
+('Vinicius', 'Jr.', 'delantero', 20, 1),
+('Luka', 'Modric', 'mediocampista', 10, 1);
+
+-- FC Barcelona (cod_equ = 2)
+INSERT INTO Jugadores (nombres, apellidos, posicion, dorsal, cod_equ) VALUES
+('Marc-André', 'ter Stegen', 'arquero', 1, 2),
+('Ronald', 'Araújo', 'defensa', 4, 2),
+('Robert', 'Lewandowski', 'delantero', 9, 2),
+('Frenkie', 'de Jong', 'mediocampista', 21, 2);
+
+-- River Plate (cod_equ = 3)
+INSERT INTO Jugadores (nombres, apellidos, posicion, dorsal, cod_equ) VALUES
+('Franco', 'Armani', 'arquero', 1, 3),
+('Javier', 'Mascherano', 'defensa', 14, 3),
+('Enzo', 'Pérez', 'mediocampista', 5, 3),
+('Miguel', 'Borja', 'delantero', 9, 3);
+
+-- Corinthians (cod_equ = 4)
+INSERT INTO Jugadores (nombres, apellidos, posicion, dorsal, cod_equ) VALUES
+('Cássio', 'Ramos', 'arquero', 1, 4),
+('Gil', 'Silva', 'defensa', 3, 4),
+('Renato', 'Augusto', 'mediocampista', 8, 4),
+('Róger', 'Guedes', 'delantero', 11, 4);
+
+-- Manchester City (cod_equ = 5)
+INSERT INTO Jugadores (nombres, apellidos, posicion, dorsal, cod_equ) VALUES
+('Ederson', 'Moraes', 'arquero', 31, 5),
+('John', 'Stones', 'defensa', 5, 5),
+('Kevin', 'De Bruyne', 'mediocampista', 17, 5),
+('Erling', 'Haaland', 'delantero', 9, 5);
+
+-- Bayern Munich (cod_equ = 6)
+INSERT INTO Jugadores (nombres, apellidos, posicion, dorsal, cod_equ) VALUES
+('Manuel', 'Neuer', 'arquero', 1, 6),
+('Joshua', 'Kimmich', 'defensa', 6, 6),
+('Thomas', 'Müller', 'mediocampista', 25, 6),
+('Harry', 'Kane', 'delantero', 9, 6);
+
+-- AS Roma (cod_equ = 7)
+INSERT INTO Jugadores (nombres, apellidos, posicion, dorsal, cod_equ) VALUES
+('Rui', 'Patrício', 'arquero', 1, 7),
+('Chris', 'Smalling', 'defensa', 6, 7),
+('Nicolò', 'Zaniolo', 'mediocampista', 22, 7),
+('Paulo', 'Dybala', 'delantero', 21, 7);
+
+-- Ajax Amsterdam (cod_equ = 8)
+INSERT INTO Jugadores (nombres, apellidos, posicion, dorsal, cod_equ) VALUES
+('Remko', 'Pasveer', 'arquero', 1, 8),
+('Steven', 'Berghuis', 'mediocampista', 10, 8),
+('Sebastian', 'Hallér', 'delantero', 9, 8),
+('Edson', 'Álvarez', 'defensa', 4, 8);
+
+-- ----------------------
+-- 5. Insertar Canchas
+-- ----------------------
+INSERT INTO Canchas (nombre, direccion, capacidad) VALUES
+('Estadio Santiago Bernabéu', 'Av. Concha Espina, Madrid', 81044),
+('Camp Nou', 'Carrer d''Arístides Maillol, Barcelona', 99354),
+('Estadio Monumental', 'Av. Del Libertador, Buenos Aires', 72000),
+('Arena Corinthians', 'Av. Miguel Ignácio Curi, São Paulo', 49205),
+('Etihad Stadium', 'Ashton New Road, Manchester', 55097),
+('Allianz Arena', 'Werner-Heisenberg-Allee, Munich', 70000),
+('Stadio Olimpico', 'Piazza di Spagna, Roma', 72698),
+('Johan Cruyff Arena', 'Arenastrat, Ámsterdam', 51568)
+RETURNING *;
+
+-- ----------------------
+-- 6. Insertar Partidos (fase de cuartos)
+-- ----------------------
+INSERT INTO Partidos (fecha, hora, cod_cancha, equ_local, equ_visitante, estado, fase) VALUES
+('2025-06-20', '15:00', 1, 1, 2, 'programado', 'cuartos'),
+('2025-06-20', '19:00', 3, 3, 4, 'programado', 'cuartos'),
+('2025-06-21', '15:00', 5, 5, 6, 'programado', 'cuartos'),
+('2025-06-21', '19:00', 7, 7, 8, 'programado', 'cuartos')
+RETURNING *;
