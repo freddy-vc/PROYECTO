@@ -36,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else if ($resultado['usuario']['foto_perfil']) {
             $_SESSION['usuario_foto'] = 'data:image/jpeg;base64,' . base64_encode($resultado['usuario']['foto_perfil']);
         } else {
-            // Asegurarnos de que se use la ruta correcta para la imagen por defecto
-            $_SESSION['usuario_foto'] = './frontend/assets/images/user.png';
+            // Dejamos vacío para que el componente header determine la ruta correcta según la ubicación
+            $_SESSION['usuario_foto'] = '';
         }
         
         // Guardar mensaje de éxito en la sesión

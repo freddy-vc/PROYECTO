@@ -196,18 +196,8 @@ class Usuario
         if (isset($usuario['foto_perfil']) && $usuario['foto_perfil']) {
             $usuario['foto_perfil_base64'] = 'data:image/jpeg;base64,' . base64_encode($usuario['foto_perfil']);
         } else {
-            // Determinamos la ruta correcta según el contexto
-            if (strpos($_SERVER['PHP_SELF'], '/backend/controllers/') !== false) {
-                $usuario['foto_perfil_base64'] = '../../frontend/assets/images/user.png';
-            } else if (strpos($_SERVER['PHP_SELF'], '/backend/') !== false) {
-                $usuario['foto_perfil_base64'] = '../frontend/assets/images/user.png';
-            } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
-                $usuario['foto_perfil_base64'] = '../assets/images/user.png';
-            } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
-                $usuario['foto_perfil_base64'] = './assets/images/user.png';
-            } else {
-                $usuario['foto_perfil_base64'] = './frontend/assets/images/user.png';
-            }
+            // No establecemos ninguna ruta, el header.php se encargará de determinarla según el contexto
+            $usuario['foto_perfil_base64'] = '';
         }
         
         return $usuario;
@@ -307,6 +297,181 @@ class Usuario
             return [
                 'estado' => false,
                 'mensaje' => 'Error al cambiar contraseña: ' . $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Obtener todos los usuarios
+     */
+    public function obtenerTodos() {
+        try {
+            $sql = "SELECT cod_user, username, email, rol, foto_perfil FROM Usuarios ORDER BY username";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute();
+            
+            $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Procesar las fotos de perfil
+            foreach ($usuarios as &$usuario) {
+                $usuario = $this->procesarFotoPerfil($usuario);
+            }
+            
+            return $usuarios;
+            
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+    
+    /**
+     * Registrar un nuevo usuario desde el panel admin
+     */
+    public function registrarAdmin($username, $email, $password, $rol, $foto_perfil = null) {
+        try {
+            // Verificar si el username ya está registrado
+            if ($this->usernameExiste($username)) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El nombre de usuario ya está registrado'
+                ];
+            }
+            
+            // Verificar si el email ya está registrado
+            if ($this->emailExiste($email)) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El correo electrónico ya está registrado'
+                ];
+            }
+            
+            // Preparar la consulta SQL
+            $sql = "INSERT INTO Usuarios (username, email, password, rol, foto_perfil) 
+                    VALUES (:username, :email, :password, :rol, :foto_perfil)";
+            
+            $stmt = $this->conexion->prepare($sql);
+            
+            // Asignar valores a los parámetros
+            $stmt->bindParam(':username', $username);
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':password', $password);
+            $stmt->bindParam(':rol', $rol);
+            $stmt->bindParam(':foto_perfil', $foto_perfil, PDO::PARAM_LOB);
+            
+            // Ejecutar la consulta
+            $stmt->execute();
+            
+            // Obtener el ID del usuario recién creado
+            $cod_user = $this->conexion->lastInsertId();
+            
+            // Devolver el usuario recién creado
+            return [
+                'estado' => true,
+                'mensaje' => 'Usuario registrado correctamente',
+                'id' => $cod_user
+            ];
+            
+        } catch (PDOException $e) {
+            return [
+                'estado' => false,
+                'mensaje' => 'Error al registrar usuario: ' . $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Actualizar un usuario desde el panel admin
+     */
+    public function actualizarAdmin($id, $username, $email, $password = null, $rol = null, $foto_perfil = null, $actualizar_foto = false) {
+        try {
+            // Verificar si estamos actualizando el username y si ya existe
+            $usuario = $this->obtenerPorId($id);
+            
+            if (!$usuario) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El usuario no existe'
+                ];
+            }
+            
+            if ($usuario['username'] !== $username && $this->usernameExiste($username)) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El nombre de usuario ya está registrado por otro usuario'
+                ];
+            }
+            
+            // Verificar si estamos actualizando el email y si ya existe
+            if ($usuario['email'] !== $email && $this->emailExiste($email)) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El correo electrónico ya está registrado por otro usuario'
+                ];
+            }
+            
+            // SQL base
+            $sql = "UPDATE Usuarios SET username = :username, email = :email";
+            $params = [
+                ':id' => $id,
+                ':username' => $username,
+                ':email' => $email
+            ];
+            
+            // Si se actualiza el rol
+            if ($rol !== null) {
+                $sql .= ", rol = :rol";
+                $params[':rol'] = $rol;
+            }
+            
+            // Si se actualiza la contraseña
+            if ($password !== null && $password !== '') {
+                $sql .= ", password = :password";
+                $params[':password'] = $password;
+            }
+            
+            // Si se actualiza la foto de perfil
+            if ($actualizar_foto) {
+                $sql .= ", foto_perfil = :foto_perfil";
+                $params[':foto_perfil'] = $foto_perfil;
+            }
+            
+            $sql .= " WHERE cod_user = :id";
+            
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute($params);
+            
+            return [
+                'estado' => true,
+                'mensaje' => 'Usuario actualizado correctamente'
+            ];
+            
+        } catch (PDOException $e) {
+            return [
+                'estado' => false,
+                'mensaje' => 'Error al actualizar el usuario: ' . $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Eliminar un usuario
+     */
+    public function eliminar($id) {
+        try {
+            $sql = "DELETE FROM Usuarios WHERE cod_user = :id";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            return [
+                'estado' => true,
+                'mensaje' => 'Usuario eliminado correctamente'
+            ];
+            
+        } catch (PDOException $e) {
+            return [
+                'estado' => false,
+                'mensaje' => 'Error al eliminar el usuario: ' . $e->getMessage()
             ];
         }
     }

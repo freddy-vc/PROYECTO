@@ -234,6 +234,23 @@ img {
     margin-bottom: 40px;
 }
 
+/* Título de página estándar */
+.page-title {
+    color: var(--primary-color);
+    font-size: 2.2rem;
+    margin-bottom: 30px;
+    text-align: center;
+    padding: 20px 0;
+}
+
+/* Sección de introducción */
+.section-intro {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+    color: #777;
+}
+
 .hero-content {
     max-width: 800px;
     margin: 0 auto;

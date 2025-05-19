@@ -470,4 +470,169 @@ class Jugador {
             return null;
         }
     }
+    
+    /**
+     * Crea un nuevo jugador en la base de datos
+     */
+    public function crear($datos) {
+        try {
+            // Preparar la consulta SQL
+            $query = "INSERT INTO Jugadores (nombres, apellidos, fecha_nacimiento, documento, 
+                     cod_equ, posicion, num_camiseta, estado, estatura, peso, foto) 
+                     VALUES (:nombres, :apellidos, :fecha_nacimiento, :documento, 
+                     :cod_equ, :posicion, :num_camiseta, :estado, :estatura, :peso, :foto)";
+            
+            $stmt = $this->db->prepare($query);
+            
+            // Vincular los parámetros
+            $stmt->bindParam(':nombres', $datos['nombres']);
+            $stmt->bindParam(':apellidos', $datos['apellidos']);
+            $stmt->bindParam(':fecha_nacimiento', $datos['fecha_nacimiento']);
+            $stmt->bindParam(':documento', $datos['documento']);
+            $stmt->bindParam(':cod_equ', $datos['cod_equ'], PDO::PARAM_INT);
+            $stmt->bindParam(':posicion', $datos['posicion']);
+            $stmt->bindParam(':num_camiseta', $datos['num_camiseta'], PDO::PARAM_INT);
+            $stmt->bindParam(':estado', $datos['estado']);
+            $stmt->bindParam(':estatura', $datos['estatura'], PDO::PARAM_INT);
+            $stmt->bindParam(':peso', $datos['peso'], PDO::PARAM_STR);
+            $stmt->bindParam(':foto', $datos['foto'], PDO::PARAM_LOB);
+            
+            // Ejecutar la consulta
+            $stmt->execute();
+            
+            // Obtener el ID del jugador recién creado
+            $jugadorId = $this->db->lastInsertId();
+            
+            return [
+                'estado' => true,
+                'mensaje' => 'Jugador creado correctamente',
+                'id' => $jugadorId
+            ];
+        } catch (PDOException $e) {
+            return [
+                'estado' => false,
+                'mensaje' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Actualiza un jugador existente en la base de datos
+     */
+    public function actualizar($datos) {
+        try {
+            // Verificar si se debe actualizar la foto
+            if ($datos['actualizar_foto']) {
+                // Actualizar todos los campos, incluyendo la foto
+                $query = "UPDATE Jugadores SET nombres = :nombres, apellidos = :apellidos, 
+                         fecha_nacimiento = :fecha_nacimiento, documento = :documento, 
+                         cod_equ = :cod_equ, posicion = :posicion, num_camiseta = :num_camiseta, 
+                         estado = :estado, estatura = :estatura, peso = :peso, foto = :foto 
+                         WHERE cod_jug = :cod_jug";
+                         
+                $stmt = $this->db->prepare($query);
+                $stmt->bindParam(':foto', $datos['foto'], PDO::PARAM_LOB);
+            } else {
+                // Actualizar todos los campos excepto la foto
+                $query = "UPDATE Jugadores SET nombres = :nombres, apellidos = :apellidos, 
+                         fecha_nacimiento = :fecha_nacimiento, documento = :documento, 
+                         cod_equ = :cod_equ, posicion = :posicion, num_camiseta = :num_camiseta, 
+                         estado = :estado, estatura = :estatura, peso = :peso 
+                         WHERE cod_jug = :cod_jug";
+                         
+                $stmt = $this->db->prepare($query);
+            }
+            
+            // Vincular los parámetros comunes
+            $stmt->bindParam(':nombres', $datos['nombres']);
+            $stmt->bindParam(':apellidos', $datos['apellidos']);
+            $stmt->bindParam(':fecha_nacimiento', $datos['fecha_nacimiento']);
+            $stmt->bindParam(':documento', $datos['documento']);
+            $stmt->bindParam(':cod_equ', $datos['cod_equ'], PDO::PARAM_INT);
+            $stmt->bindParam(':posicion', $datos['posicion']);
+            $stmt->bindParam(':num_camiseta', $datos['num_camiseta'], PDO::PARAM_INT);
+            $stmt->bindParam(':estado', $datos['estado']);
+            $stmt->bindParam(':estatura', $datos['estatura'], PDO::PARAM_INT);
+            $stmt->bindParam(':peso', $datos['peso'], PDO::PARAM_STR);
+            $stmt->bindParam(':cod_jug', $datos['cod_jug'], PDO::PARAM_INT);
+            
+            // Ejecutar la consulta
+            $stmt->execute();
+            
+            return [
+                'estado' => true,
+                'mensaje' => 'Jugador actualizado correctamente'
+            ];
+        } catch (PDOException $e) {
+            return [
+                'estado' => false,
+                'mensaje' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Elimina un jugador de la base de datos
+     */
+    public function eliminar($jugadorId) {
+        try {
+            // Primero verificamos si el jugador existe
+            $query = "SELECT * FROM Jugadores WHERE cod_jug = :jugador_id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':jugador_id', $jugadorId, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            if ($stmt->rowCount() === 0) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El jugador no existe en la base de datos'
+                ];
+            }
+            
+            // Verificar si el jugador tiene registros relacionados
+            // Verificar goles
+            $query = "SELECT COUNT(*) as total FROM Goles WHERE cod_jug = :jugador_id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':jugador_id', $jugadorId, PDO::PARAM_INT);
+            $stmt->execute();
+            $goles = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            // Verificar asistencias
+            $query = "SELECT COUNT(*) as total FROM Asistencias WHERE cod_jug = :jugador_id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':jugador_id', $jugadorId, PDO::PARAM_INT);
+            $stmt->execute();
+            $asistencias = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            // Verificar faltas
+            $query = "SELECT COUNT(*) as total FROM Faltas WHERE cod_jug = :jugador_id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':jugador_id', $jugadorId, PDO::PARAM_INT);
+            $stmt->execute();
+            $faltas = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            if ($goles > 0 || $asistencias > 0 || $faltas > 0) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'No se puede eliminar el jugador porque tiene registros asociados'
+                ];
+            }
+            
+            // Eliminar el jugador
+            $query = "DELETE FROM Jugadores WHERE cod_jug = :jugador_id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':jugador_id', $jugadorId, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            return [
+                'estado' => true,
+                'mensaje' => 'Jugador eliminado correctamente'
+            ];
+        } catch (PDOException $e) {
+            return [
+                'estado' => false,
+                'mensaje' => $e->getMessage()
+            ];
+        }
+    }
 } 
