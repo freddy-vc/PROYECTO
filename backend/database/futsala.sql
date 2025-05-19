@@ -70,6 +70,7 @@ CREATE TABLE Partidos (
     equ_local INT NOT NULL,
     equ_visitante INT NOT NULL,
     estado VARCHAR(20) DEFAULT 'programado',
+    fase VARCHAR(50) NOT NULL,
     FOREIGN KEY (cod_cancha) REFERENCES Canchas(cod_cancha)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
@@ -79,7 +80,8 @@ CREATE TABLE Partidos (
     FOREIGN KEY (equ_visitante) REFERENCES Equipos(cod_equ)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    CHECK (estado IN ('programado', 'finalizado'))
+    CHECK (estado IN ('programado', 'finalizado')),
+    CHECK (fase IN ('cuartos', 'semis', 'final'))
 );
 
 -- ----------------------
@@ -138,21 +140,7 @@ CREATE TABLE Faltas (
 );
 
 -- ----------------------
--- 10. FaseEquipo
--- ----------------------
-CREATE TABLE FaseEquipo (
-    cod_equ INT NOT NULL,
-    fase VARCHAR(50) NOT NULL,
-    clasificado BOOLEAN NOT NULL,
-    FOREIGN KEY (cod_equ) REFERENCES Equipos(cod_equ)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-    PRIMARY KEY (cod_equ, fase),
-    CHECK (fase IN ('cuartos', 'semis', 'final'))
-);
-
--- ----------------------
--- 11. Usuarios
+-- 10. Usuarios
 -- ----------------------
 CREATE TABLE Usuarios (
     cod_user SERIAL PRIMARY KEY,
