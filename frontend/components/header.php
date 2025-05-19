@@ -32,7 +32,9 @@ session_set_cookie_params([
     <!-- CSS Común -->
     <link rel="stylesheet" href="<?php 
     // Determinar la ruta relativa según la ubicación del archivo
-    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/admin/') !== false) {
+        echo "../../assets/css/styles.css";
+    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
         echo "../assets/css/styles.css";
     } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
         echo "./assets/css/styles.css";
@@ -44,7 +46,9 @@ session_set_cookie_params([
     <!-- CSS específico de la página actual -->
     <?php if(isset($pagina_actual) && file_exists(dirname(__FILE__) . '/../../frontend/assets/css/' . $pagina_actual . '.css')): ?>
     <link rel="stylesheet" href="<?php 
-    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/admin/') !== false) {
+        echo "../../assets/css/" . $pagina_actual . ".css";
+    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
         echo "../assets/css/" . $pagina_actual . ".css";
     } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
         echo "./assets/css/" . $pagina_actual . ".css";
@@ -56,7 +60,9 @@ session_set_cookie_params([
     
     <!-- Cache Buster -->
     <script src="<?php 
-    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/admin/') !== false) {
+        echo "../../assets/js/cache-buster.js";
+    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
         echo "../assets/js/cache-buster.js";
     } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
         echo "./assets/js/cache-buster.js";
@@ -67,7 +73,9 @@ session_set_cookie_params([
     
     <!-- JavaScript común -->
     <script src="<?php 
-    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/admin/') !== false) {
+        echo "../../assets/js/main.js";
+    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
         echo "../assets/js/main.js";
     } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
         echo "./assets/js/main.js";
@@ -79,7 +87,9 @@ session_set_cookie_params([
     <!-- JavaScript específico de la página actual -->
     <?php if(isset($pagina_actual) && file_exists(dirname(__FILE__) . '/../../frontend/assets/js/' . $pagina_actual . '.js')): ?>
     <script src="<?php 
-    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/admin/') !== false) {
+        echo "../../assets/js/" . $pagina_actual . ".js";
+    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
         echo "../assets/js/" . $pagina_actual . ".js";
     } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
         echo "./assets/js/" . $pagina_actual . ".js";
@@ -104,7 +114,9 @@ session_set_cookie_params([
                     }
                     ?>">
                         <img src="<?php 
-                        if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+                        if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/admin/') !== false) {
+                            echo "../../assets/images/logo.png";
+                        } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
                             echo "../assets/images/logo.png";
                         } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
                             echo "./assets/images/logo.png";
@@ -128,18 +140,56 @@ session_set_cookie_params([
                                 echo $_SESSION['usuario_foto'];
                             } else {
                                 // De lo contrario, determinar la ruta correcta según la ubicación actual
-                                if (strpos($_SERVER['PHP_SELF'], 'index.php') !== false || $_SERVER['PHP_SELF'] == '/') {
-                                    echo "./frontend/assets/images/user.png";
+                                if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/admin/') !== false) {
+                                    echo "../../assets/images/user.png";
                                 } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
                                     echo "../assets/images/user.png";
-                                } else {
+                                } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
                                     echo "./assets/images/user.png";
+                                } else {
+                                    echo "./frontend/assets/images/user.png";
                                 }
                             }
                             ?>" alt="Foto de perfil">
                             <span><?php echo $_SESSION['usuario_nombre']; ?></span>
                             <div class="user-dropdown">
-                                                                <ul>                                    <li><a href="<?php                                     if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {                                        echo "./perfil.php";                                    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {                                        echo "./pages/perfil.php";                                    } else {                                        echo "./frontend/pages/perfil.php";                                    }                                    ?>">Mi Perfil</a></li>                                    <?php if(isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'admin'): ?>                                    <li><a href="<?php                                     if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {                                        echo "./admin/index.php";                                    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {                                        echo "./pages/admin/index.php";                                    } else {                                        echo "./frontend/pages/admin/index.php";                                    }                                    ?>" class="admin-link">Panel de Administración</a></li>                                    <?php endif; ?>                                    <li><a href="<?php                                     if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {                                        echo "../../backend/controllers/logout.php";                                    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {                                        echo "../backend/controllers/logout.php";                                    } else {                                        echo "./backend/controllers/logout.php";                                    }                                    ?>">Cerrar Sesión</a></li>                                </ul>
+                                <ul>
+                                    <li><a href="<?php 
+                                    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/admin/') !== false) {
+                                        echo "../perfil.php";
+                                    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+                                        echo "./perfil.php";
+                                    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
+                                        echo "./pages/perfil.php";
+                                    } else {
+                                        echo "./frontend/pages/perfil.php";
+                                    }
+                                    ?>">Mi Perfil</a></li>
+                                    <?php if(isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'admin'): ?>
+                                    <li><a href="<?php 
+                                    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/admin/') !== false) {
+                                        echo "./index.php";
+                                    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+                                        echo "./admin/index.php";
+                                    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
+                                        echo "./pages/admin/index.php";
+                                    } else {
+                                        echo "./frontend/pages/admin/index.php";
+                                    }
+                                    ?>" class="admin-link">Panel de Administración</a></li>
+                                    <?php endif; ?>
+                                    <li><a href="<?php 
+                                    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/admin/') !== false) {
+                                        echo "../../../backend/controllers/logout.php";
+                                    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+                                        echo "../../backend/controllers/logout.php";
+                                    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
+                                        echo "../backend/controllers/logout.php";
+                                    } else {
+                                        echo "./backend/controllers/logout.php";
+                                    }
+                                    ?>">Cerrar Sesión</a></li>
+                                </ul>
                             </div>
                         </div>
                     <?php else: ?>

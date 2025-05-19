@@ -2,6 +2,57 @@
 // Iniciar la sesión
 session_start();
 
+// Mostrar información sobre la ubicación actual y rutas
+echo "<h1>Información de rutas para la imagen de usuario</h1>";
+echo "<p>PHP_SELF: " . $_SERVER['PHP_SELF'] . "</p>";
+echo "<p>SCRIPT_NAME: " . $_SERVER['SCRIPT_NAME'] . "</p>";
+echo "<p>REQUEST_URI: " . $_SERVER['REQUEST_URI'] . "</p>";
+echo "<p>DOCUMENT_ROOT: " . $_SERVER['DOCUMENT_ROOT'] . "</p>";
+
+// Verificar si estamos en una página de administración
+$es_admin = (strpos($_SERVER['PHP_SELF'], '/frontend/pages/admin/') !== false);
+echo "<p>¿Es página de administración? " . ($es_admin ? 'Sí' : 'No') . "</p>";
+
+// Mostrar la ruta que se usaría para la imagen de perfil
+echo "<h2>Ruta que se usaría para la imagen de usuario</h2>";
+if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/admin/') !== false) {
+    echo "<p>Ruta: <code>../../assets/images/user.png</code></p>";
+} else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+    echo "<p>Ruta: <code>../assets/images/user.png</code></p>";
+} else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
+    echo "<p>Ruta: <code>./assets/images/user.png</code></p>";
+} else {
+    echo "<p>Ruta: <code>./frontend/assets/images/user.png</code></p>";
+}
+
+// Mostrar la ruta completa del archivo
+echo "<h2>Verificación de existencia de los archivos</h2>";
+$rutas = [
+    "../../assets/images/user.png",
+    "../assets/images/user.png",
+    "./assets/images/user.png",
+    "./frontend/assets/images/user.png"
+];
+
+foreach ($rutas as $ruta) {
+    $ruta_real = realpath(dirname($_SERVER['SCRIPT_FILENAME']) . '/' . $ruta);
+    echo "<p>Ruta <code>$ruta</code>: " . ($ruta_real && file_exists($ruta_real) ? "EXISTE ($ruta_real)" : "NO EXISTE") . "</p>";
+}
+
+// Comprobar rutas alternativas con rutas absolutas
+echo "<h2>Verificación con rutas absolutas</h2>";
+$bases = [
+    "/var/www/html/PROYECTO/",
+    "/var/www/html/PROYECTO/frontend/",
+    "/var/www/html/PROYECTO/frontend/pages/",
+    "/var/www/html/PROYECTO/frontend/pages/admin/"
+];
+
+foreach ($bases as $base) {
+    $ruta = $base . "assets/images/user.png";
+    echo "<p>Ruta <code>$ruta</code>: " . (file_exists($ruta) ? "EXISTE" : "NO EXISTE") . "</p>";
+}
+
 // Mostrar información sobre la sesión y el usuario
 echo "<h2>Depuración de Usuario</h2>";
 

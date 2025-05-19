@@ -13,8 +13,11 @@ include_once 'frontend/components/notificaciones.php';
 <!-- Incluir los estilos específicos para esta página -->
 <link rel="stylesheet" href="./frontend/assets/css/inicio.css">
 
-<!-- Mostrar notificaciones de éxito -->
 <div class="container">
+    <!-- Título de la página -->
+    <h1 class="page-title">Campeonato de Futsala Villavicencio</h1>
+    
+    <!-- Mostrar notificaciones de éxito -->
     <?php mostrarNotificaciones(['exito_login']); ?>
 </div>
 
