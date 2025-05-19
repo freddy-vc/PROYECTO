@@ -33,17 +33,39 @@
 /* Centrado de semis y final */
 .clasificaciones-col.semis {
     justify-content: space-between;
-    gap: 120px;
+    gap: 50px;
 }
 .clasificaciones-col.final {
     justify-content: center;
-    gap: 220px;
+    gap: 0; /* Remove extra gap */
+    margin-top: 170px; /* Adjust to center between semis */
+    position: relative; /* Ensure positioning for the title */
+}
+.clasificaciones-col.final::before {
+    content: 'Final'; /* Add title for the final column */
+    position: absolute;
+    top: -40px; /* Adjust position above the column */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.25em;
+    font-weight: bold;
+    color: #1976d2;
+    text-transform: uppercase;
+    text-align: center;
 }
 .clasificaciones-col.semis .clasificaciones-match {
     margin-top: 80px;
 }
 .clasificaciones-col.final .clasificaciones-match {
-    margin-top: 180px;
+    margin-top: 120px;
+}
+/* Ajustar la posición de los partidos de semifinales */
+.clasificaciones-col.semis .clasificaciones-match.semi-1 {
+    margin-top: 60px; /* Ajustar para centrar entre los dos primeros partidos de cuartos */
+}
+
+.clasificaciones-col.semis .clasificaciones-match.semi-2 {
+    margin-top: 140px; /* Ajustar para centrar entre los dos últimos partidos de cuartos */
 }
 /* Líneas de conexión */
 .clasificaciones-match.semi-1::before {
@@ -134,4 +156,4 @@
 @media (max-width: 900px) {
     #clasificaciones-container { flex-direction: column; align-items: stretch; }
     .clasificaciones-col { flex-direction: row; min-width: unset; }
-} 
+}
