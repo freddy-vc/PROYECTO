@@ -83,6 +83,20 @@ switch ($accion) {
         // Obtener los partidos del equipo
         $partidos = $equipo->obtenerPartidos($cod_equ);
         
+        // Procesar los escudos de los partidos a base64
+        foreach ($partidos as &$partido) {
+            if ($partido['local_escudo']) {
+                $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);
+            } else {
+                $partido['local_escudo_base64'] = '../assets/images/team.png';
+            }
+            if ($partido['visitante_escudo']) {
+                $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);
+            } else {
+                $partido['visitante_escudo_base64'] = '../assets/images/team.png';
+            }
+        }
+        
         // Preparar los datos para devolverlos en formato JSON
         header('Content-Type: application/json');
         echo json_encode([

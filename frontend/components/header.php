@@ -123,8 +123,8 @@ session_set_cookie_params([
                         } else {
                             echo "./frontend/assets/images/logo.png";
                         }
-                        ?>" alt="Logo Futsala Villavicencio">
-                        <span>Futsala Villavicencio</span>
+                        ?>" alt="Logo VILLAVOCUP">
+                        <span>VILLAVOCUP</span>
                     </a>
                 </div>
                 

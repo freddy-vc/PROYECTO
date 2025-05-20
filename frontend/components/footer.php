@@ -6,15 +6,17 @@
             <div class="footer-content">
                 <div class="footer-logo">
                     <img src="<?php 
-                    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
+                    if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/admin/') !== false) {
+                        echo "../../assets/images/logo.png";
+                    } else if (strpos($_SERVER['PHP_SELF'], '/frontend/pages/') !== false) {
                         echo "../assets/images/logo.png";
                     } else if (strpos($_SERVER['PHP_SELF'], '/frontend/') !== false) {
                         echo "./assets/images/logo.png";
                     } else {
                         echo "./frontend/assets/images/logo.png";
                     }
-                    ?>" alt="Logo Futsala Villavicencio">
-                    <span>Futsala Villavicencio</span>
+                    ?>" alt="Logo VILLAVOCUP">
+                    <span>VILLAVOCUP</span>
                 </div>
                 
                 <div class="footer-links">
@@ -68,7 +70,7 @@
                 </div>
                 
                 <div class="footer-info">
-                    <p>&copy; <?php echo date('Y'); ?> Campeonato de Futsala Villavicencio</p>
+                    <p>&copy; <?php echo date('Y'); ?> Campeonato de VILLAVOCUP</p>
                     <p>Todos los derechos reservados</p>
                     <p>Proyecto académico para curso de Bases de Datos - Ingeniería de Sistemas</p>
                 </div>

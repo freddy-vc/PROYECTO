@@ -25,6 +25,7 @@ include_once 'frontend/components/notificaciones.php';
 <section class="hero">
     <div class="hero-content">
         <h1>Campeonato de Futsala Villavicencio</h1>
+        <img src="./frontend/assets/images/logo.png" alt="Logo VILLAVOCUP" class="hero-logo">
         <p>Toda la información del campeonato en un solo lugar</p>
         <div class="hero-buttons">
             <a href="./frontend/pages/partidos.php" class="btn btn-primary">Ver Próximos Partidos</a>

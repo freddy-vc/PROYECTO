@@ -217,4 +217,12 @@
     .stat-value {
         font-size: 1.5rem;
     }
+}
+
+.hero-logo {
+    display: block;
+    margin: 30px auto 20px auto;
+    max-width: 350px;
+    width: 100%;
+    height: auto;
 } 

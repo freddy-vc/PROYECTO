@@ -47,7 +47,7 @@ function mostrarDetalleEquipo(equipo, jugadores, partidos) {
                     <img src="${equipo.escudo_base64}" alt="${equipo.nombre}">
                 </div>
                 <h1 class="equipo-nombre">${equipo.nombre}</h1>
-                <div class="equipo-ciudad">${equipo.ciudad || 'Ciudad no especificada'}</div>
+                <div class="equipo-ciudad">${equipo.ciudad_nombre || 'Ciudad no especificada'}</div>
             </div>
             
             <div class="equipo-content">

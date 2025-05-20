@@ -67,6 +67,11 @@ class Equipo
             $equipo = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($equipo) {
                 $equipo['id'] = $equipo['cod_equ'];
+                if (isset($equipo['ciudad_nombre'])) {
+                    $equipo['ciudad_nombre'] = $equipo['ciudad_nombre'];
+                } else {
+                    $equipo['ciudad_nombre'] = null;
+                }
                 if ($equipo['escudo']) {
                     $equipo['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($equipo['escudo']);
                 } else {
