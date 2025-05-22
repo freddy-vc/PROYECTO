@@ -29,6 +29,7 @@ $partidos = $partidoModel->obtenerTodos();
 <!-- Incluir los estilos específicos para esta página -->
 <link rel="stylesheet" href="../../assets/css/admin.css">
 <link rel="stylesheet" href="../../assets/css/admin_crud.css">
+<link rel="stylesheet" href="../../assets/css/admin_partidos.css">
 
 <div class="container">
     <h1 class="page-title">Administración de Partidos</h1>
@@ -53,7 +54,6 @@ $partidos = $partidoModel->obtenerTodos();
                 <li><a href="./canchas.php">Canchas</a></li>
                 <li><a href="./directores.php">Directores Técnicos</a></li>
                 <li><a href="./partidos.php" class="active">Partidos</a></li>
-                <li><a href="./clasificaciones.php">Clasificaciones</a></li>
                 <li><a href="./usuarios.php">Usuarios</a></li>
             </ul>
         </div>
@@ -88,6 +88,7 @@ $partidos = $partidoModel->obtenerTodos();
                         <th>Visitante</th>
                         <th>Resultado</th>
                         <th>Cancha</th>
+                        <th>Fase</th>
                         <th data-column="estado">Estado</th>
                         <th>Acciones</th>
                     </tr>
@@ -124,6 +125,7 @@ $partidos = $partidoModel->obtenerTodos();
                             <?php endif; ?>
                         </td>
                         <td><?php echo $partido['cancha']; ?></td>
+                        <td><?php echo ucfirst($partido['fase']); ?></td>
                         <td data-column="estado">
                             <?php if ($partido['estado'] === 'programado'): ?>
                                 <span class="badge badge-programado">Programado</span>

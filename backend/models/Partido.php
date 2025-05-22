@@ -27,7 +27,7 @@ class Partido
     {
         try {
             // Consulta base
-            $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado,
+            $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado, p.fase,
                     e1.cod_equ as local_id, e1.nombre as local_nombre, e1.escudo as local_escudo,
                     e2.cod_equ as visitante_id, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,
                     c.nombre as cancha
@@ -79,7 +79,7 @@ class Partido
     public function obtenerPorId($cod_par)
     {
         try {
-            $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado,
+            $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado, p.fase,
                     e1.cod_equ as local_id, e1.nombre as local_nombre, e1.escudo as local_escudo,
                     e2.cod_equ as visitante_id, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,
                     c.nombre as cancha, c.direccion as cancha_direccion
@@ -255,7 +255,7 @@ class Partido
     /**
      * Crear un nuevo partido
      */
-    public function crear($fecha, $hora, $cod_cancha, $equ_local, $equ_visitante)
+    public function crear($fecha, $hora, $cod_cancha, $equ_local, $equ_visitante, $fase)
     {
         try {
             // Verificar que los equipos sean diferentes
@@ -266,8 +266,8 @@ class Partido
                 ];
             }
             
-            $sql = "INSERT INTO Partidos (fecha, hora, cod_cancha, equ_local, equ_visitante, estado) 
-                    VALUES (:fecha, :hora, :cod_cancha, :equ_local, :equ_visitante, 'programado')";
+            $sql = "INSERT INTO Partidos (fecha, hora, cod_cancha, equ_local, equ_visitante, estado, fase) 
+                    VALUES (:fecha, :hora, :cod_cancha, :equ_local, :equ_visitante, 'programado', :fase)";
             
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':fecha', $fecha);
@@ -275,6 +275,7 @@ class Partido
             $stmt->bindParam(':cod_cancha', $cod_cancha);
             $stmt->bindParam(':equ_local', $equ_local);
             $stmt->bindParam(':equ_visitante', $equ_visitante);
+            $stmt->bindParam(':fase', $fase);
             
             $stmt->execute();
             
@@ -295,12 +296,12 @@ class Partido
     /**
      * Actualizar partido
      */
-    public function actualizar($cod_par, $fecha, $hora, $cod_cancha, $estado)
+    public function actualizar($cod_par, $fecha, $hora, $cod_cancha, $estado, $fase)
     {
         try {
             $sql = "UPDATE Partidos 
                     SET fecha = :fecha, hora = :hora, 
-                    cod_cancha = :cod_cancha, estado = :estado
+                    cod_cancha = :cod_cancha, estado = :estado, fase = :fase
                     WHERE cod_par = :cod_par";
             
             $stmt = $this->conexion->prepare($sql);
@@ -309,6 +310,7 @@ class Partido
             $stmt->bindParam(':hora', $hora);
             $stmt->bindParam(':cod_cancha', $cod_cancha);
             $stmt->bindParam(':estado', $estado);
+            $stmt->bindParam(':fase', $fase);
             
             $stmt->execute();
             

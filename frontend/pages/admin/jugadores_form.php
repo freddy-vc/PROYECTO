@@ -81,7 +81,6 @@ if (isset($_GET['id'])) {
                 <li><a href="./canchas.php">Canchas</a></li>
                 <li><a href="./directores.php">Directores Técnicos</a></li>
                 <li><a href="./partidos.php">Partidos</a></li>
-                <li><a href="./clasificaciones.php">Clasificaciones</a></li>
                 <li><a href="./usuarios.php">Usuarios</a></li>
             </ul>
         </div>
@@ -113,22 +112,6 @@ if (isset($_GET['id'])) {
                 <div class="form-row">
                     <div class="form-col">
                         <div class="admin-form-group">
-                            <label for="fecha_nacimiento">Fecha de Nacimiento</label>
-                            <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" value="<?php echo isset($jugador) ? $jugador['fecha_nacimiento'] : ''; ?>" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-col">
-                        <div class="admin-form-group">
-                            <label for="documento">Documento de Identidad</label>
-                            <input type="text" id="documento" name="documento" value="<?php echo isset($jugador) ? $jugador['documento'] : ''; ?>" required>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-col">
-                        <div class="admin-form-group">
                             <label for="equipo">Equipo</label>
                             <select id="equipo" name="equipo_id" required>
                                 <option value="">Seleccione un equipo</option>
@@ -146,11 +129,10 @@ if (isset($_GET['id'])) {
                             <label for="posicion">Posición</label>
                             <select id="posicion" name="posicion" required>
                                 <option value="">Seleccione una posición</option>
-                                <?php foreach ($posiciones as $key => $pos): ?>
-                                    <option value="<?php echo $key; ?>" <?php echo (isset($jugador) && $jugador['posicion'] == $key) ? 'selected' : ''; ?>>
-                                        <?php echo $pos; ?>
-                                    </option>
-                                <?php endforeach; ?>
+                                <option value="delantero" <?php echo (isset($jugador) && $jugador['posicion'] == 'delantero') ? 'selected' : ''; ?>>Delantero</option>
+                                <option value="defensa" <?php echo (isset($jugador) && $jugador['posicion'] == 'defensa') ? 'selected' : ''; ?>>Defensa</option>
+                                <option value="mediocampista" <?php echo (isset($jugador) && $jugador['posicion'] == 'mediocampista') ? 'selected' : ''; ?>>Mediocampista</option>
+                                <option value="arquero" <?php echo (isset($jugador) && $jugador['posicion'] == 'arquero') ? 'selected' : ''; ?>>Arquero</option>
                             </select>
                         </div>
                     </div>
@@ -159,40 +141,11 @@ if (isset($_GET['id'])) {
                 <div class="form-row">
                     <div class="form-col">
                         <div class="admin-form-group">
-                            <label for="numero_camiseta">Número de Camiseta</label>
-                            <input type="number" id="numero_camiseta" name="numero_camiseta" min="1" max="99" value="<?php echo isset($jugador) ? $jugador['num_camiseta'] : ''; ?>" required>
+                            <label for="dorsal">Número de Camiseta</label>
+                            <input type="number" id="dorsal" name="dorsal" min="1" max="99" value="<?php echo isset($jugador) ? $jugador['dorsal'] : ''; ?>" required>
                         </div>
                     </div>
                     
-                    <div class="form-col">
-                        <div class="admin-form-group">
-                            <label for="estado">Estado</label>
-                            <select id="estado" name="estado">
-                                <option value="activo" <?php echo (isset($jugador) && $jugador['estado'] == 'activo') ? 'selected' : ''; ?>>Activo</option>
-                                <option value="lesionado" <?php echo (isset($jugador) && $jugador['estado'] == 'lesionado') ? 'selected' : ''; ?>>Lesionado</option>
-                                <option value="inactivo" <?php echo (isset($jugador) && $jugador['estado'] == 'inactivo') ? 'selected' : ''; ?>>Inactivo</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-col">
-                        <div class="admin-form-group">
-                            <label for="estatura">Estatura (cm)</label>
-                            <input type="number" id="estatura" name="estatura" min="100" max="250" value="<?php echo isset($jugador) ? $jugador['estatura'] : ''; ?>">
-                        </div>
-                    </div>
-                    
-                    <div class="form-col">
-                        <div class="admin-form-group">
-                            <label for="peso">Peso (kg)</label>
-                            <input type="number" id="peso" name="peso" min="40" max="150" step="0.1" value="<?php echo isset($jugador) ? $jugador['peso'] : ''; ?>">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-row">
                     <div class="form-col">
                         <div class="admin-form-group">
                             <label for="foto">Foto del Jugador</label>

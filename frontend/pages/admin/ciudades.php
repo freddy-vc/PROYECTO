@@ -53,7 +53,6 @@ $ciudades = $ciudadModel->obtenerTodas();
                 <li><a href="./canchas.php">Canchas</a></li>
                 <li><a href="./directores.php">Directores Técnicos</a></li>
                 <li><a href="./partidos.php">Partidos</a></li>
-                <li><a href="./clasificaciones.php">Clasificaciones</a></li>
                 <li><a href="./usuarios.php">Usuarios</a></li>
             </ul>
         </div>
@@ -77,7 +76,6 @@ $ciudades = $ciudadModel->obtenerTodas();
                     <tr>
                         <th>ID</th>
                         <th>Nombre</th>
-                        <th>Canchas</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -86,7 +84,6 @@ $ciudades = $ciudadModel->obtenerTodas();
                     <tr>
                         <td><?php echo $ciudad['cod_ciu']; ?></td>
                         <td><?php echo $ciudad['nombre']; ?></td>
-                        <td><?php echo (isset($ciudad['num_canchas'])) ? $ciudad['num_canchas'] : '0'; ?></td>
                         <td class="admin-actions">
                             <a href="./ciudades_form.php?id=<?php echo $ciudad['cod_ciu']; ?>" class="action-btn edit" title="Editar">
                                 <i class="fas fa-edit"></i>
@@ -104,7 +101,7 @@ $ciudades = $ciudadModel->obtenerTodas();
                     
                     <?php if (empty($ciudades)): ?>
                     <tr>
-                        <td colspan="4" class="no-results">No hay ciudades registradas</td>
+                        <td colspan="3" class="no-results">No hay ciudades registradas</td>
                     </tr>
                     <?php endif; ?>
                 </tbody>

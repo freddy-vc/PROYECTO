@@ -74,6 +74,7 @@ if ($esEdicion) {
 <!-- Incluir los estilos específicos para esta página -->
 <link rel="stylesheet" href="../../assets/css/admin.css">
 <link rel="stylesheet" href="../../assets/css/admin_crud.css">
+<link rel="stylesheet" href="../../assets/css/admin_partidos.css">
 <!-- Incluir Font Awesome para los iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
@@ -170,7 +171,9 @@ if ($esEdicion) {
                             alt="<?php echo $partido['local_nombre']; ?>" class="equipo-logo">
                         <div class="equipo-nombre"><?php echo $partido['local_nombre']; ?></div>
                         <?php if ($partido['estado'] === 'finalizado'): ?>
-                        <div class="equipo-goles"><?php echo $partido['goles_local']; ?></div>
+                        <div class="equipo-goles">
+                            <input type="number" name="goles_local" min="0" value="<?php echo $partido['goles_local']; ?>" class="goles-input">
+                        </div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -184,20 +187,31 @@ if ($esEdicion) {
                             alt="<?php echo $partido['visitante_nombre']; ?>" class="equipo-logo">
                         <div class="equipo-nombre"><?php echo $partido['visitante_nombre']; ?></div>
                         <?php if ($partido['estado'] === 'finalizado'): ?>
-                        <div class="equipo-goles"><?php echo $partido['goles_visitante']; ?></div>
+                        <div class="equipo-goles">
+                            <input type="number" name="goles_visitante" min="0" value="<?php echo $partido['goles_visitante']; ?>" class="goles-input">
+                        </div>
                         <?php endif; ?>
                     </div>
                 </div>
             </div>
             
-            <!-- Estado del partido (solo para partidos en edición) -->
+            <!-- Estado del partido -->
             <div class="form-group">
-                <label for="estado">Estado del Partido <span class="required">*</span></label>
-                <select id="estado" name="estado" required>
-                    <option value="programado" <?php echo ($esEdicion && $partido['estado'] === 'programado') ? 'selected' : ''; ?>>Programado</option>
-                    <option value="finalizado" <?php echo ($esEdicion && $partido['estado'] === 'finalizado') ? 'selected' : ''; ?>>Finalizado</option>
+                <label for="estado">Estado del Partido</label>
+                <select name="estado" id="estado" class="form-control" required>
+                    <option value="programado" <?php echo ($partido && $partido['estado'] == 'programado') ? 'selected' : ''; ?>>Programado</option>
+                    <option value="finalizado" <?php echo ($partido && $partido['estado'] == 'finalizado') ? 'selected' : ''; ?>>Finalizado</option>
                 </select>
-                <div class="form-error" id="error-estado"></div>
+            </div>
+
+            <!-- Fase del partido -->
+            <div class="form-group">
+                <label for="fase">Fase del Torneo</label>
+                <select name="fase" id="fase" class="form-control" required>
+                    <option value="cuartos" <?php echo ($partido && $partido['fase'] == 'cuartos') ? 'selected' : ''; ?>>Cuartos de Final</option>
+                    <option value="semis" <?php echo ($partido && $partido['fase'] == 'semis') ? 'selected' : ''; ?>>Semifinales</option>
+                    <option value="final" <?php echo ($partido && $partido['fase'] == 'final') ? 'selected' : ''; ?>>Final</option>
+                </select>
             </div>
             <?php endif; ?>
             
@@ -215,13 +229,13 @@ if ($esEdicion) {
             <div class="tabs">
                 <button class="tab-btn active" data-tab="goles">Goles</button>
                 <button class="tab-btn" data-tab="asistencias">Asistencias</button>
-                <button class="tab-btn" data-tab="faltas">Faltas</button>
+                <button class="tab-btn" data-tab="faltas">Tarjetas</button>
             </div>
             
             <div class="tab-content active" id="tab-goles">
                 <h4>Goles</h4>
                 
-                <!-- Formulario para registrar gol -->
+                <!-- Formulario para registrar/editar gol -->
                 <form action="../../../backend/controllers/admin/partidos_controller.php" method="POST" class="stats-form" id="gol-form">
                     <input type="hidden" name="accion" value="registrar_gol">
                     <input type="hidden" name="partido_id" value="<?php echo $partido['cod_par']; ?>">
@@ -250,7 +264,7 @@ if ($esEdicion) {
                         
                         <div class="form-group form-col">
                             <label for="minuto_gol">Minuto</label>
-                            <input type="number" id="minuto_gol" name="minuto" min="1" max="90" required>
+                            <input type="number" id="minuto_gol" name="minuto" min="0" max="50" required>
                         </div>
                         
                         <div class="form-group form-col">
@@ -279,6 +293,7 @@ if ($esEdicion) {
                                 <th>Jugador</th>
                                 <th>Equipo</th>
                                 <th>Tipo</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -302,6 +317,19 @@ if ($esEdicion) {
                                     }
                                     ?>
                                 </td>
+                                <td class="stats-actions">
+                                    <button type="button" class="btn-edit" onclick="editarGol(<?php echo htmlspecialchars(json_encode($gol)); ?>)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <form action="../../../backend/controllers/admin/partidos_controller.php" method="POST" style="display: inline;">
+                                        <input type="hidden" name="accion" value="eliminar_gol">
+                                        <input type="hidden" name="partido_id" value="<?php echo $partido['cod_par']; ?>">
+                                        <input type="hidden" name="gol_id" value="<?php echo $gol['cod_gol']; ?>">
+                                        <button type="submit" class="btn-delete" onclick="return confirm('¿Estás seguro de eliminar este gol?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -315,7 +343,7 @@ if ($esEdicion) {
             <div class="tab-content" id="tab-asistencias">
                 <h4>Asistencias</h4>
                 
-                <!-- Formulario para registrar asistencia -->
+                <!-- Formulario para registrar/editar asistencia -->
                 <form action="../../../backend/controllers/admin/partidos_controller.php" method="POST" class="stats-form" id="asistencia-form">
                     <input type="hidden" name="accion" value="registrar_asistencia">
                     <input type="hidden" name="partido_id" value="<?php echo $partido['cod_par']; ?>">
@@ -344,7 +372,7 @@ if ($esEdicion) {
                         
                         <div class="form-group form-col">
                             <label for="minuto_asistencia">Minuto</label>
-                            <input type="number" id="minuto_asistencia" name="minuto" min="1" max="90" required>
+                            <input type="number" id="minuto_asistencia" name="minuto" min="0" max="50" required>
                         </div>
                         
                         <div class="form-group form-col">
@@ -363,6 +391,7 @@ if ($esEdicion) {
                                 <th>Minuto</th>
                                 <th>Jugador</th>
                                 <th>Equipo</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -371,6 +400,19 @@ if ($esEdicion) {
                                 <td><?php echo $asistencia['minuto']; ?>'</td>
                                 <td><?php echo $asistencia['nombres'] . ' ' . $asistencia['apellidos']; ?> (#<?php echo $asistencia['dorsal']; ?>)</td>
                                 <td><?php echo $asistencia['equipo']; ?></td>
+                                <td class="stats-actions">
+                                    <button type="button" class="btn-edit" onclick="editarAsistencia(<?php echo htmlspecialchars(json_encode($asistencia)); ?>)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <form action="../../../backend/controllers/admin/partidos_controller.php" method="POST" style="display: inline;">
+                                        <input type="hidden" name="accion" value="eliminar_asistencia">
+                                        <input type="hidden" name="partido_id" value="<?php echo $partido['cod_par']; ?>">
+                                        <input type="hidden" name="asistencia_id" value="<?php echo $asistencia['cod_asis']; ?>">
+                                        <button type="submit" class="btn-delete" onclick="return confirm('¿Estás seguro de eliminar esta asistencia?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -384,7 +426,7 @@ if ($esEdicion) {
             <div class="tab-content" id="tab-faltas">
                 <h4>Tarjetas</h4>
                 
-                <!-- Formulario para registrar falta -->
+                <!-- Formulario para registrar/editar falta -->
                 <form action="../../../backend/controllers/admin/partidos_controller.php" method="POST" class="stats-form" id="falta-form">
                     <input type="hidden" name="accion" value="registrar_falta">
                     <input type="hidden" name="partido_id" value="<?php echo $partido['cod_par']; ?>">
@@ -413,7 +455,7 @@ if ($esEdicion) {
                         
                         <div class="form-group form-col">
                             <label for="minuto_falta">Minuto</label>
-                            <input type="number" id="minuto_falta" name="minuto" min="1" max="90" required>
+                            <input type="number" id="minuto_falta" name="minuto" min="0" max="50" required>
                         </div>
                         
                         <div class="form-group form-col">
@@ -421,6 +463,7 @@ if ($esEdicion) {
                             <select id="tipo_falta" name="tipo_falta" required>
                                 <option value="amarilla">Amarilla</option>
                                 <option value="roja">Roja</option>
+                                <option value="normal">Normal</option>
                             </select>
                         </div>
                         
@@ -441,6 +484,7 @@ if ($esEdicion) {
                                 <th>Jugador</th>
                                 <th>Equipo</th>
                                 <th>Tarjeta</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -452,9 +496,24 @@ if ($esEdicion) {
                                 <td>
                                     <?php if ($falta['tipo_falta'] === 'amarilla'): ?>
                                     <span class="tarjeta-amarilla">Amarilla</span>
-                                    <?php else: ?>
+                                    <?php elseif ($falta['tipo_falta'] === 'roja'): ?>
                                     <span class="tarjeta-roja">Roja</span>
+                                    <?php else: ?>
+                                    <span class="tarjeta-normal">Normal</span>
                                     <?php endif; ?>
+                                </td>
+                                <td class="stats-actions">
+                                    <button type="button" class="btn-edit" onclick="editarFalta(<?php echo htmlspecialchars(json_encode($falta)); ?>)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <form action="../../../backend/controllers/admin/partidos_controller.php" method="POST" style="display: inline;">
+                                        <input type="hidden" name="accion" value="eliminar_falta">
+                                        <input type="hidden" name="partido_id" value="<?php echo $partido['cod_par']; ?>">
+                                        <input type="hidden" name="falta_id" value="<?php echo $falta['cod_falta']; ?>">
+                                        <button type="submit" class="btn-delete" onclick="return confirm('¿Estás seguro de eliminar esta tarjeta?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -469,6 +528,245 @@ if ($esEdicion) {
         <?php endif; ?>
     </div>
 </div>
+
+<style>
+.partido-equipos {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.equipo {
+    flex: 1;
+    text-align: center;
+}
+
+.equipo-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.equipo-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 10px;
+}
+
+.equipo-nombre {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.versus {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin: 0 20px;
+    color: #666;
+}
+
+.goles-input {
+    width: 60px;
+    text-align: center;
+    font-size: 1.2em;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.partido-detalles {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.detalle-seccion {
+    margin-bottom: 30px;
+}
+
+.detalle-seccion h3 {
+    margin-bottom: 15px;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 5px;
+}
+
+.gol-item, .asistencia-item, .falta-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: white;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.minuto {
+    font-weight: bold;
+    color: #666;
+    margin-right: 10px;
+}
+
+.jugador {
+    font-weight: 500;
+}
+
+.equipo {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.tipo {
+    margin-left: 10px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+}
+
+.btn-add {
+    width: 100%;
+    padding: 10px;
+    background: #e9ecef;
+    border: 1px dashed #ced4da;
+    border-radius: 4px;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+    background: #dee2e6;
+    border-color: #adb5bd;
+}
+
+.btn-edit, .btn-delete {
+    padding: 5px 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.btn-edit:hover {
+    color: #007bff;
+}
+
+.btn-delete:hover {
+    color: #dc3545;
+}
+
+.stats-actions {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+.btn-edit, .btn-delete {
+    padding: 5px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.btn-edit:hover {
+    color: #007bff;
+}
+
+.btn-delete:hover {
+    color: #dc3545;
+}
+
+.tarjeta-amarilla {
+    background-color: #ffc107;
+    color: #000;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.tarjeta-roja {
+    background-color: #dc3545;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.tarjeta-normal {
+    background-color: #6c757d;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+</style>
+
+<script>
+function editarGol(gol) {
+    // Llenar el formulario de gol con los datos existentes
+    document.getElementById('jugador_gol').value = gol.cod_jug;
+    document.getElementById('minuto_gol').value = gol.minuto;
+    document.getElementById('tipo_gol').value = gol.tipo;
+    
+    // Cambiar el formulario a modo edición
+    const form = document.getElementById('gol-form');
+    form.querySelector('input[name="accion"]').value = 'actualizar_gol';
+    form.innerHTML += `<input type="hidden" name="gol_id" value="${gol.cod_gol}">`;
+    
+    // Cambiar el texto del botón
+    form.querySelector('button[type="submit"]').textContent = 'Actualizar Gol';
+}
+
+function editarAsistencia(asistencia) {
+    // Llenar el formulario de asistencia con los datos existentes
+    document.getElementById('jugador_asistencia').value = asistencia.cod_jug;
+    document.getElementById('minuto_asistencia').value = asistencia.minuto;
+    
+    // Cambiar el formulario a modo edición
+    const form = document.getElementById('asistencia-form');
+    form.querySelector('input[name="accion"]').value = 'actualizar_asistencia';
+    form.innerHTML += `<input type="hidden" name="asistencia_id" value="${asistencia.cod_asis}">`;
+    
+    // Cambiar el texto del botón
+    form.querySelector('button[type="submit"]').textContent = 'Actualizar Asistencia';
+}
+
+function editarFalta(falta) {
+    // Llenar el formulario de falta con los datos existentes
+    document.getElementById('jugador_falta').value = falta.cod_jug;
+    document.getElementById('minuto_falta').value = falta.minuto;
+    document.getElementById('tipo_falta').value = falta.tipo_falta;
+    
+    // Cambiar el formulario a modo edición
+    const form = document.getElementById('falta-form');
+    form.querySelector('input[name="accion"]').value = 'actualizar_falta';
+    form.innerHTML += `<input type="hidden" name="falta_id" value="${falta.cod_falta}">`;
+    
+    // Cambiar el texto del botón
+    form.querySelector('button[type="submit"]').textContent = 'Actualizar Tarjeta';
+}
+
+// Función para resetear los formularios después de enviar
+document.querySelectorAll('.stats-form').forEach(form => {
+    form.addEventListener('submit', function() {
+        setTimeout(() => {
+            this.reset();
+            this.querySelector('input[name="accion"]').value = this.querySelector('input[name="accion"]').value.replace('actualizar_', 'registrar_');
+            this.querySelector('button[type="submit"]').textContent = this.querySelector('button[type="submit"]').textContent.replace('Actualizar', 'Registrar');
+            const idInput = this.querySelector('input[name$="_id"]');
+            if (idInput) idInput.remove();
+        }, 100);
+    });
+});
+</script>
 
 <!-- Incluir los scripts específicos para esta página -->
 <script src="../../assets/js/admin.js"></script>

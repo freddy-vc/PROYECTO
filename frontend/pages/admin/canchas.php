@@ -54,7 +54,6 @@ $canchas = $canchaModel->procesarImagenes($canchas);
                 <li><a href="./canchas.php" class="active">Canchas</a></li>
                 <li><a href="./directores.php">Directores Técnicos</a></li>
                 <li><a href="./partidos.php">Partidos</a></li>
-                <li><a href="./clasificaciones.php">Clasificaciones</a></li>
                 <li><a href="./usuarios.php">Usuarios</a></li>
             </ul>
         </div>
@@ -77,7 +76,6 @@ $canchas = $canchaModel->procesarImagenes($canchas);
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Foto</th>
                         <th>Nombre</th>
                         <th>Dirección</th>
                         <th>Capacidad</th>
@@ -88,11 +86,6 @@ $canchas = $canchaModel->procesarImagenes($canchas);
                     <?php foreach ($canchas as $cancha): ?>
                     <tr>
                         <td><?php echo $cancha['cod_cancha']; ?></td>
-                        <td>
-                            <img src="<?php echo $cancha['foto_base64']; ?>" 
-                                alt="<?php echo $cancha['nombre']; ?>" 
-                                class="admin-table-img">
-                        </td>
                         <td><?php echo $cancha['nombre']; ?></td>
                         <td><?php echo $cancha['direccion'] ?? 'No definida'; ?></td>
                         <td><?php echo $cancha['capacidad'] ? $cancha['capacidad'] . ' personas' : 'No definida'; ?></td>
@@ -113,7 +106,7 @@ $canchas = $canchaModel->procesarImagenes($canchas);
                     
                     <?php if (empty($canchas)): ?>
                     <tr>
-                        <td colspan="6" class="no-results">No hay canchas registradas</td>
+                        <td colspan="5" class="no-results">No hay canchas registradas</td>
                     </tr>
                     <?php endif; ?>
                 </tbody>

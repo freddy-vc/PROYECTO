@@ -66,9 +66,11 @@ include_once '../../components/notificaciones.php';
                 <div class="admin-card-icon">
                     <i class="fas fa-futbol"></i>
                 </div>
-                <h2>Canchas</h2>
-                <p>Gestionar las canchas de juego</p>
-                <a href="./canchas.php" class="btn">Administrar</a>
+                <div class="admin-card-content">
+                    <h3>Partidos</h3>
+                    <p>Gestiona los partidos y fases del torneo</p>
+                    <a href="./partidos.php" class="btn">Administrar</a>
+                </div>
             </div>
             
             <div class="admin-card">
@@ -82,29 +84,13 @@ include_once '../../components/notificaciones.php';
             
             <div class="admin-card">
                 <div class="admin-card-icon">
-                    <i class="fas fa-calendar-alt"></i>
+                    <i class="fas fa-users"></i>
                 </div>
-                <h2>Partidos</h2>
-                <p>Gestionar los partidos y resultados</p>
-                <a href="./partidos.php" class="btn">Administrar</a>
-            </div>
-            
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-table"></i>
+                <div class="admin-card-content">
+                    <h3>Usuarios</h3>
+                    <p>Gestiona los usuarios del sistema</p>
+                    <a href="./usuarios.php" class="btn">Administrar</a>
                 </div>
-                <h2>Tabla de Puntuación</h2>
-                <p>Gestionar la tabla de posiciones</p>
-                <a href="./clasificaciones.php" class="btn">Administrar</a>
-            </div>
-            
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-user-shield"></i>
-                </div>
-                <h2>Usuarios</h2>
-                <p>Gestionar los usuarios del sistema</p>
-                <a href="./usuarios.php" class="btn">Administrar</a>
             </div>
         </div>
     </div>

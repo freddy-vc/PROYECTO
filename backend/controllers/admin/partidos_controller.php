@@ -67,7 +67,7 @@ switch ($accion) {
 function crearPartido() {
     // Verificar que se han enviado los datos necesarios
     if (!isset($_POST['fecha']) || !isset($_POST['hora']) || !isset($_POST['cancha_id']) || 
-        !isset($_POST['equipo_local']) || !isset($_POST['equipo_visitante'])) {
+        !isset($_POST['equipo_local']) || !isset($_POST['equipo_visitante']) || !isset($_POST['fase'])) {
         $_SESSION['error_partidos'] = 'Faltan datos obligatorios';
         header('Location: ../../../frontend/pages/admin/partidos_form.php');
         exit;
@@ -86,10 +86,11 @@ function crearPartido() {
     $cancha_id = intval($_POST['cancha_id']);
     $equipo_local = intval($_POST['equipo_local']);
     $equipo_visitante = intval($_POST['equipo_visitante']);
+    $fase = trim($_POST['fase']);
     
     // Crear el partido en la base de datos
     $partidoModel = new Partido();
-    $resultado = $partidoModel->crear($fecha, $hora, $cancha_id, $equipo_local, $equipo_visitante);
+    $resultado = $partidoModel->crear($fecha, $hora, $cancha_id, $equipo_local, $equipo_visitante, $fase);
     
     if ($resultado['estado']) {
         // Éxito al crear el partido
@@ -110,7 +111,7 @@ function crearPartido() {
 function actualizarPartido() {
     // Verificar que se han enviado los datos necesarios
     if (!isset($_POST['id']) || !isset($_POST['fecha']) || !isset($_POST['hora']) || 
-        !isset($_POST['cancha_id']) || !isset($_POST['estado'])) {
+        !isset($_POST['cancha_id']) || !isset($_POST['estado']) || !isset($_POST['fase'])) {
         $_SESSION['error_partidos'] = 'Faltan datos obligatorios';
         header('Location: ../../../frontend/pages/admin/partidos.php');
         exit;
@@ -122,10 +123,11 @@ function actualizarPartido() {
     $hora = trim($_POST['hora']);
     $cancha_id = intval($_POST['cancha_id']);
     $estado = trim($_POST['estado']);
+    $fase = trim($_POST['fase']);
     
     // Actualizar el partido en la base de datos
     $partidoModel = new Partido();
-    $resultado = $partidoModel->actualizar($id, $fecha, $hora, $cancha_id, $estado);
+    $resultado = $partidoModel->actualizar($id, $fecha, $hora, $cancha_id, $estado, $fase);
     
     if ($resultado['estado']) {
         // Éxito al actualizar el partido

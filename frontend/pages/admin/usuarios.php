@@ -53,7 +53,6 @@ $usuarios = $usuarioModel->obtenerTodos();
                 <li><a href="./canchas.php">Canchas</a></li>
                 <li><a href="./directores.php">Directores Técnicos</a></li>
                 <li><a href="./partidos.php">Partidos</a></li>
-                <li><a href="./clasificaciones.php">Clasificaciones</a></li>
                 <li><a href="./usuarios.php" class="active">Usuarios</a></li>
             </ul>
         </div>

@@ -30,7 +30,7 @@ class Jugador {
                 if ($jugador['foto']) {
                     $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
                 } else {
-                    $jugador['foto_base64'] = '../assets/images/player.png';
+                    $jugador['foto_base64'] = '../../assets/images/player.png';
                 }
                 
                 // Procesar el escudo del equipo
@@ -92,7 +92,7 @@ class Jugador {
                 if ($jugador['foto']) {
                     $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
                 } else {
-                    $jugador['foto_base64'] = '../assets/images/player.png';
+                    $jugador['foto_base64'] = '../../assets/images/player.png';
                 }
                 
                 // Procesar el escudo del equipo
@@ -143,7 +143,7 @@ class Jugador {
             if ($jugador['foto']) {
                 $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
             } else {
-                $jugador['foto_base64'] = '../assets/images/player.png';
+                $jugador['foto_base64'] = '../../assets/images/player.png';
             }
             
             // Procesar el escudo del equipo
@@ -411,14 +411,14 @@ class Jugador {
             if ($goleador['foto']) {
                 $goleador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($goleador['foto']);
             } else {
-                $goleador['foto_base64'] = './frontend/assets/images/player.png';
+                $goleador['foto_base64'] = '../../assets/images/player.png';
             }
             
             // Procesar el escudo del equipo
             if ($goleador['escudo_equipo']) {
                 $goleador['escudo_equipo_base64'] = 'data:image/jpeg;base64,' . base64_encode($goleador['escudo_equipo']);
             } else {
-                $goleador['escudo_equipo_base64'] = './frontend/assets/images/team.png';
+                $goleador['escudo_equipo_base64'] = '../assets/images/team.png';
             }
             
             return $goleador;
@@ -455,14 +455,14 @@ class Jugador {
             if ($asistidor['foto']) {
                 $asistidor['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($asistidor['foto']);
             } else {
-                $asistidor['foto_base64'] = './frontend/assets/images/player.png';
+                $asistidor['foto_base64'] = '../../assets/images/player.png';
             }
             
             // Procesar el escudo del equipo
             if ($asistidor['escudo_equipo']) {
                 $asistidor['escudo_equipo_base64'] = 'data:image/jpeg;base64,' . base64_encode($asistidor['escudo_equipo']);
             } else {
-                $asistidor['escudo_equipo_base64'] = './frontend/assets/images/team.png';
+                $asistidor['escudo_equipo_base64'] = '../assets/images/team.png';
             }
             
             return $asistidor;

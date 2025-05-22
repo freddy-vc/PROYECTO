@@ -13,6 +13,19 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Inicializar las pestañas en la sección de estadísticas si existen
     initializeTabs();
+
+    // Función para resetear los formularios después de enviar
+    document.querySelectorAll('.stats-form').forEach(form => {
+        form.addEventListener('submit', function() {
+            setTimeout(() => {
+                this.reset();
+                this.querySelector('input[name="accion"]').value = this.querySelector('input[name="accion"]').value.replace('actualizar_', 'registrar_');
+                this.querySelector('button[type="submit"]').textContent = this.querySelector('button[type="submit"]').textContent.replace('Actualizar', 'Registrar');
+                const idInput = this.querySelector('input[name$="_id"]');
+                if (idInput) idInput.remove();
+            }, 100);
+        });
+    });
 });
 
 /**
@@ -157,4 +170,49 @@ function clearError(input) {
         errorElement.textContent = '';
         input.classList.remove('input-error');
     }
+}
+
+// Funciones para manejar la edición de estadísticas
+function editarGol(gol) {
+    // Llenar el formulario de gol con los datos existentes
+    document.getElementById('jugador_gol').value = gol.cod_jug;
+    document.getElementById('minuto_gol').value = gol.minuto;
+    document.getElementById('tipo_gol').value = gol.tipo;
+    
+    // Cambiar el formulario a modo edición
+    const form = document.getElementById('gol-form');
+    form.querySelector('input[name="accion"]').value = 'actualizar_gol';
+    form.innerHTML += `<input type="hidden" name="gol_id" value="${gol.cod_gol}">`;
+    
+    // Cambiar el texto del botón
+    form.querySelector('button[type="submit"]').textContent = 'Actualizar Gol';
+}
+
+function editarAsistencia(asistencia) {
+    // Llenar el formulario de asistencia con los datos existentes
+    document.getElementById('jugador_asistencia').value = asistencia.cod_jug;
+    document.getElementById('minuto_asistencia').value = asistencia.minuto;
+    
+    // Cambiar el formulario a modo edición
+    const form = document.getElementById('asistencia-form');
+    form.querySelector('input[name="accion"]').value = 'actualizar_asistencia';
+    form.innerHTML += `<input type="hidden" name="asistencia_id" value="${asistencia.cod_asis}">`;
+    
+    // Cambiar el texto del botón
+    form.querySelector('button[type="submit"]').textContent = 'Actualizar Asistencia';
+}
+
+function editarFalta(falta) {
+    // Llenar el formulario de falta con los datos existentes
+    document.getElementById('jugador_falta').value = falta.cod_jug;
+    document.getElementById('minuto_falta').value = falta.minuto;
+    document.getElementById('tipo_falta').value = falta.tipo_falta;
+    
+    // Cambiar el formulario a modo edición
+    const form = document.getElementById('falta-form');
+    form.querySelector('input[name="accion"]').value = 'actualizar_falta';
+    form.innerHTML += `<input type="hidden" name="falta_id" value="${falta.cod_falta}">`;
+    
+    // Cambiar el texto del botón
+    form.querySelector('button[type="submit"]').textContent = 'Actualizar Tarjeta';
 } 
