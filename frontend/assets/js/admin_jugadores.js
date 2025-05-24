@@ -417,15 +417,65 @@ function editTempStat(id, tipo) {
     if (!stat) return;
     editingStat = { id, tipo };
     // Llenar el formulario con los datos
-    const form = document.querySelector(`#modal-${tipo.slice(0, -1)} form`);
-    if (form) {
-        Object.keys(stat).forEach(key => {
-            const input = form.querySelector(`[name="${key}"]`);
-            if (input) input.value = stat[key];
-        });
-        openModal(`modal-${tipo.slice(0, -1)}`);
+    let form, modalId;
+    if (tipo === 'goles') {
+        form = document.getElementById('form-add-gol');
+        modalId = 'modal-gol';
+        if (form) {
+            // Llenar campos
+            Object.keys(stat).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) input.value = stat[key];
+            });
+            // Cambiar texto del botón
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn) btn.textContent = 'Actualizar';
+            openModal(modalId);
+        }
+    } else if (tipo === 'asistencias') {
+        form = document.getElementById('form-add-asistencia');
+        modalId = 'modal-asistencia';
+        if (form) {
+            Object.keys(stat).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) input.value = stat[key];
+            });
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn) btn.textContent = 'Actualizar';
+            openModal(modalId);
+        }
+    } else if (tipo === 'faltas') {
+        form = document.getElementById('form-add-falta');
+        modalId = 'modal-falta';
+        if (form) {
+            Object.keys(stat).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) input.value = stat[key];
+            });
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn) btn.textContent = 'Actualizar';
+            openModal(modalId);
+        }
     }
 }
+
+// Restaurar el texto del botón y limpiar el formulario al cerrar/agregar/editar
+['modal-gol','modal-asistencia','modal-falta'].forEach(function(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                const form = modal.querySelector('form');
+                if (form) {
+                    form.reset();
+                    const btn = form.querySelector('button[type="submit"]');
+                    if (btn) btn.textContent = 'Guardar';
+                }
+                editingStat = { id: null, tipo: null };
+            }
+        });
+    }
+});
 
 // Función para eliminar estadística temporal
 function deleteTempStat(id, tipo, showMsg = true) {
