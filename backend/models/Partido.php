@@ -600,5 +600,129 @@ class Partido
             return [];
         }
     }
+
+    /**
+     * Actualizar un gol
+     */
+    public function actualizarGol($cod_gol, $cod_par, $cod_jug, $minuto, $tipo)
+    {
+        try {
+            $sql = "UPDATE Goles SET cod_par = :cod_par, cod_jug = :cod_jug, minuto = :minuto, tipo = :tipo WHERE cod_gol = :cod_gol";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':cod_par', $cod_par);
+            $stmt->bindParam(':cod_jug', $cod_jug);
+            $stmt->bindParam(':minuto', $minuto);
+            $stmt->bindParam(':tipo', $tipo);
+            $stmt->bindParam(':cod_gol', $cod_gol);
+            $stmt->execute();
+            return ['estado' => true, 'mensaje' => 'Gol actualizado correctamente'];
+        } catch (PDOException $e) {
+            return ['estado' => false, 'mensaje' => 'Error al actualizar el gol: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Eliminar un gol
+     */
+    public function eliminarGol($cod_gol)
+    {
+        try {
+            $sql = "DELETE FROM Goles WHERE cod_gol = :cod_gol";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':cod_gol', $cod_gol);
+            $stmt->execute();
+            return ['estado' => true, 'mensaje' => 'Gol eliminado correctamente'];
+        } catch (PDOException $e) {
+            return ['estado' => false, 'mensaje' => 'Error al eliminar el gol: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Actualizar una asistencia
+     */
+    public function actualizarAsistencia($cod_asis, $cod_par, $cod_jug, $minuto)
+    {
+        try {
+            $sql = "UPDATE Asistencias SET cod_par = :cod_par, cod_jug = :cod_jug, minuto = :minuto WHERE cod_asis = :cod_asis";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':cod_par', $cod_par);
+            $stmt->bindParam(':cod_jug', $cod_jug);
+            $stmt->bindParam(':minuto', $minuto);
+            $stmt->bindParam(':cod_asis', $cod_asis);
+            $stmt->execute();
+            return ['estado' => true, 'mensaje' => 'Asistencia actualizada correctamente'];
+        } catch (PDOException $e) {
+            return ['estado' => false, 'mensaje' => 'Error al actualizar la asistencia: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Eliminar una asistencia
+     */
+    public function eliminarAsistencia($cod_asis)
+    {
+        try {
+            $sql = "DELETE FROM Asistencias WHERE cod_asis = :cod_asis";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':cod_asis', $cod_asis);
+            $stmt->execute();
+            return ['estado' => true, 'mensaje' => 'Asistencia eliminada correctamente'];
+        } catch (PDOException $e) {
+            return ['estado' => false, 'mensaje' => 'Error al eliminar la asistencia: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Actualizar una falta
+     */
+    public function actualizarFalta($cod_falta, $cod_par, $cod_jug, $minuto, $tipo_falta)
+    {
+        try {
+            $sql = "UPDATE Faltas SET cod_par = :cod_par, cod_jug = :cod_jug, minuto = :minuto, tipo_falta = :tipo_falta WHERE cod_falta = :cod_falta";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':cod_par', $cod_par);
+            $stmt->bindParam(':cod_jug', $cod_jug);
+            $stmt->bindParam(':minuto', $minuto);
+            $stmt->bindParam(':tipo_falta', $tipo_falta);
+            $stmt->bindParam(':cod_falta', $cod_falta);
+            $stmt->execute();
+            return ['estado' => true, 'mensaje' => 'Falta actualizada correctamente'];
+        } catch (PDOException $e) {
+            return ['estado' => false, 'mensaje' => 'Error al actualizar la falta: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Eliminar una falta
+     */
+    public function eliminarFalta($cod_falta)
+    {
+        try {
+            $sql = "DELETE FROM Faltas WHERE cod_falta = :cod_falta";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':cod_falta', $cod_falta);
+            $stmt->execute();
+            return ['estado' => true, 'mensaje' => 'Falta eliminada correctamente'];
+        } catch (PDOException $e) {
+            return ['estado' => false, 'mensaje' => 'Error al eliminar la falta: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Obtener partidos donde participa un equipo
+     */
+    public function obtenerPorEquipo($cod_equ) {
+        $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado,
+                       e1.nombre as local_nombre, e2.nombre as visitante_nombre
+                FROM Partidos p
+                JOIN Equipos e1 ON p.equ_local = e1.cod_equ
+                JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ
+                WHERE p.equ_local = :cod_equ OR p.equ_visitante = :cod_equ
+                ORDER BY p.fecha, p.hora";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':cod_equ', $cod_equ, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 ?> 

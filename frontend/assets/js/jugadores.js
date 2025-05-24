@@ -116,13 +116,20 @@ function crearTarjetaJugador(jugador) {
     const tarjetasAmarillas = jugador.tarjetas_amarillas || 0;
     const tarjetasRojas = jugador.tarjetas_rojas || 0;
     
+    // Determinar la ruta de la imagen por defecto según el contexto
+    const isAdmin = window.location.pathname.includes('/admin/');
+    const defaultImagePath = isAdmin ? '../../assets/images/player.png' : '../assets/images/player.png';
+    
+    // Asegurar que siempre haya una imagen
+    const fotoUrl = jugador.foto_base64 || defaultImagePath;
+    
     return `
         <div class="jugador-card" 
              data-nombre="${jugador.nombres.toLowerCase()} ${jugador.apellidos.toLowerCase()}"
              data-equipo="${jugador.cod_equ}"
              data-posicion="${jugador.posicion || ''}">
             <div class="jugador-header">
-                <img src="${jugador.foto_base64}" alt="${jugador.nombres}" class="jugador-foto">
+                <img src="${fotoUrl}" alt="${jugador.nombres}" class="jugador-foto" onerror="this.src='${defaultImagePath}'">
                 <img src="${jugador.escudo_equipo}" alt="${jugador.nombre_equipo}" class="jugador-equipo-logo">
             </div>
             <div class="jugador-info">

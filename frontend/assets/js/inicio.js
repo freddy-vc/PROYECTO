@@ -1,4 +1,20 @@
+/**
+ * Función para ocultar notificaciones después de 5 segundos
+ */
+function ocultarNotificaciones() {
+    document.querySelectorAll('.mensaje-error, .mensaje-exito').forEach(function(el) {
+        setTimeout(function() {
+            el.style.transition = 'opacity 0.5s';
+            el.style.opacity = '0';
+            setTimeout(function() { el.style.display = 'none'; }, 500);
+        }, 5000);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Ocultar notificaciones existentes
+    ocultarNotificaciones();
+    
     // Verificar si hay partidos finalizados
     verificarPartidosFinalizados();
     

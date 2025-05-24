@@ -22,11 +22,21 @@ require_once '../../../backend/models/Equipo.php';
 
 // Obtener todos los jugadores
 $jugadorModel = new Jugador();
+try {
 $jugadores = $jugadorModel->obtenerTodosConEstadisticas();
+} catch (Exception $e) {
+    $jugadores = [];
+    $_SESSION['error_jugadores'] = "Error al cargar los jugadores: " . $e->getMessage();
+}
 
 // Obtener todos los equipos para el filtro
 $equipoModel = new Equipo();
+try {
 $equipos = $equipoModel->obtenerTodos();
+} catch (Exception $e) {
+    $equipos = [];
+    $_SESSION['error_jugadores'] = "Error al cargar los equipos: " . $e->getMessage();
+}
 
 // Obtener valores únicos para filtros
 $equiposUnicos = [];
@@ -109,7 +119,8 @@ foreach ($jugadores as $jugador) {
                     <tr>
                         <th>ID</th>
                         <th>Foto</th>
-                        <th>Nombre</th>
+                        <th>Nombres</th>
+                        <th>Apellidos</th>
                         <th data-column="equipo">Equipo</th>
                         <th data-column="posicion">Posición</th>
                         <th>Dorsal</th>
@@ -126,10 +137,11 @@ foreach ($jugadores as $jugador) {
                                 alt="<?php echo $jugador['nombres'] . ' ' . $jugador['apellidos']; ?>" 
                                 class="admin-table-img">
                         </td>
-                        <td><?php echo $jugador['nombres'] . ' ' . $jugador['apellidos']; ?></td>
+                        <td><?php echo $jugador['nombres']; ?></td>
+                        <td><?php echo $jugador['apellidos']; ?></td>
                         <td data-column="equipo"><?php echo $jugador['nombre_equipo'] ?? 'Sin equipo'; ?></td>
                         <td data-column="posicion"><?php echo $jugador['posicion']; ?></td>
-                        <td><?php echo $jugador['num_camiseta']; ?></td>
+                        <td><?php echo $jugador['dorsal']; ?></td>
                         <td>
                             <div class="player-stats">
                                 <span class="stat-item" title="Goles">
@@ -166,7 +178,7 @@ foreach ($jugadores as $jugador) {
                     
                     <?php if (empty($jugadores)): ?>
                     <tr>
-                        <td colspan="8" class="no-results">No hay jugadores registrados</td>
+                        <td colspan="9" class="no-results">No hay jugadores registrados</td>
                     </tr>
                     <?php endif; ?>
                 </tbody>

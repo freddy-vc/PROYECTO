@@ -42,6 +42,10 @@ function mostrarEquipos(equipos) {
         return;
     }
     
+    // Determinar la ruta de la imagen por defecto según el contexto
+    const isAdmin = window.location.pathname.includes('/admin/');
+    const defaultImagePath = isAdmin ? '../../assets/images/team.png' : '../assets/images/team.png';
+    
     let html = '';
     
     equipos.forEach(equipo => {
@@ -49,10 +53,14 @@ function mostrarEquipos(equipos) {
         if ((equipo.dt_nombres && equipo.dt_nombres.trim() !== '') || (equipo.dt_apellidos && equipo.dt_apellidos.trim() !== '')) {
             dt = (equipo.dt_nombres ? equipo.dt_nombres : '') + (equipo.dt_apellidos ? ' ' + equipo.dt_apellidos : '');
         }
+        
+        // Asegurar que siempre haya una imagen
+        const escudoUrl = equipo.escudo_base64 || defaultImagePath;
+        
         html += `
             <div class="equipo-card" data-nombre="${equipo.nombre.toLowerCase()}">
                 <div class="equipo-header">
-                    <img src="${equipo.escudo_base64}" alt="${equipo.nombre}">
+                    <img src="${escudoUrl}" alt="${equipo.nombre}" onerror="this.src='${defaultImagePath}'">
                     <h2>${equipo.nombre}</h2>
                 </div>
                 <div class="equipo-info">

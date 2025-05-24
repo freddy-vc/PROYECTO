@@ -7,14 +7,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Configurar filtros específicos para jugadores
     setupJugadoresFilters();
+    
+    // Configurar formularios de estadísticas
+    setupStatsForms();
+    
+    // Inicializar estadísticas desde PHP si existen
+    if (window.initialStats) {
+        tempStats.goles = window.initialStats.goles.map(gol => ({...gol, id: gol.cod_gol || ('db_' + gol.cod_gol)}));
+        tempStats.asistencias = window.initialStats.asistencias.map(asis => ({...asis, id: asis.cod_asis || ('db_' + asis.cod_asis)}));
+        tempStats.faltas = window.initialStats.faltas.map(falta => ({...falta, id: falta.cod_falta || ('db_' + falta.cod_falta)}));
+    }
+    
+    // Renderizar todas las tablas al cargar
+    renderAllStatsTables();
 });
 
 /**
  * Configura el formulario de jugador con validaciones específicas
  */
 function setupJugadorForm() {
-    const jugadorForm = document.querySelector('form[action*="jugadores_controller.php"]');
-    
+    const jugadorForm = document.getElementById('form-jugador');
+    console.log('jugadorForm:', jugadorForm);
     if (!jugadorForm) return;
     
     jugadorForm.addEventListener('submit', function(e) {
@@ -208,4 +221,265 @@ function clearError(field) {
     if (errorMessage && errorMessage.className === 'error-message') {
         errorMessage.remove();
     }
+}
+
+// Array para almacenar temporalmente las estadísticas
+let tempStats = {
+    goles: [],
+    asistencias: [],
+    faltas: []
+};
+
+// Arrays para almacenar ids de registros eliminados
+let deletedStats = {
+    goles: [],
+    asistencias: [],
+    faltas: []
+};
+
+// Editar estadística (abrir modal y guardar edición)
+let editingStat = { id: null, tipo: null };
+
+// Función para manejar los formularios de estadísticas
+function setupStatsForms() {
+    // Formulario de goles
+    const formGol = document.getElementById('form-add-gol');
+    if (formGol) {
+        formGol.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = {};
+            formData.forEach((value, key) => data[key] = value);
+            if (editingStat.id && editingStat.tipo === 'goles') {
+                // Actualizar
+                const idx = tempStats.goles.findIndex(item => item.id == editingStat.id);
+                if (idx !== -1) {
+                    tempStats.goles[idx] = { ...tempStats.goles[idx], ...data };
+                }
+                editingStat = { id: null, tipo: null };
+            } else {
+                // Nuevo
+                const tempId = 'temp_' + Date.now();
+                data.id = tempId;
+                tempStats.goles.push(data);
+            }
+            closeModal('modal-gol');
+            showNotification('success', 'Gol guardado');
+            updateStatsTable('goles');
+            this.reset();
+        });
+    }
+
+    // Formulario de asistencias
+    const formAsistencia = document.getElementById('form-add-asistencia');
+    if (formAsistencia) {
+        formAsistencia.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = {};
+            formData.forEach((value, key) => data[key] = value);
+            if (editingStat.id && editingStat.tipo === 'asistencias') {
+                const idx = tempStats.asistencias.findIndex(item => item.id == editingStat.id);
+                if (idx !== -1) {
+                    tempStats.asistencias[idx] = { ...tempStats.asistencias[idx], ...data };
+                }
+                editingStat = { id: null, tipo: null };
+            } else {
+                const tempId = 'temp_' + Date.now();
+                data.id = tempId;
+                tempStats.asistencias.push(data);
+            }
+            closeModal('modal-asistencia');
+            showNotification('success', 'Asistencia guardada');
+            updateStatsTable('asistencias');
+            this.reset();
+        });
+    }
+
+    // Formulario de faltas
+    const formFalta = document.getElementById('form-add-falta');
+    if (formFalta) {
+        formFalta.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = {};
+            formData.forEach((value, key) => data[key] = value);
+            if (editingStat.id && editingStat.tipo === 'faltas') {
+                const idx = tempStats.faltas.findIndex(item => item.id == editingStat.id);
+                if (idx !== -1) {
+                    tempStats.faltas[idx] = { ...tempStats.faltas[idx], ...data };
+                }
+                editingStat = { id: null, tipo: null };
+            } else {
+                const tempId = 'temp_' + Date.now();
+                data.id = tempId;
+                tempStats.faltas.push(data);
+            }
+            closeModal('modal-falta');
+            showNotification('success', 'Falta guardada');
+            updateStatsTable('faltas');
+            this.reset();
+        });
+    }
+
+    // Modificar el formulario principal para incluir las estadísticas temporales y eliminadas
+    const jugadorForm = document.getElementById('form-jugador');
+    if (jugadorForm) {
+        jugadorForm.addEventListener('submit', function(e) {
+            // Agregar las estadísticas temporales al formulario
+            const statsInput = document.createElement('input');
+            statsInput.type = 'hidden';
+            statsInput.name = 'estadisticas_temporales';
+            statsInput.value = JSON.stringify(tempStats);
+            this.appendChild(statsInput);
+            // Agregar los eliminados
+            const deletedInput = document.createElement('input');
+            deletedInput.type = 'hidden';
+            deletedInput.name = 'estadisticas_eliminadas';
+            deletedInput.value = JSON.stringify(deletedStats);
+            this.appendChild(deletedInput);
+        });
+    }
+}
+
+// Función para actualizar la tabla de estadísticas
+function updateStatsTable(tipo) {
+    const tableBody = document.querySelector(`#tabla-${tipo} tbody`);
+    if (tableBody) {
+        tableBody.innerHTML = '';
+        tempStats[tipo].forEach(item => {
+            const row = createStatsRow(item, tipo);
+            tableBody.appendChild(row);
+        });
+    }
+}
+
+// Función para crear una fila de estadísticas
+function createStatsRow(item, tipo) {
+    const row = document.createElement('tr');
+    let partido = item.partido_id || item.partido || '';
+    // Si viene de la base de datos, mostrar el nombre del partido
+    if (item.equipo_local && item.equipo_visitante) {
+        partido = `${item.equipo_local} vs ${item.equipo_visitante}`;
+    }
+    switch(tipo) {
+        case 'goles':
+            row.innerHTML = `
+                <td>${partido}</td>
+                <td>${item.minuto}</td>
+                <td>${item.tipo}</td>
+                <td>
+                    <button type="button" onclick="editTempStat('${item.id}', 'goles')" class="action-btn edit" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button type="button" onclick="deleteTempStat('${item.id}', 'goles')" class="action-btn delete" title="Eliminar">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            break;
+        case 'asistencias':
+            row.innerHTML = `
+                <td>${partido}</td>
+                <td>${item.minuto}</td>
+                <td>
+                    <button type="button" onclick="editTempStat('${item.id}', 'asistencias')" class="action-btn edit" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button type="button" onclick="deleteTempStat('${item.id}', 'asistencias')" class="action-btn delete" title="Eliminar">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            break;
+        case 'faltas':
+            row.innerHTML = `
+                <td>${partido}</td>
+                <td>${item.minuto}</td>
+                <td>${item.tipo_falta}</td>
+                <td>
+                    <button type="button" onclick="editTempStat('${item.id}', 'faltas')" class="action-btn edit" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button type="button" onclick="deleteTempStat('${item.id}', 'faltas')" class="action-btn delete" title="Eliminar">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            break;
+    }
+    return row;
+}
+
+// Función para editar estadística temporal
+function editTempStat(id, tipo) {
+    const stat = tempStats[tipo].find(item => item.id == id);
+    if (!stat) return;
+    editingStat = { id, tipo };
+    // Llenar el formulario con los datos
+    const form = document.querySelector(`#modal-${tipo.slice(0, -1)} form`);
+    if (form) {
+        Object.keys(stat).forEach(key => {
+            const input = form.querySelector(`[name="${key}"]`);
+            if (input) input.value = stat[key];
+        });
+        openModal(`modal-${tipo.slice(0, -1)}`);
+    }
+}
+
+// Función para eliminar estadística temporal
+function deleteTempStat(id, tipo, showMsg = true) {
+    const stat = tempStats[tipo].find(item => item.id == id);
+    if (stat && (stat.cod_gol || stat.cod_asis || stat.cod_falta)) {
+        // Es de la BD
+        if (tipo === 'goles' && stat.cod_gol) deletedStats.goles.push(stat.cod_gol);
+        if (tipo === 'asistencias' && stat.cod_asis) deletedStats.asistencias.push(stat.cod_asis);
+        if (tipo === 'faltas' && stat.cod_falta) deletedStats.faltas.push(stat.cod_falta);
+    }
+    tempStats[tipo] = tempStats[tipo].filter(item => item.id != id);
+    updateStatsTable(tipo);
+    if (showMsg) showNotification('success', `${tipo.charAt(0).toUpperCase() + tipo.slice(1)} eliminado`);
+}
+
+// Función para mostrar notificaciones
+function showNotification(type, message) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Función para abrir un modal
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'block';
+    }
+}
+
+// Función para cerrar un modal
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Cerrar modal cuando se hace clic fuera de él
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+}
+
+// Renderizar todas las tablas al cargar
+function renderAllStatsTables() {
+    updateStatsTable('goles');
+    updateStatsTable('asistencias');
+    updateStatsTable('faltas');
 } 

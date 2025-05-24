@@ -14,7 +14,8 @@ class Jugador {
      */
     public function obtenerTodos() {
         try {
-            $query = "SELECT j.*, e.nombre as nombre_equipo, e.escudo as escudo_equipo 
+            $query = "SELECT j.cod_jug, j.nombres, j.apellidos, j.dorsal, j.posicion, j.foto, j.cod_equ, 
+                             e.nombre as nombre_equipo, e.escudo as escudo_equipo 
                      FROM Jugadores j
                      LEFT JOIN Equipos e ON j.cod_equ = e.cod_equ
                      ORDER BY j.apellidos, j.nombres";
@@ -30,7 +31,15 @@ class Jugador {
                 if ($jugador['foto']) {
                     $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
                 } else {
-                    $jugador['foto_base64'] = '../../assets/images/player.png';
+                    // Detectar el contexto basado en la ruta del script
+                    $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
+                    if (strpos($script_path, '/frontend/pages/admin/') !== false) {
+                        // Si estamos en el panel admin
+                        $jugador['foto_base64'] = '../../assets/images/player.png';
+                    } else {
+                        // Si estamos en la interfaz de usuario
+                    $jugador['foto_base64'] = '../assets/images/player.png';
+                    }
                 }
                 
                 // Procesar el escudo del equipo
@@ -52,11 +61,42 @@ class Jugador {
      */
     public function obtenerTodosConEstadisticas() {
         try {
-            // Primero obtenemos todos los jugadores con sus datos básicos
-            $jugadores = $this->obtenerTodos();
+            $query = "SELECT j.cod_jug, j.nombres, j.apellidos, j.dorsal, j.posicion, j.foto, j.cod_equ, 
+                             e.nombre as nombre_equipo, e.escudo as escudo_equipo 
+                     FROM Jugadores j
+                     LEFT JOIN Equipos e ON j.cod_equ = e.cod_equ
+                     ORDER BY j.apellidos, j.nombres";
             
-            // Para cada jugador, obtenemos sus estadísticas
+            $stmt = $this->db->prepare($query);
+            $stmt->execute();
+            
+            $jugadores = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Procesar las fotos y escudos
             foreach ($jugadores as &$jugador) {
+                // Procesar la foto del jugador
+                if ($jugador['foto']) {
+                    $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
+                } else {
+                    // Detectar el contexto basado en la ruta del script
+                    $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
+                    if (strpos($script_path, '/frontend/pages/admin/') !== false) {
+                        // Si estamos en el panel admin
+                        $jugador['foto_base64'] = '../../assets/images/player.png';
+                    } else {
+                        // Si estamos en la interfaz de usuario
+                        $jugador['foto_base64'] = '../assets/images/player.png';
+                    }
+                }
+                
+                // Procesar el escudo del equipo
+                if ($jugador['escudo_equipo']) {
+                    $jugador['escudo_equipo'] = 'data:image/jpeg;base64,' . base64_encode($jugador['escudo_equipo']);
+                } else {
+                    $jugador['escudo_equipo'] = '../assets/images/team.png';
+                }
+                
+                // Obtener estadísticas
                 $jugador['goles'] = $this->contarGoles($jugador['cod_jug']);
                 $jugador['asistencias'] = $this->contarAsistencias($jugador['cod_jug']);
                 $jugador['tarjetas_amarillas'] = $this->contarTarjetas($jugador['cod_jug'], 'amarilla');
@@ -74,7 +114,8 @@ class Jugador {
      */
     public function obtenerPorEquipo($equipoId) {
         try {
-            $query = "SELECT j.*, e.nombre as nombre_equipo, e.escudo as escudo_equipo 
+            $query = "SELECT j.cod_jug, j.nombres, j.apellidos, j.dorsal, j.posicion, j.foto, j.cod_equ, 
+                             e.nombre as nombre_equipo, e.escudo as escudo_equipo 
                      FROM Jugadores j
                      LEFT JOIN Equipos e ON j.cod_equ = e.cod_equ
                      WHERE j.cod_equ = :equipo_id
@@ -92,7 +133,15 @@ class Jugador {
                 if ($jugador['foto']) {
                     $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
                 } else {
-                    $jugador['foto_base64'] = '../../assets/images/player.png';
+                    // Detectar el contexto basado en la ruta del script
+                    $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
+                    if (strpos($script_path, '/frontend/pages/admin/') !== false) {
+                        // Si estamos en el panel admin
+                        $jugador['foto_base64'] = '../../assets/images/player.png';
+                    } else {
+                        // Si estamos en la interfaz de usuario
+                    $jugador['foto_base64'] = '../assets/images/player.png';
+                    }
                 }
                 
                 // Procesar el escudo del equipo
@@ -143,7 +192,15 @@ class Jugador {
             if ($jugador['foto']) {
                 $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
             } else {
-                $jugador['foto_base64'] = '../../assets/images/player.png';
+                // Detectar el contexto basado en la ruta del script
+                $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
+                if (strpos($script_path, '/frontend/pages/admin/') !== false) {
+                    // Si estamos en el panel admin
+                    $jugador['foto_base64'] = '../../assets/images/player.png';
+                } else {
+                    // Si estamos en la interfaz de usuario
+                $jugador['foto_base64'] = '../assets/images/player.png';
+                }
             }
             
             // Procesar el escudo del equipo
@@ -411,7 +468,7 @@ class Jugador {
             if ($goleador['foto']) {
                 $goleador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($goleador['foto']);
             } else {
-                $goleador['foto_base64'] = '../../assets/images/player.png';
+                $goleador['foto_base64'] = '../assets/images/player.png';
             }
             
             // Procesar el escudo del equipo
@@ -455,7 +512,7 @@ class Jugador {
             if ($asistidor['foto']) {
                 $asistidor['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($asistidor['foto']);
             } else {
-                $asistidor['foto_base64'] = '../../assets/images/player.png';
+                $asistidor['foto_base64'] = '../assets/images/player.png';
             }
             
             // Procesar el escudo del equipo
@@ -477,32 +534,17 @@ class Jugador {
     public function crear($datos) {
         try {
             // Preparar la consulta SQL
-            $query = "INSERT INTO Jugadores (nombres, apellidos, fecha_nacimiento, documento, 
-                     cod_equ, posicion, num_camiseta, estado, estatura, peso, foto) 
-                     VALUES (:nombres, :apellidos, :fecha_nacimiento, :documento, 
-                     :cod_equ, :posicion, :num_camiseta, :estado, :estatura, :peso, :foto)";
-            
+            $query = "INSERT INTO Jugadores (nombres, apellidos, posicion, dorsal, cod_equ, foto) 
+                     VALUES (:nombres, :apellidos, :posicion, :dorsal, :cod_equ, :foto)";
             $stmt = $this->db->prepare($query);
-            
-            // Vincular los parámetros
             $stmt->bindParam(':nombres', $datos['nombres']);
             $stmt->bindParam(':apellidos', $datos['apellidos']);
-            $stmt->bindParam(':fecha_nacimiento', $datos['fecha_nacimiento']);
-            $stmt->bindParam(':documento', $datos['documento']);
-            $stmt->bindParam(':cod_equ', $datos['cod_equ'], PDO::PARAM_INT);
             $stmt->bindParam(':posicion', $datos['posicion']);
-            $stmt->bindParam(':num_camiseta', $datos['num_camiseta'], PDO::PARAM_INT);
-            $stmt->bindParam(':estado', $datos['estado']);
-            $stmt->bindParam(':estatura', $datos['estatura'], PDO::PARAM_INT);
-            $stmt->bindParam(':peso', $datos['peso'], PDO::PARAM_STR);
+            $stmt->bindParam(':dorsal', $datos['dorsal'], PDO::PARAM_INT);
+            $stmt->bindParam(':cod_equ', $datos['cod_equ'], PDO::PARAM_INT);
             $stmt->bindParam(':foto', $datos['foto'], PDO::PARAM_LOB);
-            
-            // Ejecutar la consulta
             $stmt->execute();
-            
-            // Obtener el ID del jugador recién creado
             $jugadorId = $this->db->lastInsertId();
-            
             return [
                 'estado' => true,
                 'mensaje' => 'Jugador creado correctamente',
@@ -521,44 +563,25 @@ class Jugador {
      */
     public function actualizar($datos) {
         try {
-            // Verificar si se debe actualizar la foto
             if ($datos['actualizar_foto']) {
-                // Actualizar todos los campos, incluyendo la foto
                 $query = "UPDATE Jugadores SET nombres = :nombres, apellidos = :apellidos, 
-                         fecha_nacimiento = :fecha_nacimiento, documento = :documento, 
-                         cod_equ = :cod_equ, posicion = :posicion, num_camiseta = :num_camiseta, 
-                         estado = :estado, estatura = :estatura, peso = :peso, foto = :foto 
+                         posicion = :posicion, dorsal = :dorsal, cod_equ = :cod_equ, foto = :foto 
                          WHERE cod_jug = :cod_jug";
-                         
                 $stmt = $this->db->prepare($query);
                 $stmt->bindParam(':foto', $datos['foto'], PDO::PARAM_LOB);
             } else {
-                // Actualizar todos los campos excepto la foto
                 $query = "UPDATE Jugadores SET nombres = :nombres, apellidos = :apellidos, 
-                         fecha_nacimiento = :fecha_nacimiento, documento = :documento, 
-                         cod_equ = :cod_equ, posicion = :posicion, num_camiseta = :num_camiseta, 
-                         estado = :estado, estatura = :estatura, peso = :peso 
+                         posicion = :posicion, dorsal = :dorsal, cod_equ = :cod_equ 
                          WHERE cod_jug = :cod_jug";
-                         
                 $stmt = $this->db->prepare($query);
             }
-            
-            // Vincular los parámetros comunes
             $stmt->bindParam(':nombres', $datos['nombres']);
             $stmt->bindParam(':apellidos', $datos['apellidos']);
-            $stmt->bindParam(':fecha_nacimiento', $datos['fecha_nacimiento']);
-            $stmt->bindParam(':documento', $datos['documento']);
-            $stmt->bindParam(':cod_equ', $datos['cod_equ'], PDO::PARAM_INT);
             $stmt->bindParam(':posicion', $datos['posicion']);
-            $stmt->bindParam(':num_camiseta', $datos['num_camiseta'], PDO::PARAM_INT);
-            $stmt->bindParam(':estado', $datos['estado']);
-            $stmt->bindParam(':estatura', $datos['estatura'], PDO::PARAM_INT);
-            $stmt->bindParam(':peso', $datos['peso'], PDO::PARAM_STR);
+            $stmt->bindParam(':dorsal', $datos['dorsal'], PDO::PARAM_INT);
+            $stmt->bindParam(':cod_equ', $datos['cod_equ'], PDO::PARAM_INT);
             $stmt->bindParam(':cod_jug', $datos['cod_jug'], PDO::PARAM_INT);
-            
-            // Ejecutar la consulta
             $stmt->execute();
-            
             return [
                 'estado' => true,
                 'mensaje' => 'Jugador actualizado correctamente'
