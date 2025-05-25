@@ -340,7 +340,7 @@ class Usuario
      */
     public function obtenerTodos() {
         try {
-            $sql = "SELECT cod_user, username, email, rol, foto_perfil FROM Usuarios ORDER BY username";
+            $sql = "SELECT cod_user, username, email, rol, foto_perfil FROM Usuarios ORDER BY cod_user";
             $stmt = $this->conexion->prepare($sql);
             $stmt->execute();
             

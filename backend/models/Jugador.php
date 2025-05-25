@@ -18,7 +18,7 @@ class Jugador {
                              e.nombre as nombre_equipo, e.escudo as escudo_equipo 
                      FROM Jugadores j
                      LEFT JOIN Equipos e ON j.cod_equ = e.cod_equ
-                     ORDER BY j.apellidos, j.nombres";
+                     ORDER BY j.cod_jug";
             
             $stmt = $this->db->prepare($query);
             $stmt->execute();
@@ -60,7 +60,7 @@ class Jugador {
                              e.nombre as nombre_equipo, e.escudo as escudo_equipo 
                      FROM Jugadores j
                      LEFT JOIN Equipos e ON j.cod_equ = e.cod_equ
-                     ORDER BY j.apellidos, j.nombres";
+                     ORDER BY j.cod_jug";
             
             $stmt = $this->db->prepare($query);
             $stmt->execute();
@@ -110,7 +110,7 @@ class Jugador {
                      FROM Jugadores j
                      LEFT JOIN Equipos e ON j.cod_equ = e.cod_equ
                      WHERE j.cod_equ = :equipo_id
-                     ORDER BY j.apellidos, j.nombres";
+                     ORDER BY j.cod_jug";
             
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(':equipo_id', $equipoId, PDO::PARAM_INT);

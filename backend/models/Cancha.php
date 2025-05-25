@@ -23,7 +23,7 @@ class Cancha {
      */
     public function obtenerTodas() {
         try {
-            $query = "SELECT * FROM canchas ORDER BY nombre";
+            $query = "SELECT * FROM canchas ORDER BY cod_cancha";
             
             $stmt = $this->db->prepare($query);
             $stmt->execute();

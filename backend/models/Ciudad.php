@@ -23,7 +23,7 @@ class Ciudad {
      */
     public function obtenerTodas() {
         try {
-            $query = "SELECT * FROM Ciudades ORDER BY nombre";
+            $query = "SELECT * FROM Ciudades ORDER BY cod_ciu";
             
             $stmt = $this->db->prepare($query);
             $stmt->execute();

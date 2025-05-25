@@ -31,7 +31,7 @@ class Equipo
                      FROM Equipos e
                      LEFT JOIN Ciudades c ON e.cod_ciu = c.cod_ciu
                      LEFT JOIN Directores d ON e.cod_dt = d.cod_dt
-                     ORDER BY e.nombre";
+                     ORDER BY e.cod_equ";
             
             $stmt = $this->db->prepare($query);
             $stmt->execute();

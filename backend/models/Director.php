@@ -23,7 +23,7 @@ class Director {
      */
     public function obtenerTodos() {
         try {
-            $query = "SELECT * FROM Directores ORDER BY apellidos, nombres";
+            $query = "SELECT * FROM Directores ORDER BY cod_dt";
             
             $stmt = $this->db->prepare($query);
             $stmt->execute();

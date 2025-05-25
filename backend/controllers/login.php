@@ -40,12 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Guardar mensaje de éxito en la sesión
         $_SESSION['exito_login'] = '¡Sesión iniciada correctamente! Bienvenido/a ' . $username;
         
-        // Redireccionar según el rol del usuario
-        if ($resultado['usuario']['rol'] === 'admin') {
-            header('Location: ../../frontend/pages/admin/index.php');
-        } else {
-            header('Location: ../../index.php');
-        }
+        // Redireccionar a la página principal independientemente del rol
+        header('Location: ../../index.php');
         exit;
     } else {
         // Guardar mensaje de error en la sesión

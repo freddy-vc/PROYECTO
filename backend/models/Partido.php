@@ -43,8 +43,8 @@ class Partido
                 $sql .= " WHERE p.estado = 'finalizado'";
             }
             
-            // Ordenar por fecha y hora
-            $sql .= " ORDER BY p.fecha, p.hora";
+            // Ordenar por ID
+            $sql .= " ORDER BY p.cod_par";
             
             $stmt = $this->conexion->prepare($sql);
             $stmt->execute();
