@@ -197,11 +197,29 @@ class Usuario
             try {
                 // Verificar que la imagen sea válida antes de codificarla
                 $finfo = new finfo(FILEINFO_MIME_TYPE);
-                $mime_type = $finfo->buffer($usuario['foto_perfil']);
+                
+                // Verificar si foto_perfil es un recurso o un string
+                if (is_resource($usuario['foto_perfil'])) {
+                    // Si es un recurso, leer el contenido
+                    $content = stream_get_contents($usuario['foto_perfil']);
+                    $mime_type = $finfo->buffer($content);
+                    // Restablecer el puntero del recurso
+                    if (is_resource($usuario['foto_perfil'])) {
+                        rewind($usuario['foto_perfil']);
+                        $content_for_base64 = stream_get_contents($usuario['foto_perfil']);
+                        rewind($usuario['foto_perfil']);
+                    } else {
+                        $content_for_base64 = $content;
+                    }
+                } else {
+                    // Si es un string, usarlo directamente
+                    $mime_type = $finfo->buffer($usuario['foto_perfil']);
+                    $content_for_base64 = $usuario['foto_perfil'];
+                }
                 
                 if (strpos($mime_type, 'image/') === 0) {
                     // Es una imagen válida
-                    $usuario['foto_perfil_base64'] = 'data:' . $mime_type . ';base64,' . base64_encode($usuario['foto_perfil']);
+                    $usuario['foto_perfil_base64'] = 'data:' . $mime_type . ';base64,' . base64_encode($content_for_base64);
                 } else {
                     // No es una imagen válida
                     $usuario['foto_perfil_base64'] = '';
@@ -244,24 +262,23 @@ class Usuario
                 ];
             }
             
-            // SQL base
-            $sql = "UPDATE Usuarios SET username = :username, email = :email";
-            $params = [
-                ':cod_user' => $cod_user,
-                ':username' => $username,
-                ':email' => $email
-            ];
-            
             // Si se actualiza la foto de perfil
             if ($foto_perfil !== null) {
-                $sql .= ", foto_perfil = :foto_perfil";
-                $params[':foto_perfil'] = $foto_perfil;
+                $sql = "UPDATE Usuarios SET username = :username, email = :email, foto_perfil = :foto_perfil WHERE cod_user = :cod_user";
+                $stmt = $this->conexion->prepare($sql);
+                $stmt->bindParam(':username', $username);
+                $stmt->bindParam(':email', $email);
+                $stmt->bindParam(':foto_perfil', $foto_perfil, PDO::PARAM_LOB);
+                $stmt->bindParam(':cod_user', $cod_user);
+            } else {
+                $sql = "UPDATE Usuarios SET username = :username, email = :email WHERE cod_user = :cod_user";
+                $stmt = $this->conexion->prepare($sql);
+                $stmt->bindParam(':username', $username);
+                $stmt->bindParam(':email', $email);
+                $stmt->bindParam(':cod_user', $cod_user);
             }
             
-            $sql .= " WHERE cod_user = :cod_user";
-            
-            $stmt = $this->conexion->prepare($sql);
-            $stmt->execute($params);
+            $stmt->execute();
             
             return [
                 'estado' => true,
@@ -489,6 +506,100 @@ class Usuario
             return [
                 'estado' => false,
                 'mensaje' => 'Error al eliminar el usuario: ' . $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Actualizar la foto de perfil usando base64
+     */
+    public function actualizarFotoBase64($cod_user, $username, $email, $foto_perfil_base64)
+    {
+        try {
+            // Verificar si estamos actualizando el username y si ya existe
+            $usuario = $this->obtenerPorId($cod_user);
+            
+            if ($usuario['username'] !== $username && $this->usernameExiste($username)) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El nombre de usuario ya está registrado por otro usuario'
+                ];
+            }
+            
+            // Verificar si estamos actualizando el email y si ya existe
+            if ($usuario['email'] !== $email && $this->emailExiste($email)) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El correo electrónico ya está registrado por otro usuario'
+                ];
+            }
+            
+            // Decodificar la foto de base64
+            $foto_perfil = base64_decode($foto_perfil_base64);
+            
+            // Actualizar la foto de perfil
+            $sql = "UPDATE Usuarios SET username = :username, email = :email, foto_perfil = :foto_perfil WHERE cod_user = :cod_user";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':username', $username);
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':foto_perfil', $foto_perfil, PDO::PARAM_LOB);
+            $stmt->bindParam(':cod_user', $cod_user);
+            $stmt->execute();
+            
+            return [
+                'estado' => true,
+                'mensaje' => 'Datos actualizados correctamente'
+            ];
+            
+        } catch (PDOException $e) {
+            return [
+                'estado' => false,
+                'mensaje' => 'Error al actualizar datos: ' . $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Eliminar la foto de perfil de un usuario
+     */
+    public function eliminarFoto($cod_user, $username, $email)
+    {
+        try {
+            // Verificar si estamos actualizando el username y si ya existe
+            $usuario = $this->obtenerPorId($cod_user);
+            
+            if ($usuario['username'] !== $username && $this->usernameExiste($username)) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El nombre de usuario ya está registrado por otro usuario'
+                ];
+            }
+            
+            // Verificar si estamos actualizando el email y si ya existe
+            if ($usuario['email'] !== $email && $this->emailExiste($email)) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El correo electrónico ya está registrado por otro usuario'
+                ];
+            }
+            
+            // Establecer la foto de perfil como NULL
+            $sql = "UPDATE Usuarios SET username = :username, email = :email, foto_perfil = NULL WHERE cod_user = :cod_user";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':username', $username);
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':cod_user', $cod_user);
+            $stmt->execute();
+            
+            return [
+                'estado' => true,
+                'mensaje' => 'Foto de perfil eliminada correctamente'
+            ];
+            
+        } catch (PDOException $e) {
+            return [
+                'estado' => false,
+                'mensaje' => 'Error al eliminar foto de perfil: ' . $e->getMessage()
             ];
         }
     }

@@ -27,7 +27,24 @@ function cargarPartidos(filtro = null) {
         '../../backend/controllers/partidos_controller.php?accion=listar';
     
     fetch(url)
-        .then(response => response.json())
+        .then(response => {
+            // Primero verificamos si la respuesta es correcta
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(text => {
+            // Intenta analizar el texto como JSON
+            try {
+                const data = JSON.parse(text);
+                return data;
+            } catch (error) {
+                console.error('Error al parsear JSON:', error);
+                console.log('Respuesta recibida:', text);
+                throw new Error('Error al analizar la respuesta del servidor');
+            }
+        })
         .then(data => {
             if (data.estado) {
                 mostrarPartidos(data.partidos);
@@ -39,7 +56,7 @@ function cargarPartidos(filtro = null) {
         .catch(error => {
             console.error('Error:', error);
             document.getElementById('partidos-container').innerHTML = 
-                '<div class="no-results">No hay partidos para mostrar.</div>';
+                '<div class="no-results">Error al cargar los partidos. Por favor, intenta de nuevo más tarde.</div>';
         });
 }
 
@@ -80,7 +97,7 @@ function mostrarPartidos(partidos) {
                     <div class="partido-content">
                         <div class="partido-equipos">
                             <div class="partido-equipo">
-                                <img src="${partido.local_escudo_base64}" alt="${partido.local_nombre}">
+                                <img src="${partido.local_escudo_base64}" alt="${partido.local_nombre}" onerror="this.src='/PROYECTO/frontend/assets/images/team.png'">
                                 <h4>${partido.local_nombre}</h4>
                             </div>
                             
@@ -92,7 +109,7 @@ function mostrarPartidos(partidos) {
                             </div>
                             
                             <div class="partido-equipo">
-                                <img src="${partido.visitante_escudo_base64}" alt="${partido.visitante_nombre}">
+                                <img src="${partido.visitante_escudo_base64}" alt="${partido.visitante_nombre}" onerror="this.src='/PROYECTO/frontend/assets/images/team.png'">
                                 <h4>${partido.visitante_nombre}</h4>
                             </div>
                         </div>

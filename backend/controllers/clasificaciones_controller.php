@@ -25,7 +25,7 @@ switch ($accion) {
             return [
                 'id' => $equipo['cod_equ'],
                 'nombre' => $equipo['nombre'],
-                'escudo' => $equipo['escudo_base64']
+                'escudo' => $equipo['escudo_base64'] ?: '../assets/images/team.png'
             ];
         }
         $clasificaciones = [

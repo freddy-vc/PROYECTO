@@ -31,3 +31,20 @@ Este proyecto permite gestionar toda la información relacionada con un campeona
 - **Backend**: PHP (orientado a objetos)
 - **Frontend**: HTML, CSS, JavaScript nativo
 - **Base de Datos**: PostgreSQL
+
+## Solución a problemas con imágenes en PostgreSQL
+
+Si experimentas problemas al subir imágenes a la base de datos PostgreSQL (fotos de perfil, escudos de equipo o fotos de jugadores), asegúrate de que:
+
+1. **Formato de imagen**: Solo se permiten formatos JPG, PNG y GIF.
+2. **Tamaño máximo**: Las imágenes no deben superar los 2MB.
+3. **Validación de contenido**: Se han implementado verificaciones para asegurar que el contenido de la imagen no esté vacío.
+4. **Procesamiento MIME**: Ahora se detecta automáticamente el tipo MIME de la imagen para mostrarla correctamente.
+
+Las mejoras implementadas incluyen:
+- Validación del tipo MIME de las imágenes antes de guardarlas
+- Verificación del contenido de la imagen para evitar datos corruptos
+- Manejo mejorado de errores con registro en logs
+- Procesamiento adecuado de imágenes en la visualización
+
+Si persisten los problemas, verifica que la extensión PDO_PGSQL esté correctamente configurada en tu servidor PHP.

@@ -100,7 +100,7 @@ $equipos = $equipoModel->obtenerTodos();
                     <tr>
                         <td><?php echo $equipo['cod_equ']; ?></td>
                         <td>
-                            <img src="<?php echo $equipo['escudo_base64'] ?? '../../assets/images/team.png'; ?>" 
+                            <img src="<?php echo $equipo['escudo_base64'] ?? '/PROYECTO/frontend/assets/images/team.png'; ?>" 
                                 alt="<?php echo $equipo['nombre']; ?>" 
                                 class="admin-table-img">
                         </td>

@@ -168,7 +168,7 @@ if ($esEdicion) {
                 <div class="equipo local">
                     <h3>Local</h3>
                     <div class="equipo-info">
-                        <img src="<?php echo (!empty($partido['local_escudo'])) ? 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']) : '../../assets/images/team.png'; ?>" 
+                        <img src="<?php echo isset($partido['local_escudo_base64']) ? $partido['local_escudo_base64'] : '/PROYECTO/frontend/assets/images/team.png'; ?>" 
                             alt="<?php echo $partido['local_nombre']; ?>" class="equipo-logo">
                         <div class="equipo-nombre">
                             <?php echo $partido['local_nombre']; ?>
@@ -192,7 +192,7 @@ if ($esEdicion) {
                 <div class="equipo visitante">
                     <h3>Visitante</h3>
                     <div class="equipo-info">
-                        <img src="<?php echo (!empty($partido['visitante_escudo'])) ? 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']) : '../../assets/images/team.png'; ?>" 
+                        <img src="<?php echo isset($partido['visitante_escudo_base64']) ? $partido['visitante_escudo_base64'] : '/PROYECTO/frontend/assets/images/team.png'; ?>" 
                             alt="<?php echo $partido['visitante_nombre']; ?>" class="equipo-logo">
                         <div class="equipo-nombre">
                             <?php echo $partido['visitante_nombre']; ?>

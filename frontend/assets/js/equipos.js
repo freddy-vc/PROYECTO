@@ -14,7 +14,24 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function cargarEquipos() {
     fetch('../../backend/controllers/equipos_controller.php?accion=listar')
-        .then(response => response.json())
+        .then(response => {
+            // Primero verificamos si la respuesta es correcta
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(text => {
+            // Intenta analizar el texto como JSON
+            try {
+                const data = JSON.parse(text);
+                return data;
+            } catch (error) {
+                console.error('Error al parsear JSON:', error);
+                console.log('Respuesta recibida:', text);
+                throw new Error('Error al analizar la respuesta del servidor');
+            }
+        })
         .then(data => {
             if (data.estado) {
                 mostrarEquipos(data.equipos);
@@ -26,7 +43,7 @@ function cargarEquipos() {
         .catch(error => {
             console.error('Error:', error);
             document.getElementById('equipos-container').innerHTML = 
-                '<div class="no-results">No hay equipos para mostrar.</div>';
+                '<div class="no-results">Error al cargar los equipos. Por favor, intenta de nuevo más tarde.</div>';
         });
 }
 
@@ -42,9 +59,8 @@ function mostrarEquipos(equipos) {
         return;
     }
     
-    // Determinar la ruta de la imagen por defecto según el contexto
-    const isAdmin = window.location.pathname.includes('/admin/');
-    const defaultImagePath = isAdmin ? '../../assets/images/team.png' : '../assets/images/team.png';
+    // Usar siempre rutas absolutas desde la raíz del sitio para las imágenes por defecto
+    const defaultImagePath = '/PROYECTO/frontend/assets/images/team.png';
     
     let html = '';
     

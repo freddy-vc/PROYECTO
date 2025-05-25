@@ -132,6 +132,12 @@ if (isset($_GET['id'])) {
                                 <div class="current-image">
                                     <img src="<?php echo $equipo['escudo_base64']; ?>" alt="Escudo actual" style="max-width: 100px; margin-bottom: 10px;">
                                     <p>Escudo actual</p>
+                                    <form action="../../../backend/controllers/admin/eliminar_escudo.php" method="POST" style="display: inline-block; margin-top: 10px;">
+                                        <input type="hidden" name="equipo_id" value="<?php echo $equipo['cod_equ']; ?>">
+                                        <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('¿Está seguro de eliminar el escudo?')">
+                                            <i class="fas fa-trash"></i> Eliminar escudo
+                                        </button>
+                                    </form>
                                 </div>
                             <?php endif; ?>
                             <input type="file" id="escudo" name="escudo" accept="image/*">

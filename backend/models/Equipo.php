@@ -278,10 +278,22 @@ class Equipo
             
             // Procesar las fotos para mostrarlas como imágenes
             foreach ($jugadores as &$jugador) {
-                if ($jugador['foto']) {
-                    $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
+                if (!empty($jugador['foto'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($jugador['foto'])) {
+                        $content = stream_get_contents($jugador['foto']);
+                        rewind($jugador['foto']);
+                        $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($jugador['foto']);
+                    } else {
+                        $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($jugador['foto']);
+                    }
                 } else {
                     $jugador['foto_base64'] = '../assets/images/player.png';
+                    unset($jugador['foto']);
                 }
             }
             
@@ -314,7 +326,54 @@ class Equipo
             $stmt->bindParam(':cod_equ', $cod_equ);
             $stmt->execute();
             
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $partidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Procesar los escudos para mostrarlos como imágenes
+            foreach ($partidos as &$partido) {
+                // Procesar escudo del equipo local
+                if (!empty($partido['local_escudo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($partido['local_escudo'])) {
+                        $content = stream_get_contents($partido['local_escudo']);
+                        rewind($partido['local_escudo']);
+                        $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($partido['local_escudo']);
+                    } else {
+                        $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($partido['local_escudo']);
+                    }
+                } else {
+                    $partido['local_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+                    unset($partido['local_escudo']);
+                }
+                
+                // Procesar escudo del equipo visitante
+                if (!empty($partido['visitante_escudo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($partido['visitante_escudo'])) {
+                        $content = stream_get_contents($partido['visitante_escudo']);
+                        rewind($partido['visitante_escudo']);
+                        $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($partido['visitante_escudo']);
+                    } else {
+                        $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($partido['visitante_escudo']);
+                    }
+                } else {
+                    $partido['visitante_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+                    unset($partido['visitante_escudo']);
+                }
+                
+                // Formatear fecha para mostrar
+                $fecha = new DateTime($partido['fecha']);
+                $partido['fecha_formateada'] = $fecha->format('d/m/Y');
+            }
+            
+            return $partidos;
             
         } catch (PDOException $e) {
             return [];
@@ -326,16 +385,26 @@ class Equipo
      */
     public function obtenerFases() {
         try {
-            $sql = "SELECT e.cod_equ, e.nombre, fe.fase, fe.clasificado 
-                   FROM FaseEquipo fe
-                   JOIN Equipos e ON fe.cod_equ = e.cod_equ
-                   ORDER BY fe.fase, e.nombre";
+            $sql = "SELECT DISTINCT e.cod_equ, e.nombre, p.fase, 
+                   CASE WHEN p.estado = 'finalizado' THEN
+                       CASE 
+                           WHEN (SELECT COUNT(*) FROM Goles g JOIN Jugadores j ON g.cod_jug = j.cod_jug WHERE g.cod_par = p.cod_par AND j.cod_equ = e.cod_equ) > 
+                                (SELECT COUNT(*) FROM Goles g JOIN Jugadores j ON g.cod_jug = j.cod_jug WHERE g.cod_par = p.cod_par AND j.cod_equ != e.cod_equ) 
+                           THEN true
+                           ELSE false
+                       END
+                   ELSE false END as clasificado
+                   FROM Partidos p
+                   JOIN Equipos e ON p.equ_local = e.cod_equ OR p.equ_visitante = e.cod_equ
+                   WHERE p.fase IN ('cuartos', 'semis', 'final')
+                   ORDER BY p.fase, e.nombre";
             
             $stmt = $this->db->prepare($sql);
             $stmt->execute();
             
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
+            error_log('Error al obtener fases: ' . $e->getMessage());
             return [];
         }
     }
@@ -425,35 +494,62 @@ class Equipo
     }
     
     /**
-     * Procesa el escudo del equipo para convertirlo a base64
+     * Procesar el escudo de un equipo
      */
     private function procesarEscudo(&$equipo)
     {
-        if (isset($equipo['escudo']) && $equipo['escudo'] && !empty($equipo['escudo'])) {
-            try {
-                // Verificar que la imagen sea válida antes de codificarla
-                $finfo = new finfo(FILEINFO_MIME_TYPE);
-                $mime_type = $finfo->buffer($equipo['escudo']);
-                
-                if (strpos($mime_type, 'image/') === 0) {
-                    // Es una imagen válida
-                    $equipo['escudo_base64'] = 'data:' . $mime_type . ';base64,' . base64_encode($equipo['escudo']);
-                } else {
-                    // No es una imagen válida
-                    $equipo['escudo_base64'] = '';
-                    error_log("Error en procesarEscudo: Tipo MIME no válido: " . $mime_type);
-                }
-            } catch (Exception $e) {
-                // Error al procesar la imagen
-                $equipo['escudo_base64'] = '';
-                error_log("Error en procesarEscudo: " . $e->getMessage());
+        if (!empty($equipo['escudo'])) {
+            // Verificar si es un recurso o un string
+            if (is_resource($equipo['escudo'])) {
+                $content = stream_get_contents($equipo['escudo']);
+                rewind($equipo['escudo']);
+                $equipo['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                // Eliminar el recurso del array para evitar problemas con JSON
+                unset($equipo['escudo']);
+            } else {
+                $equipo['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($equipo['escudo']);
+                // Eliminar la versión binaria para evitar duplicados
+                unset($equipo['escudo']);
             }
         } else {
-            // No hay imagen o está vacía
-            $equipo['escudo_base64'] = '';
+            $equipo['escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+            unset($equipo['escudo']);
         }
-        
-        return $equipo;
+    }
+    
+    /**
+     * Eliminar el escudo de un equipo
+     */
+    public function eliminarEscudo($id)
+    {
+        try {
+            // Verificar si el equipo existe
+            $equipo = $this->obtenerPorId($id);
+            
+            if (!$equipo) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El equipo no existe'
+                ];
+            }
+            
+            // Establecer el escudo como NULL
+            $sql = "UPDATE Equipos SET escudo = NULL WHERE cod_equ = :id";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            return [
+                'estado' => true,
+                'mensaje' => 'Escudo eliminado correctamente'
+            ];
+            
+        } catch (PDOException $e) {
+            return [
+                'estado' => false,
+                'mensaje' => 'Error al eliminar escudo: ' . $e->getMessage()
+            ];
+        }
     }
 }
 ?> 

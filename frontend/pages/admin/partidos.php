@@ -22,6 +22,30 @@ require_once '../../../backend/models/Partido.php';
 // Obtener todos los partidos
 $partidoModel = new Partido();
 $partidos = $partidoModel->obtenerTodos();
+
+// Depuración: ver la estructura del primer partido
+if (!empty($partidos)) {
+    $partidoPrueba = $partidos[0];
+    // Comentar o eliminar estas líneas después de depurar
+    echo '<pre style="background:#f5f5f5; padding:10px; margin:10px; border:1px solid #ddd; font-size:12px;">';
+    echo "Debug - Variables del primer partido (ID: {$partidoPrueba['cod_par']}):\n";
+    echo "local_escudo_base64: " . (isset($partidoPrueba['local_escudo_base64']) ? "Existe" : "No existe") . "\n";
+    echo "visitante_escudo_base64: " . (isset($partidoPrueba['visitante_escudo_base64']) ? "Existe" : "No existe") . "\n";
+    echo "local_escudo: " . (isset($partidoPrueba['local_escudo']) ? "Existe" : "No existe") . "\n";
+    echo "visitante_escudo: " . (isset($partidoPrueba['visitante_escudo']) ? "Existe" : "No existe") . "\n";
+    
+    // Mostrar las primeras 20 claves del array
+    echo "\nClaves disponibles en el partido:\n";
+    $i = 0;
+    foreach (array_keys($partidoPrueba) as $key) {
+        echo "$key, ";
+        if (++$i >= 20) {
+            echo "...";
+            break;
+        }
+    }
+    echo '</pre>';
+}
 ?>
 
 <!-- Incluir Font Awesome para los iconos -->
@@ -101,14 +125,14 @@ $partidos = $partidoModel->obtenerTodos();
                         <td><?php echo date('H:i', strtotime($partido['hora'])); ?></td>
                         <td>
                             <div class="equipo-info">
-                                <img src="<?php echo (!empty($partido['local_escudo'])) ? 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']) : '../../assets/images/team.png'; ?>" 
+                                <img src="<?php echo isset($partido['local_escudo_base64']) ? $partido['local_escudo_base64'] : '/PROYECTO/frontend/assets/images/team.png'; ?>" 
                                     alt="<?php echo $partido['local_nombre']; ?>" class="equipo-icon">
                                 <?php echo $partido['local_nombre']; ?>
                             </div>
                         </td>
                         <td>
                             <div class="equipo-info">
-                                <img src="<?php echo (!empty($partido['visitante_escudo'])) ? 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']) : '../../assets/images/team.png'; ?>" 
+                                <img src="<?php echo isset($partido['visitante_escudo_base64']) ? $partido['visitante_escudo_base64'] : '/PROYECTO/frontend/assets/images/team.png'; ?>" 
                                     alt="<?php echo $partido['visitante_nombre']; ?>" class="equipo-icon">
                                 <?php echo $partido['visitante_nombre']; ?>
                             </div>

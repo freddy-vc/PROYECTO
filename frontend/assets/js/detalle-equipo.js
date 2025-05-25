@@ -201,7 +201,7 @@ function mostrarPartidos(partidos, idEquipo) {
                 <div class="partido-content">
                     <div class="partido-equipos">
                         <div class="partido-equipo">
-                            <img src="${partido.local_escudo_base64 || '../../frontend/assets/images/team.png'}" alt="${partido.local_nombre}">
+                            <img src="${partido.local_escudo_base64 || '/PROYECTO/frontend/assets/images/team.png'}" alt="${partido.local_nombre}">
                             <h4>${partido.local_nombre}</h4>
                         </div>
                         
@@ -213,7 +213,7 @@ function mostrarPartidos(partidos, idEquipo) {
                         </div>
                         
                         <div class="partido-equipo">
-                            <img src="${partido.visitante_escudo_base64 || '../../frontend/assets/images/team.png'}" alt="${partido.visitante_nombre}">
+                            <img src="${partido.visitante_escudo_base64 || '/PROYECTO/frontend/assets/images/team.png'}" alt="${partido.visitante_nombre}">
                             <h4>${partido.visitante_nombre}</h4>
                         </div>
                     </div>

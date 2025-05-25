@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Equipos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .equipos-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .equipo-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            width: 280px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .equipo-card:hover {
+            transform: translateY(-5px);
+        }
+        .equipo-header {
+            text-align: center;
+            padding: 15px;
+            background-color: #f5f5f5;
+        }
+        .equipo-header img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+        .equipo-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        .equipo-info {
+            padding: 15px;
+        }
+        .equipo-info p {
+            margin: 5px 0;
+        }
+        .equipo-footer {
+            background-color: #f9f9f9;
+            padding: 10px 15px;
+            text-align: right;
+            border-top: 1px solid #eee;
+        }
+        .equipo-footer a {
+            color: #2196F3;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .equipo-footer a:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-style: italic;
+            color: #666;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            padding: 50px;
+        }
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-style: italic;
+        }
+        .search-box {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+        }
+        .search-box input {
+            padding: 10px 15px;
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test de Equipos</h1>
+        
+        <div class="search-box">
+            <input type="text" id="buscar-equipo" placeholder="Buscar equipo...">
+        </div>
+        
+        <div id="equipos-container" class="equipos-container">
+            <div class="loading">Cargando equipos...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarEquipos();
+            
+            // Configurar filtro de búsqueda
+            const buscarInput = document.getElementById('buscar-equipo');
+            buscarInput.addEventListener('input', function() {
+                filtrarEquipos(this.value);
+            });
+        });
+
+        function cargarEquipos() {
+            fetch('/PROYECTO/backend/controllers/equipos_controller.php?accion=listar')
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.text();
+                })
+                .then(text => {
+                    console.log('Raw response:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (error) {
+                        console.error('Error parsing JSON:', error);
+                        throw new Error('Error parsing JSON: ' + error.message);
+                    }
+                })
+                .then(data => {
+                    console.log('Parsed data:', data);
+                    if (data.estado) {
+                        mostrarEquipos(data.equipos);
+                    } else {
+                        document.getElementById('equipos-container').innerHTML = 
+                            '<div class="error">No hay equipos para mostrar.</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('equipos-container').innerHTML = 
+                        `<div class="error">Error al cargar los equipos: ${error.message}</div>`;
+                });
+        }
+
+        function mostrarEquipos(equipos) {
+            const container = document.getElementById('equipos-container');
+            
+            if (!equipos || equipos.length === 0) {
+                container.innerHTML = '<div class="no-results">No hay equipos para mostrar.</div>';
+                return;
+            }
+            
+            // Determinar la ruta de la imagen por defecto
+            const defaultImagePath = '/PROYECTO/frontend/assets/images/team.png';
+            
+            let html = '';
+            
+            equipos.forEach(equipo => {
+                let dt = 'No especificado';
+                if ((equipo.dt_nombres && equipo.dt_nombres.trim() !== '') || 
+                    (equipo.dt_apellidos && equipo.dt_apellidos.trim() !== '')) {
+                    dt = (equipo.dt_nombres ? equipo.dt_nombres : '') + 
+                         (equipo.dt_apellidos ? ' ' + equipo.dt_apellidos : '');
+                }
+                
+                // Asegurar que siempre haya una imagen
+                const escudoUrl = equipo.escudo_base64 || defaultImagePath;
+                
+                html += `
+                    <div class="equipo-card" data-nombre="${equipo.nombre.toLowerCase()}">
+                        <div class="equipo-header">
+                            <img src="${escudoUrl}" alt="${equipo.nombre}" onerror="this.src='${defaultImagePath}'">
+                            <h2>${equipo.nombre}</h2>
+                        </div>
+                        <div class="equipo-info">
+                            <p><strong>Ciudad:</strong> ${equipo.ciudad_nombre || 'No especificada'}</p>
+                            <p><strong>Director Técnico:</strong> ${dt}</p>
+                        </div>
+                        <div class="equipo-footer">
+                            <a href="/PROYECTO/frontend/pages/detalle-equipo.php?id=${equipo.cod_equ}">Ver Detalles</a>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function filtrarEquipos(termino) {
+            termino = termino.toLowerCase();
+            const equipos = document.querySelectorAll('.equipo-card');
+            
+            let hayResultados = false;
+            
+            equipos.forEach(equipo => {
+                const nombre = equipo.dataset.nombre;
+                
+                if (nombre.includes(termino)) {
+                    equipo.style.display = '';
+                    hayResultados = true;
+                } else {
+                    equipo.style.display = 'none';
+                }
+            });
+            
+            // Mostrar mensaje si no hay resultados
+            const container = document.getElementById('equipos-container');
+            const noResultados = container.querySelector('.no-results');
+            
+            if (!hayResultados) {
+                if (!noResultados) {
+                    const mensaje = document.createElement('div');
+                    mensaje.className = 'no-results';
+                    mensaje.textContent = 'No se encontraron equipos con ese nombre.';
+                    container.appendChild(mensaje);
+                }
+            } else if (noResultados) {
+                noResultados.remove();
+            }
+        }
+    </script>
+</body>
+</html> 

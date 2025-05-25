@@ -145,22 +145,48 @@ class Director {
     /**
      * Obtener equipos dirigidos por un director técnico
      */
-    public function obtenerEquipos($id) {
+    public function obtenerEquipos($id = null) {
         try {
-            $query = "SELECT e.* FROM Equipos e WHERE e.cod_dt = :id ORDER BY e.nombre";
+            $query = "SELECT e.* FROM Equipos e";
+            $params = [];
+            
+            if ($id !== null) {
+                $query .= " WHERE e.cod_dt = :id";
+                $params[':id'] = $id;
+            }
+            
+            $query .= " ORDER BY e.nombre";
             
             $stmt = $this->db->prepare($query);
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            
+            if (!empty($params)) {
+                foreach ($params as $param => $value) {
+                    $stmt->bindValue($param, $value, PDO::PARAM_INT);
+                }
+            }
+            
             $stmt->execute();
             
             $equipos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             // Procesar los escudos para mostrarlos como imágenes
             foreach ($equipos as &$equipo) {
-                if ($equipo['escudo']) {
-                    $equipo['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($equipo['escudo']);
+                if (!empty($equipo['escudo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($equipo['escudo'])) {
+                        $content = stream_get_contents($equipo['escudo']);
+                        rewind($equipo['escudo']);
+                        $equipo['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($equipo['escudo']);
+                    } else {
+                        $equipo['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($equipo['escudo']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($equipo['escudo']);
+                    }
                 } else {
-                    $equipo['escudo_base64'] = '../../assets/images/team.png';
+                    $equipo['escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+                    unset($equipo['escudo']);
                 }
             }
             

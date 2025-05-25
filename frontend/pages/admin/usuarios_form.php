@@ -133,6 +133,12 @@ if ($esEdicion) {
                 <div class="current-image">
                     <p>Imagen actual:</p>
                     <img src="<?php echo $usuario['foto_perfil_base64']; ?>" alt="<?php echo htmlspecialchars($usuario['username']); ?>" class="thumbnail">
+                    <form action="../../../backend/controllers/admin/eliminar_foto_usuario.php" method="POST" style="display: inline-block; margin-top: 10px;">
+                        <input type="hidden" name="usuario_id" value="<?php echo $usuario['cod_user']; ?>">
+                        <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('¿Está seguro de eliminar la foto de perfil?')">
+                            <i class="fas fa-trash"></i> Eliminar foto
+                        </button>
+                    </form>
                 </div>
                 <?php endif; ?>
                 

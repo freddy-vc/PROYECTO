@@ -48,9 +48,17 @@ class Conexion
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
+                // Asegurar que se manejen correctamente los datos binarios
+                PDO::ATTR_STRINGIFY_FETCHES => false
             ];
             
             $this->conexion = new PDO($dsn, $this->usuario, $this->password, $opciones);
+            
+            // Establecer la codificación de caracteres a UTF-8
+            $this->conexion->exec("SET NAMES 'UTF8'");
+            
+            // Configurar el manejo de datos binarios
+            $this->conexion->exec("SET bytea_output = 'escape'");
             
             // Mensaje de éxito (puedes quitar esto en producción)
             // echo "Conexión exitosa a la base de datos";

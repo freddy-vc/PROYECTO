@@ -51,8 +51,47 @@ class Partido
             
             $partidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            // Para cada partido, obtener los goles si está finalizado
+            // Para cada partido, procesar escudos y obtener los goles si está finalizado
             foreach ($partidos as &$partido) {
+                // Procesar escudo del equipo local
+                if (!empty($partido['local_escudo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($partido['local_escudo'])) {
+                        $content = stream_get_contents($partido['local_escudo']);
+                        rewind($partido['local_escudo']);
+                        $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($partido['local_escudo']);
+                    } else {
+                        $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($partido['local_escudo']);
+                    }
+                } else {
+                    $partido['local_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+                    unset($partido['local_escudo']);
+                }
+                
+                // Procesar escudo del equipo visitante
+                if (!empty($partido['visitante_escudo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($partido['visitante_escudo'])) {
+                        $content = stream_get_contents($partido['visitante_escudo']);
+                        rewind($partido['visitante_escudo']);
+                        $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($partido['visitante_escudo']);
+                    } else {
+                        $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($partido['visitante_escudo']);
+                    }
+                } else {
+                    $partido['visitante_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+                    unset($partido['visitante_escudo']);
+                }
+                
+                // Calcular marcador si el partido está finalizado
                 $marcador = $this->calcularMarcadorPorDetalle($partido['cod_par'], $partido['local_nombre'], $partido['visitante_nombre']);
                 $partido['goles_local'] = $marcador['goles_local'];
                 $partido['goles_visitante'] = $marcador['goles_visitante'];
@@ -92,6 +131,44 @@ class Partido
             $partido = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if ($partido) {
+                // Procesar escudo del equipo local
+                if (!empty($partido['local_escudo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($partido['local_escudo'])) {
+                        $content = stream_get_contents($partido['local_escudo']);
+                        rewind($partido['local_escudo']);
+                        $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($partido['local_escudo']);
+                    } else {
+                        $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($partido['local_escudo']);
+                    }
+                } else {
+                    $partido['local_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+                    unset($partido['local_escudo']);
+                }
+                
+                // Procesar escudo del equipo visitante
+                if (!empty($partido['visitante_escudo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($partido['visitante_escudo'])) {
+                        $content = stream_get_contents($partido['visitante_escudo']);
+                        rewind($partido['visitante_escudo']);
+                        $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($partido['visitante_escudo']);
+                    } else {
+                        $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($partido['visitante_escudo']);
+                    }
+                } else {
+                    $partido['visitante_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+                    unset($partido['visitante_escudo']);
+                }
+                
                 // Obtener goles y más detalles si está finalizado
                 if ($partido['estado'] === 'finalizado') {
                     $marcador = $this->calcularMarcadorPorDetalle($partido['cod_par'], $partido['local_nombre'], $partido['visitante_nombre']);
@@ -109,6 +186,7 @@ class Partido
             return $partido;
             
         } catch (PDOException $e) {
+            error_log('Error al obtener partido por ID: ' . $e->getMessage());
             return null;
         }
     }
@@ -465,17 +543,42 @@ class Partido
             
             // Procesar los escudos y añadir conteo de goles
             foreach ($partidos as &$partido) {
-                // Procesar escudos
-                if ($partido['local_escudo']) {
-                    $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);
+                // Procesar escudo del equipo local
+                if (!empty($partido['local_escudo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($partido['local_escudo'])) {
+                        $content = stream_get_contents($partido['local_escudo']);
+                        rewind($partido['local_escudo']);
+                        $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($partido['local_escudo']);
+                    } else {
+                        $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($partido['local_escudo']);
+                    }
                 } else {
-                    $partido['local_escudo_base64'] = './frontend/assets/images/team.png';
+                    $partido['local_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+                    unset($partido['local_escudo']);
                 }
                 
-                if ($partido['visitante_escudo']) {
-                    $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);
+                // Procesar escudo del equipo visitante
+                if (!empty($partido['visitante_escudo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($partido['visitante_escudo'])) {
+                        $content = stream_get_contents($partido['visitante_escudo']);
+                        rewind($partido['visitante_escudo']);
+                        $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($partido['visitante_escudo']);
+                    } else {
+                        $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($partido['visitante_escudo']);
+                    }
                 } else {
-                    $partido['visitante_escudo_base64'] = './frontend/assets/images/team.png';
+                    $partido['visitante_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+                    unset($partido['visitante_escudo']);
                 }
                 
                 // Obtener los goles
@@ -507,21 +610,18 @@ class Partido
             $fasesStr = "'" . implode("','", $fases) . "'";
             
             $sql = "SELECT 
-                    p.cod_par, p.fecha, p.hora, p.estado,
+                    p.cod_par, p.fecha, p.hora, p.estado, p.fase,
                     e1.cod_equ as equ_local, e1.nombre as local_nombre, e1.escudo as local_escudo,
                     e2.cod_equ as equ_visitante, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,
                     c.nombre as cancha,
-                    fe.fase,
                     CASE 
-                        WHEN fe.fase = 'cuartos' THEN
+                        WHEN p.fase = 'cuartos' THEN
                             (SELECT COUNT(*) FROM Partidos p2
-                            JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)
-                            WHERE fe2.fase = 'cuartos'
+                            WHERE p2.fase = 'cuartos'
                             AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
-                        WHEN fe.fase = 'semis' THEN
+                        WHEN p.fase = 'semis' THEN
                             (SELECT COUNT(*) FROM Partidos p2
-                            JOIN FaseEquipo fe2 ON (p2.equ_local = fe2.cod_equ OR p2.equ_visitante = fe2.cod_equ)
-                            WHERE fe2.fase = 'semis'
+                            WHERE p2.fase = 'semis'
                             AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
                         ELSE 1
                     END as orden
@@ -529,14 +629,9 @@ class Partido
                 JOIN Equipos e1 ON p.equ_local = e1.cod_equ
                 JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ
                 JOIN Canchas c ON p.cod_cancha = c.cod_cancha
-                JOIN FaseEquipo fe ON (p.equ_local = fe.cod_equ OR p.equ_visitante = fe.cod_equ)
-                WHERE fe.fase IN ($fasesStr)
-                GROUP BY p.cod_par, p.fecha, p.hora, p.estado, 
-                         e1.cod_equ, e1.nombre, e1.escudo,
-                         e2.cod_equ, e2.nombre, e2.escudo,
-                         c.nombre, fe.fase
+                WHERE p.fase IN ($fasesStr)
                 ORDER BY 
-                    CASE fe.fase
+                    CASE p.fase
                         WHEN 'final' THEN 1
                         WHEN 'semis' THEN 2
                         WHEN 'cuartos' THEN 3
@@ -551,17 +646,42 @@ class Partido
             
             // Procesar los escudos y añadir conteo de goles para partidos finalizados
             foreach ($partidos as &$partido) {
-                // Procesar escudos
-                if ($partido['local_escudo']) {
-                    $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);
+                // Procesar escudo del equipo local
+                if (!empty($partido['local_escudo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($partido['local_escudo'])) {
+                        $content = stream_get_contents($partido['local_escudo']);
+                        rewind($partido['local_escudo']);
+                        $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($partido['local_escudo']);
+                    } else {
+                        $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($partido['local_escudo']);
+                    }
                 } else {
-                    $partido['local_escudo_base64'] = '../assets/images/team.png';
+                    $partido['local_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+                    unset($partido['local_escudo']);
                 }
                 
-                if ($partido['visitante_escudo']) {
-                    $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);
+                // Procesar escudo del equipo visitante
+                if (!empty($partido['visitante_escudo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($partido['visitante_escudo'])) {
+                        $content = stream_get_contents($partido['visitante_escudo']);
+                        rewind($partido['visitante_escudo']);
+                        $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($partido['visitante_escudo']);
+                    } else {
+                        $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($partido['visitante_escudo']);
+                    }
                 } else {
-                    $partido['visitante_escudo_base64'] = '../assets/images/team.png';
+                    $partido['visitante_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+                    unset($partido['visitante_escudo']);
                 }
                 
                 // Si el partido está finalizado, añadir conteo de goles
@@ -714,17 +834,79 @@ class Partido
      * Obtener partidos donde participa un equipo
      */
     public function obtenerPorEquipo($cod_equ) {
-        $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado,
-                       e1.nombre as local_nombre, e2.nombre as visitante_nombre
+        try {
+            $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado,
+                       e1.cod_equ as local_id, e1.nombre as local_nombre, e1.escudo as local_escudo,
+                       e2.cod_equ as visitante_id, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,
+                       c.nombre as cancha
                 FROM Partidos p
                 JOIN Equipos e1 ON p.equ_local = e1.cod_equ
                 JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ
+                JOIN Canchas c ON p.cod_cancha = c.cod_cancha
                 WHERE p.equ_local = :cod_equ OR p.equ_visitante = :cod_equ
                 ORDER BY p.fecha, p.hora";
-        $stmt = $this->conexion->prepare($sql);
-        $stmt->bindParam(':cod_equ', $cod_equ, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':cod_equ', $cod_equ, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            $partidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Procesar los escudos y añadir conteo de goles para partidos finalizados
+            foreach ($partidos as &$partido) {
+                // Procesar escudo del equipo local
+                if (!empty($partido['local_escudo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($partido['local_escudo'])) {
+                        $content = stream_get_contents($partido['local_escudo']);
+                        rewind($partido['local_escudo']);
+                        $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($partido['local_escudo']);
+                    } else {
+                        $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['local_escudo']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($partido['local_escudo']);
+                    }
+                } else {
+                    $partido['local_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+                    unset($partido['local_escudo']);
+                }
+                
+                // Procesar escudo del equipo visitante
+                if (!empty($partido['visitante_escudo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($partido['visitante_escudo'])) {
+                        $content = stream_get_contents($partido['visitante_escudo']);
+                        rewind($partido['visitante_escudo']);
+                        $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                        // Eliminar el recurso del array para evitar problemas con JSON
+                        unset($partido['visitante_escudo']);
+                    } else {
+                        $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['visitante_escudo']);
+                        // Eliminar la versión binaria para evitar duplicados
+                        unset($partido['visitante_escudo']);
+                    }
+                } else {
+                    $partido['visitante_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
+                    unset($partido['visitante_escudo']);
+                }
+                
+                // Si el partido está finalizado, añadir conteo de goles
+                if ($partido['estado'] === 'finalizado') {
+                    $marcador = $this->calcularMarcadorPorDetalle($partido['cod_par'], $partido['local_nombre'], $partido['visitante_nombre']);
+                    $partido['goles_local'] = $marcador['goles_local'];
+                    $partido['goles_visitante'] = $marcador['goles_visitante'];
+                }
+                
+                // Formatear fecha
+                $partido['fecha_formateada'] = date('d/m/Y', strtotime($partido['fecha']));
+            }
+            
+            return $partidos;
+        } catch (PDOException $e) {
+            error_log('Error al obtener partidos por equipo: ' . $e->getMessage());
+            return [];
+        }
     }
 
     public function calcularMarcadorPorDetalle($cod_par, $local_nombre, $visitante_nombre) {

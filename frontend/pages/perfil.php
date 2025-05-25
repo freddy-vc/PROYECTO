@@ -43,10 +43,15 @@ $foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : '../assets/image
                 <form action="../../backend/controllers/actualizar_foto.php" method="POST" enctype="multipart/form-data" class="foto-form">
                     <div class="form-group">
                         <label for="foto_perfil">Cambiar foto de perfil</label>
-                        <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" required>
+                        <input type="file" id="foto_perfil" name="foto_perfil" accept="image/jpeg,image/png,image/gif" required>
                         <small>Formatos permitidos: JPG, PNG, GIF. Máximo 2MB.</small>
                     </div>
                     <button type="submit" class="btn btn-small">Subir Foto</button>
+                </form>
+                
+                <!-- Formulario para eliminar foto de perfil -->
+                <form action="../../backend/controllers/eliminar_foto.php" method="POST" class="foto-form eliminar-foto-form">
+                    <button type="submit" class="btn btn-small btn-danger">Eliminar Foto</button>
                 </form>
             </div>
             
@@ -177,6 +182,10 @@ $foto = $_SESSION['usuario_foto'] ? $_SESSION['usuario_foto'] : '../assets/image
     
     .btn-danger {
         background-color: var(--danger-color);
+    }
+    
+    .eliminar-foto-form {
+        margin-top: 10px;
     }
     
     @media (max-width: 768px) {

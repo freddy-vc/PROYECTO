@@ -191,12 +191,12 @@ function generarPartidosFase(fase, partidos, equipos, lado) {
                 <div class="match">
                     <div class="match-teams">
                         <div class="team ${equipoGanador === equipoLocal ? 'winner' : ''}">
-                            <img src="${equipoLocal ? equipoLocal.escudo_base64 : '/frontend/assets/images/team.png'}" alt="${equipoLocal ? equipoLocal.nombre : 'Por definir'}" class="team-logo">
+                            <img src="${equipoLocal ? equipoLocal.escudo_base64 || '../assets/images/team.png' : '../assets/images/team.png'}" alt="${equipoLocal ? equipoLocal.nombre : 'Por definir'}" class="team-logo">
                             <div class="team-name">${equipoLocal ? equipoLocal.nombre : 'Por definir'}</div>
                             <div class="team-score">${partido.estado === 'finalizado' ? (partido.goles_local || 0) : '-'}</div>
                         </div>
                         <div class="team ${equipoGanador === equipoVisitante ? 'winner' : ''}">
-                            <img src="${equipoVisitante ? equipoVisitante.escudo_base64 : '/frontend/assets/images/team.png'}" alt="${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}" class="team-logo">
+                            <img src="${equipoVisitante ? equipoVisitante.escudo_base64 || '../assets/images/team.png' : '../assets/images/team.png'}" alt="${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}" class="team-logo">
                             <div class="team-name">${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}</div>
                             <div class="team-score">${partido.estado === 'finalizado' ? (partido.goles_visitante || 0) : '-'}</div>
                         </div>
@@ -249,12 +249,12 @@ function generarPartidoFinal(partidos, equipos) {
     return `
         <div class="match-teams">
             <div class="team ${equipoGanador === equipoLocal ? 'winner' : ''}">
-                <img src="${equipoLocal ? equipoLocal.escudo_base64 : '/frontend/assets/images/team.png'}" alt="${equipoLocal ? equipoLocal.nombre : 'Por definir'}" class="team-logo">
+                <img src="${equipoLocal ? equipoLocal.escudo_base64 || '../assets/images/team.png' : '../assets/images/team.png'}" alt="${equipoLocal ? equipoLocal.nombre : 'Por definir'}" class="team-logo">
                 <div class="team-name">${equipoLocal ? equipoLocal.nombre : 'Por definir'}</div>
                 <div class="team-score">${partidoFinal.estado === 'finalizado' ? (partidoFinal.goles_local || 0) : '-'}</div>
             </div>
             <div class="team ${equipoGanador === equipoVisitante ? 'winner' : ''}">
-                <img src="${equipoVisitante ? equipoVisitante.escudo_base64 : '/frontend/assets/images/team.png'}" alt="${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}" class="team-logo">
+                <img src="${equipoVisitante ? equipoVisitante.escudo_base64 || '../assets/images/team.png' : '../assets/images/team.png'}" alt="${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}" class="team-logo">
                 <div class="team-name">${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}</div>
                 <div class="team-score">${partidoFinal.estado === 'finalizado' ? (partidoFinal.goles_visitante || 0) : '-'}</div>
             </div>
@@ -299,7 +299,7 @@ function generarCampeon(partidos, equipos) {
         <div class="champion">
             <div class="champion-label">¡Campeón!</div>
             <div class="champion-team">
-                <img src="${equipoCampeon.escudo_base64}" alt="${equipoCampeon.nombre}" class="champion-logo">
+                <img src="${equipoCampeon.escudo_base64 || '../assets/images/team.png'}" alt="${equipoCampeon.nombre}" class="champion-logo">
                 <div class="champion-name">${equipoCampeon.nombre}</div>
             </div>
         </div>
@@ -361,22 +361,22 @@ function renderClasificaciones(clasificaciones) {
             if (!match) {
                 matchDiv.innerHTML = `<div class=\"clasificaciones-pending\">Pendiente</div>`;
             } else {
-                const local = match.local ? match.local : { nombre: 'Por definir', escudo: '/frontend/assets/images/team.png' };
-                const visitante = match.visitante ? match.visitante : { nombre: 'Por definir', escudo: '/frontend/assets/images/team.png' };
+                const local = match.local ? match.local : { nombre: 'Por definir', escudo: '../assets/images/team.png' };
+                const visitante = match.visitante ? match.visitante : { nombre: 'Por definir', escudo: '../assets/images/team.png' };
                 let marcador_local = match.estado === 'finalizado' ? match.goles_local : '-';
                 let marcador_visitante = match.estado === 'finalizado' ? match.goles_visitante : '-';
                 matchDiv.innerHTML = `
                     <div class=\"clasificaciones-teams-vertical\">
                         <div class=\"clasificaciones-team-row\">
                             <div class=\"clasificaciones-team\">
-                                <img class=\"clasificaciones-escudo\" src=\"${local.escudo}\" alt=\"${local.nombre}\">
+                                <img class=\"clasificaciones-escudo\" src=\"${local.escudo || '../assets/images/team.png'}\" alt=\"${local.nombre}\">
                                 <span>${local.nombre}</span>
                             </div>
                             <div class=\"clasificaciones-score\">${marcador_local}</div>
                         </div>
                         <div class=\"clasificaciones-team-row\">
                             <div class=\"clasificaciones-team\">
-                                <img class=\"clasificaciones-escudo\" src=\"${visitante.escudo}\" alt=\"${visitante.nombre}\">
+                                <img class=\"clasificaciones-escudo\" src=\"${visitante.escudo || '../assets/images/team.png'}\" alt=\"${visitante.nombre}\">
                                 <span>${visitante.nombre}</span>
                             </div>
                             <div class=\"clasificaciones-score\">${marcador_visitante}</div>

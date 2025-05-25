@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Partidos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .partido-card {
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .partido-header {
+            background-color: #f5f5f5;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .partido-content {
+            padding: 15px;
+        }
+        .partido-equipos {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .partido-equipo {
+            text-align: center;
+            width: 40%;
+        }
+        .partido-equipo img {
+            max-width: 80px;
+            max-height: 80px;
+        }
+        .partido-vs {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .partido-info {
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        .partido-footer {
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            margin-top: 10px;
+            text-align: right;
+        }
+        .estado {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .programado {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .finalizado {
+            background-color: #f44336;
+            color: white;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            padding: 20px;
+        }
+        .fecha-separador {
+            background-color: #333;
+            color: white;
+            padding: 8px 15px;
+            margin: 20px 0 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test de Partidos</h1>
+        
+        <div id="partidos-container">
+            <div class="loading">Cargando partidos...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarPartidos();
+        });
+
+        function cargarPartidos() {
+            fetch('/PROYECTO/backend/controllers/partidos_controller.php?accion=listar')
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.text();
+                })
+                .then(text => {
+                    console.log('Raw response:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (error) {
+                        console.error('Error parsing JSON:', error);
+                        throw new Error('Error parsing JSON: ' + error.message);
+                    }
+                })
+                .then(data => {
+                    console.log('Parsed data:', data);
+                    if (data.estado) {
+                        mostrarPartidos(data.partidos);
+                    } else {
+                        document.getElementById('partidos-container').innerHTML = 
+                            '<div class="error">No hay partidos para mostrar.</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('partidos-container').innerHTML = 
+                        `<div class="error">Error al cargar los partidos: ${error.message}</div>`;
+                });
+        }
+
+        function mostrarPartidos(partidos) {
+            const container = document.getElementById('partidos-container');
+            
+            if (!partidos || partidos.length === 0) {
+                container.innerHTML = '<div class="error">No hay partidos para mostrar.</div>';
+                return;
+            }
+            
+            // Agrupar partidos por fecha
+            const partidosPorFecha = agruparPorFecha(partidos);
+            
+            let html = '';
+            
+            // Recorrer las fechas ordenadas
+            Object.keys(partidosPorFecha).sort().forEach(fecha => {
+                const partidosFecha = partidosPorFecha[fecha];
+                
+                // Crear una sección para cada fecha
+                html += `<div class="fecha-separador">${formatearFecha(fecha)}</div>`;
+                
+                // Mostrar los partidos de esa fecha
+                partidosFecha.forEach(partido => {
+                    const esFinalizado = partido.estado === 'finalizado';
+                    
+                    html += `
+                        <div class="partido-card">
+                            <div class="partido-header">
+                                <span class="partido-fecha">${partido.fecha_formateada || partido.fecha}</span>
+                                <span class="partido-estado ${partido.estado}">${partido.estado === 'programado' ? 'Programado' : 'Finalizado'}</span>
+                            </div>
+                            
+                            <div class="partido-content">
+                                <div class="partido-equipos">
+                                    <div class="partido-equipo">
+                                        <img src="${partido.local_escudo_base64}" alt="${partido.local_nombre}" onerror="this.src='/PROYECTO/frontend/assets/images/team.png'">
+                                        <h4>${partido.local_nombre}</h4>
+                                    </div>
+                                    
+                                    <div class="partido-vs">
+                                        ${esFinalizado ? 
+                                            `<div class="partido-resultado">${partido.goles_local} - ${partido.goles_visitante}</div>` : 
+                                            `<div class="partido-hora">${partido.hora ? partido.hora.substring(0, 5) : '00:00'}</div>`
+                                        }
+                                    </div>
+                                    
+                                    <div class="partido-equipo">
+                                        <img src="${partido.visitante_escudo_base64}" alt="${partido.visitante_nombre}" onerror="this.src='/PROYECTO/frontend/assets/images/team.png'">
+                                        <h4>${partido.visitante_nombre}</h4>
+                                    </div>
+                                </div>
+                                
+                                <div class="partido-info">
+                                    <div class="partido-cancha">Cancha: ${partido.cancha}</div>
+                                </div>
+                                
+                                <div class="partido-footer">
+                                    <a href="/PROYECTO/frontend/pages/detalle-partido.php?id=${partido.cod_par}">Ver Detalles</a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function agruparPorFecha(partidos) {
+            const agrupados = {};
+            
+            partidos.forEach(partido => {
+                const fecha = partido.fecha;
+                
+                if (!agrupados[fecha]) {
+                    agrupados[fecha] = [];
+                }
+                
+                agrupados[fecha].push(partido);
+            });
+            
+            return agrupados;
+        }
+
+        function formatearFecha(fechaStr) {
+            try {
+                const fecha = new Date(fechaStr);
+                const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                return fecha.toLocaleDateString('es-ES', opciones);
+            } catch (error) {
+                console.error('Error al formatear fecha:', error);
+                return fechaStr;
+            }
+        }
+    </script>
+</body>
+</html> 

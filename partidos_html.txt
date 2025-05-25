@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración de Partidos - Campeonato Futsala Villavicencio</title>
+    
+    <!-- CSS Común -->
+    <link rel="stylesheet" href="../../../frontend/assets/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS específico de la página actual -->
+                        <link rel="stylesheet" href="../../../frontend/assets/css/admin_partidos.css">
+                
+    <!-- Cache Buster -->
+    <script src="../../../frontend/assets/js/cache-buster.js"></script>
+    
+    <!-- JavaScript común -->
+    <script src="../../../frontend/assets/js/main.js" defer></script>
+    
+    <!-- JavaScript específico de la página actual -->
+        <script src="../../../frontend/assets/js/admin_partidos.js" defer></script>
+    </head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../../../index.php">
+                        <img src="../../../frontend/assets/images/logo.png" alt="Logo VILLAVOCUP">
+                        <span>VILLAVOCUP</span>
+                    </a>
+                </div>
+                
+                <nav class="main-nav">
+    <ul>
+        <li><a href="../../../index.php" class="">Inicio</a></li>
+        <li><a href="../../../frontend/pages/clasificaciones.php" class="">Clasificaciones</a></li>
+        <li><a href="../../../frontend/pages/partidos.php" class="">Partidos</a></li>
+        <li><a href="../../../frontend/pages/equipos.php" class="">Equipos</a></li>
+        <li><a href="../../../frontend/pages/jugadores.php" class="">Jugadores</a></li>
+    </ul>
+</nav>                 
+                <div class="user-section">
+                                            <div class="auth-buttons">
+                            <a href="../../../frontend/pages/login.php" class="btn btn-login">Iniciar Sesión</a>
+                            <a href="../../../frontend/pages/registro.php" class="btn btn-register">Registrarse</a>
+                        </div>
+                                    </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main-content">
+        <div class="container"> 

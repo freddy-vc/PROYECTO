@@ -66,8 +66,15 @@ class Jugador {
                 $jugador = $this->procesarFotoJugador($jugador);
                 
                 // Procesar el escudo del equipo
-                if ($jugador['escudo_equipo']) {
-                    $jugador['escudo_equipo'] = 'data:image/jpeg;base64,' . base64_encode($jugador['escudo_equipo']);
+                if (!empty($jugador['escudo_equipo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($jugador['escudo_equipo'])) {
+                        $content = stream_get_contents($jugador['escudo_equipo']);
+                        rewind($jugador['escudo_equipo']);
+                        $jugador['escudo_equipo'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                    } else {
+                        $jugador['escudo_equipo'] = 'data:image/jpeg;base64,' . base64_encode($jugador['escudo_equipo']);
+                    }
                 } else {
                     $jugador['escudo_equipo'] = '../assets/images/team.png';
                 }
@@ -81,6 +88,7 @@ class Jugador {
             
             return $jugadores;
         } catch (Exception $e) {
+            error_log("Error en obtenerTodosConEstadisticas: " . $e->getMessage());
             throw new Exception("Error al obtener jugadores con estadísticas: " . $e->getMessage());
         }
     }
@@ -109,8 +117,15 @@ class Jugador {
                 $jugador = $this->procesarFotoJugador($jugador);
                 
                 // Procesar el escudo del equipo
-                if ($jugador['escudo_equipo']) {
-                    $jugador['escudo_equipo'] = 'data:image/jpeg;base64,' . base64_encode($jugador['escudo_equipo']);
+                if (!empty($jugador['escudo_equipo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($jugador['escudo_equipo'])) {
+                        $content = stream_get_contents($jugador['escudo_equipo']);
+                        rewind($jugador['escudo_equipo']);
+                        $jugador['escudo_equipo'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                    } else {
+                        $jugador['escudo_equipo'] = 'data:image/jpeg;base64,' . base64_encode($jugador['escudo_equipo']);
+                    }
                 } else {
                     $jugador['escudo_equipo'] = '../assets/images/team.png';
                 }
@@ -124,6 +139,7 @@ class Jugador {
             
             return $jugadores;
         } catch (PDOException $e) {
+            error_log("Error en obtenerPorEquipo: " . $e->getMessage());
             throw new Exception("Error al obtener jugadores del equipo: " . $e->getMessage());
         }
     }
@@ -156,8 +172,15 @@ class Jugador {
             $jugador = $this->procesarFotoJugador($jugador);
             
             // Procesar el escudo del equipo
-            if ($jugador['escudo_equipo']) {
-                $jugador['escudo_equipo'] = 'data:image/jpeg;base64,' . base64_encode($jugador['escudo_equipo']);
+            if (!empty($jugador['escudo_equipo'])) {
+                // Verificar si es un recurso o un string
+                if (is_resource($jugador['escudo_equipo'])) {
+                    $content = stream_get_contents($jugador['escudo_equipo']);
+                    rewind($jugador['escudo_equipo']);
+                    $jugador['escudo_equipo'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                } else {
+                    $jugador['escudo_equipo'] = 'data:image/jpeg;base64,' . base64_encode($jugador['escudo_equipo']);
+                }
             } else {
                 $jugador['escudo_equipo'] = '../assets/images/team.png';
             }
@@ -182,6 +205,7 @@ class Jugador {
             
             return $jugador;
         } catch (PDOException $e) {
+            error_log("Error en obtenerDetalleCompleto: " . $e->getMessage());
             throw new Exception("Error al obtener detalle del jugador: " . $e->getMessage());
         }
     }
@@ -349,8 +373,8 @@ class Jugador {
                     if (file_exists($default_image_path)) {
                         $partido['local_escudo_base64'] = 'data:image/png;base64,' . base64_encode(file_get_contents($default_image_path));
                     } else {
-                        // Si no existe el archivo, usamos una URL relativa como fallback
-                        $partido['local_escudo_base64'] = '../../frontend/assets/images/team.png';
+                        // Si no existe el archivo, usamos una URL absoluta como fallback
+                        $partido['local_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
                     }
                 }
                 
@@ -362,8 +386,8 @@ class Jugador {
                     if (file_exists($default_image_path)) {
                         $partido['visitante_escudo_base64'] = 'data:image/png;base64,' . base64_encode(file_get_contents($default_image_path));
                     } else {
-                        // Si no existe el archivo, usamos una URL relativa como fallback
-                        $partido['visitante_escudo_base64'] = '../../frontend/assets/images/team.png';
+                        // Si no existe el archivo, usamos una URL absoluta como fallback
+                        $partido['visitante_escudo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
                     }
                 }
                 
@@ -437,18 +461,8 @@ class Jugador {
             if ($goleador['escudo_equipo']) {
                 $goleador['escudo_equipo_base64'] = 'data:image/jpeg;base64,' . base64_encode($goleador['escudo_equipo']);
             } else {
-                // Detectar el contexto basado en la ruta del script
-                $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
-                if (strpos($script_path, '/frontend/pages/admin/') !== false) {
-                    // Si estamos en el panel admin
-                    $goleador['escudo_equipo_base64'] = '../../assets/images/team.png';
-                } else if (strpos($script_path, '/frontend/pages/') !== false) {
-                    // Si estamos en la interfaz de usuario
-                    $goleador['escudo_equipo_base64'] = '../assets/images/team.png';
-                } else {
-                    // Si estamos en la raíz
-                    $goleador['escudo_equipo_base64'] = './frontend/assets/images/team.png';
-                }
+                // Usar ruta absoluta para la imagen por defecto
+                $goleador['escudo_equipo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
             }
             
             return $goleador;
@@ -488,18 +502,8 @@ class Jugador {
             if ($asistidor['escudo_equipo']) {
                 $asistidor['escudo_equipo_base64'] = 'data:image/jpeg;base64,' . base64_encode($asistidor['escudo_equipo']);
             } else {
-                // Detectar el contexto basado en la ruta del script
-                $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
-                if (strpos($script_path, '/frontend/pages/admin/') !== false) {
-                    // Si estamos en el panel admin
-                    $asistidor['escudo_equipo_base64'] = '../../assets/images/team.png';
-                } else if (strpos($script_path, '/frontend/pages/') !== false) {
-                    // Si estamos en la interfaz de usuario
-                    $asistidor['escudo_equipo_base64'] = '../assets/images/team.png';
-                } else {
-                    // Si estamos en la raíz
-                    $asistidor['escudo_equipo_base64'] = './frontend/assets/images/team.png';
-                }
+                // Usar ruta absoluta para la imagen por defecto
+                $asistidor['escudo_equipo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
             }
             
             return $asistidor;
@@ -640,34 +644,63 @@ class Jugador {
     }
     
     /**
-     * Procesa la foto del jugador para convertirla a base64
+     * Procesa la foto de un jugador (codificación base64)
      */
     private function procesarFotoJugador($jugador)
     {
-        if (isset($jugador['foto']) && $jugador['foto'] && !empty($jugador['foto'])) {
-            try {
-                // Verificar que la imagen sea válida antes de codificarla
-                $finfo = new finfo(FILEINFO_MIME_TYPE);
-                $mime_type = $finfo->buffer($jugador['foto']);
-                
-                if (strpos($mime_type, 'image/') === 0) {
-                    // Es una imagen válida
-                    $jugador['foto_base64'] = 'data:' . $mime_type . ';base64,' . base64_encode($jugador['foto']);
+        if (!empty($jugador) && array_key_exists('foto', $jugador)) {
+            if (!empty($jugador['foto'])) {
+                // Verificar si es un recurso o un string
+                if (is_resource($jugador['foto'])) {
+                    $content = stream_get_contents($jugador['foto']);
+                    rewind($jugador['foto']);
+                    $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($content);
                 } else {
-                    // No es una imagen válida
-                    $jugador['foto_base64'] = '';
-                    error_log("Error en procesarFotoJugador: Tipo MIME no válido: " . $mime_type);
+                    $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
                 }
-            } catch (Exception $e) {
-                // Error al procesar la imagen
-                $jugador['foto_base64'] = '';
-                error_log("Error en procesarFotoJugador: " . $e->getMessage());
+            } else {
+                // Usar una ruta absoluta para la imagen por defecto
+                $jugador['foto_base64'] = '/PROYECTO/frontend/assets/images/player.png';
             }
-        } else {
-            // No hay imagen o está vacía
-            $jugador['foto_base64'] = '';
         }
-        
         return $jugador;
+    }
+    
+    /**
+     * Eliminar la foto de un jugador
+     */
+    public function eliminarFoto($jugadorId)
+    {
+        try {
+            // Verificar si el jugador existe
+            $query = "SELECT * FROM Jugadores WHERE cod_jug = :jugador_id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':jugador_id', $jugadorId, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            if ($stmt->rowCount() === 0) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El jugador no existe en la base de datos'
+                ];
+            }
+            
+            // Establecer la foto como NULL
+            $query = "UPDATE Jugadores SET foto = NULL WHERE cod_jug = :jugador_id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':jugador_id', $jugadorId, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            return [
+                'estado' => true,
+                'mensaje' => 'Foto del jugador eliminada correctamente'
+            ];
+            
+        } catch (PDOException $e) {
+            return [
+                'estado' => false,
+                'mensaje' => 'Error al eliminar la foto: ' . $e->getMessage()
+            ];
+        }
     }
 } 

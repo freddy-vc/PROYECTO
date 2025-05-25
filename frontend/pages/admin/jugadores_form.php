@@ -149,6 +149,12 @@ if (isset($_GET['id'])) {
                                 <div class="current-image">
                                     <img src="<?php echo $jugador['foto_base64']; ?>" alt="Foto actual" style="max-width: 100px; margin-bottom: 10px;">
                                     <p>Foto actual</p>
+                                    <form action="../../../backend/controllers/admin/eliminar_foto_jugador.php" method="POST" style="display: inline-block; margin-top: 10px;">
+                                        <input type="hidden" name="jugador_id" value="<?php echo $jugador['cod_jug']; ?>">
+                                        <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('¿Está seguro de eliminar la foto?')">
+                                            <i class="fas fa-trash"></i> Eliminar foto
+                                        </button>
+                                    </form>
                                 </div>
                             <?php else: ?>
                                 <div class="current-image">

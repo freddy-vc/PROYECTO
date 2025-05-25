@@ -63,30 +63,22 @@ function verificarJugadoresDestacados() {
                 // Si hay goleador, mostrar su información
                 if (data.goleador) {
                     html += `
-                        <div class="player-card">
-                            <div class="player-header">
-                                <img src="${data.goleador.foto_base64 || '../../frontend/assets/images/player.png'}" alt="${data.goleador.nombres} ${data.goleador.apellidos}">
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <h3>Goleador</h3>
+                            </div>
+                            <div class="stat-card-body">
+                                <div class="player-avatar">
+                                    <img src="${data.goleador.foto_base64 || '/PROYECTO/frontend/assets/images/player.png'}" alt="${data.goleador.nombres} ${data.goleador.apellidos}">
+                                </div>
                                 <div class="player-info">
-                                    <h3>${data.goleador.nombres} ${data.goleador.apellidos}</h3>
-                                    <p class="player-team">
-                                        <img src="${data.goleador.escudo_equipo_base64 || '../../frontend/assets/images/team.png'}" alt="${data.goleador.nombre_equipo}">
+                                    <div class="player-name">${data.goleador.nombres} ${data.goleador.apellidos}</div>
+                                    <div class="player-team">
+                                        <img src="${data.goleador.escudo_equipo_base64 || '/PROYECTO/frontend/assets/images/team.png'}" alt="${data.goleador.nombre_equipo}">
                                         ${data.goleador.nombre_equipo}
-                                    </p>
+                                    </div>
+                                    <div class="player-stat">${data.goleador.goles} goles</div>
                                 </div>
-                            </div>
-                            <div class="player-stats">
-                                <div class="stat">
-                                    <span class="stat-value">${data.goleador.total_goles}</span>
-                                    <span class="stat-label">Goles</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-value">${data.goleador.dorsal}</span>
-                                    <span class="stat-label">Dorsal</span>
-                                </div>
-                            </div>
-                            <div class="player-badge">
-                                <i class="fas fa-futbol"></i>
-                                <span>Goleador</span>
                             </div>
                         </div>
                     `;
@@ -95,30 +87,22 @@ function verificarJugadoresDestacados() {
                 // Si hay máximo asistidor, mostrar su información
                 if (data.asistidor) {
                     html += `
-                        <div class="player-card">
-                            <div class="player-header">
-                                <img src="${data.asistidor.foto_base64 || '../../frontend/assets/images/player.png'}" alt="${data.asistidor.nombres} ${data.asistidor.apellidos}">
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <h3>Asistidor</h3>
+                            </div>
+                            <div class="stat-card-body">
+                                <div class="player-avatar">
+                                    <img src="${data.asistidor.foto_base64 || '/PROYECTO/frontend/assets/images/player.png'}" alt="${data.asistidor.nombres} ${data.asistidor.apellidos}">
+                                </div>
                                 <div class="player-info">
-                                    <h3>${data.asistidor.nombres} ${data.asistidor.apellidos}</h3>
-                                    <p class="player-team">
-                                        <img src="${data.asistidor.escudo_equipo_base64 || '../../frontend/assets/images/team.png'}" alt="${data.asistidor.nombre_equipo}">
+                                    <div class="player-name">${data.asistidor.nombres} ${data.asistidor.apellidos}</div>
+                                    <div class="player-team">
+                                        <img src="${data.asistidor.escudo_equipo_base64 || '/PROYECTO/frontend/assets/images/team.png'}" alt="${data.asistidor.nombre_equipo}">
                                         ${data.asistidor.nombre_equipo}
-                                    </p>
+                                    </div>
+                                    <div class="player-stat">${data.asistidor.asistencias} asistencias</div>
                                 </div>
-                            </div>
-                            <div class="player-stats">
-                                <div class="stat">
-                                    <span class="stat-value">${data.asistidor.total_asistencias}</span>
-                                    <span class="stat-label">Asistencias</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-value">${data.asistidor.dorsal}</span>
-                                    <span class="stat-label">Dorsal</span>
-                                </div>
-                            </div>
-                            <div class="player-badge">
-                                <i class="fas fa-hands-helping"></i>
-                                <span>Máx. Asistidor</span>
                             </div>
                         </div>
                     `;
