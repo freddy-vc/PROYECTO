@@ -9,8 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeImagePreview();
     }
     
-    // Inicializar los botones de eliminación si existen
-    initializeDeleteButtons();
+    // No inicializar los botones de eliminación aquí, se hace en admin.js
 });
 
 /**
@@ -132,23 +131,6 @@ function initializeImagePreview() {
             }
         });
     }
-}
-
-/**
- * Inicializar los botones de eliminación
- */
-function initializeDeleteButtons() {
-    const deleteButtons = document.querySelectorAll('.delete-btn');
-    
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const canchaName = this.getAttribute('data-name');
-            
-            if (confirm(`¿Estás seguro de que deseas eliminar la cancha "${canchaName}"? Esta acción no se puede deshacer.`)) {
-                this.closest('form').submit();
-            }
-        });
-    });
 }
 
 /**

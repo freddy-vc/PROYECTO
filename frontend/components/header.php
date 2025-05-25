@@ -68,6 +68,9 @@ if (!isset($ruta_raiz)) {
     <!-- Cache Buster -->
     <script src="<?php echo $ruta_raiz; ?>frontend/assets/js/cache-buster.js"></script>
     
+    <!-- Notifications handler -->
+    <script src="<?php echo $ruta_raiz; ?>frontend/assets/js/notifications.js"></script>
+    
     <!-- JavaScript común -->
     <script src="<?php echo $ruta_raiz; ?>frontend/assets/js/main.js" defer></script>
     

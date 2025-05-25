@@ -19,16 +19,16 @@ include_once '../../components/notificaciones.php';
 // Incluir el modelo de Equipo
 require_once '../../../backend/models/Equipo.php';
 
-// Obtener los equipos
+// Obtener todos los equipos
 $equipoModel = new Equipo();
 $equipos = $equipoModel->obtenerTodos();
+
 ?>
 
-<!-- Incluir Font Awesome para los iconos -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<!-- Incluir los estilos comunes para el panel de administración -->
+<?php include_once '../../components/admin_styles.php'; ?>
+
 <!-- Incluir los estilos específicos para esta página -->
-<link rel="stylesheet" href="../../assets/css/admin.css">
-<link rel="stylesheet" href="../../assets/css/admin_crud.css">
 
 <div class="container">
     <h1 class="page-title">Administración de Equipos</h1>

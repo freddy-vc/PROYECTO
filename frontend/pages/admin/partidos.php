@@ -23,37 +23,10 @@ require_once '../../../backend/models/Partido.php';
 $partidoModel = new Partido();
 $partidos = $partidoModel->obtenerTodos();
 
-// Depuración: ver la estructura del primer partido
-if (!empty($partidos)) {
-    $partidoPrueba = $partidos[0];
-    // Comentar o eliminar estas líneas después de depurar
-    echo '<pre style="background:#f5f5f5; padding:10px; margin:10px; border:1px solid #ddd; font-size:12px;">';
-    echo "Debug - Variables del primer partido (ID: {$partidoPrueba['cod_par']}):\n";
-    echo "local_escudo_base64: " . (isset($partidoPrueba['local_escudo_base64']) ? "Existe" : "No existe") . "\n";
-    echo "visitante_escudo_base64: " . (isset($partidoPrueba['visitante_escudo_base64']) ? "Existe" : "No existe") . "\n";
-    echo "local_escudo: " . (isset($partidoPrueba['local_escudo']) ? "Existe" : "No existe") . "\n";
-    echo "visitante_escudo: " . (isset($partidoPrueba['visitante_escudo']) ? "Existe" : "No existe") . "\n";
-    
-    // Mostrar las primeras 20 claves del array
-    echo "\nClaves disponibles en el partido:\n";
-    $i = 0;
-    foreach (array_keys($partidoPrueba) as $key) {
-        echo "$key, ";
-        if (++$i >= 20) {
-            echo "...";
-            break;
-        }
-    }
-    echo '</pre>';
-}
 ?>
 
-<!-- Incluir Font Awesome para los iconos -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<!-- Incluir los estilos específicos para esta página -->
-<link rel="stylesheet" href="../../assets/css/admin.css">
-<link rel="stylesheet" href="../../assets/css/admin_crud.css">
-<link rel="stylesheet" href="../../assets/css/admin_partidos.css">
+<!-- Incluir los estilos comunes para el panel de administración -->
+<?php include_once '../../components/admin_styles.php'; ?>
 
 <div class="container">
     <h1 class="page-title">Administración de Partidos</h1>

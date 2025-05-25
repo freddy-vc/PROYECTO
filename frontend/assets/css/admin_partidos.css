@@ -250,4 +250,20 @@
     padding: 20px;
     background: #f8f9fa;
     border-radius: 8px;
+}
+
+.badge-programado {
+    background-color: #e6f7ee;
+    color: #28a745;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.85em;
+}
+
+.badge-finalizado {
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.85em;
 } 

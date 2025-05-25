@@ -8,8 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeFormValidation();
     }
     
-    // Inicializar los botones de eliminación si existen
-    initializeDeleteButtons();
+    // No inicializar los botones de eliminación aquí, se hace en admin.js
 });
 
 /**
@@ -35,23 +34,6 @@ function initializeFormValidation() {
         if (!isValid) {
             e.preventDefault();
         }
-    });
-}
-
-/**
- * Inicializar los botones de eliminación
- */
-function initializeDeleteButtons() {
-    const deleteButtons = document.querySelectorAll('.delete-btn');
-    
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const cityName = this.getAttribute('data-name');
-            
-            if (confirm(`¿Estás seguro de que deseas eliminar la ciudad "${cityName}"? Esta acción no se puede deshacer y podría afectar a las canchas asociadas.`)) {
-                this.closest('form').submit();
-            }
-        });
     });
 }
 

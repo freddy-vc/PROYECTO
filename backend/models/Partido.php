@@ -498,11 +498,62 @@ class Partido
     public function eliminar($cod_par)
     {
         try {
-            $sql = "DELETE FROM Partidos WHERE cod_par = :cod_par";
+            // Verificar primero si el partido existe
+            $query = "SELECT * FROM Partidos WHERE cod_par = :cod_par";
+            $stmt = $this->conexion->prepare($query);
+            $stmt->bindParam(':cod_par', $cod_par);
+            $stmt->execute();
             
+            if ($stmt->rowCount() === 0) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'No se pudo eliminar porque el partido no existe o ya fue eliminado'
+                ];
+            }
+            
+            // Verificar si hay estadísticas asociadas al partido
+            $queryGoles = "SELECT COUNT(*) as total FROM Goles WHERE cod_par = :cod_par";
+            $stmtGoles = $this->conexion->prepare($queryGoles);
+            $stmtGoles->bindParam(':cod_par', $cod_par);
+            $stmtGoles->execute();
+            $goles = $stmtGoles->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            $queryAsistencias = "SELECT COUNT(*) as total FROM Asistencias WHERE cod_par = :cod_par";
+            $stmtAsistencias = $this->conexion->prepare($queryAsistencias);
+            $stmtAsistencias->bindParam(':cod_par', $cod_par);
+            $stmtAsistencias->execute();
+            $asistencias = $stmtAsistencias->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            $queryFaltas = "SELECT COUNT(*) as total FROM Faltas WHERE cod_par = :cod_par";
+            $stmtFaltas = $this->conexion->prepare($queryFaltas);
+            $stmtFaltas->bindParam(':cod_par', $cod_par);
+            $stmtFaltas->execute();
+            $faltas = $stmtFaltas->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            if ($goles > 0 || $asistencias > 0 || $faltas > 0) {
+                $detalles = [];
+                if ($goles > 0) $detalles[] = $goles . ' gol(es)';
+                if ($asistencias > 0) $detalles[] = $asistencias . ' asistencia(s)';
+                if ($faltas > 0) $detalles[] = $faltas . ' tarjeta(s)';
+                
+                return [
+                    'estado' => false,
+                    'mensaje' => 'No se puede eliminar el partido porque tiene estadísticas asociadas: ' . implode(', ', $detalles) . '. Elimine primero estas estadísticas o considere marcar el partido como cancelado en lugar de eliminarlo.'
+                ];
+            }
+            
+            // Eliminar el partido
+            $sql = "DELETE FROM Partidos WHERE cod_par = :cod_par";
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':cod_par', $cod_par);
             $stmt->execute();
+            
+            if ($stmt->rowCount() === 0) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'No se pudo eliminar el partido. Por favor, inténtelo de nuevo más tarde.'
+                ];
+            }
             
             return [
                 'estado' => true,
@@ -510,9 +561,16 @@ class Partido
             ];
             
         } catch (PDOException $e) {
+            $errorMessage = 'Error al eliminar el partido';
+            
+            // Verificar si es error de clave foránea
+            if (strpos($e->getMessage(), 'foreign key constraint fails') !== false) {
+                $errorMessage = 'No se puede eliminar el partido porque está siendo referenciado por otros registros del sistema';
+            }
+            
             return [
                 'estado' => false,
-                'mensaje' => 'Error al eliminar el partido: ' . $e->getMessage()
+                'mensaje' => $errorMessage
             ];
         }
     }
@@ -941,6 +999,40 @@ class Partido
             'goles_local' => $marcadorLocal,
             'goles_visitante' => $marcadorVisitante
         ];
+    }
+
+    /**
+     * Contar partidos por fase
+     * @param string $fase Fase a contar (cuartos, semis, final)
+     * @param int|null $excluir_partido_id ID de partido a excluir del conteo (útil al actualizar)
+     * @return int Número de partidos en la fase
+     */
+    public function contarPartidosPorFase($fase, $excluir_partido_id = null)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM Partidos WHERE fase = :fase";
+            
+            // Si se proporciona un ID para excluir, añadirlo a la consulta
+            if ($excluir_partido_id !== null) {
+                $sql .= " AND cod_par != :excluir_partido_id";
+            }
+            
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->bindParam(':fase', $fase);
+            
+            if ($excluir_partido_id !== null) {
+                $stmt->bindParam(':excluir_partido_id', $excluir_partido_id, PDO::PARAM_INT);
+            }
+            
+            $stmt->execute();
+            $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            return (int)$resultado['total'];
+            
+        } catch (PDOException $e) {
+            error_log("Error al contar partidos por fase: " . $e->getMessage());
+            return 0;
+        }
     }
 }
 ?> 

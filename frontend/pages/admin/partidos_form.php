@@ -66,12 +66,8 @@ if ($esEdicion) {
 }
 ?>
 
-<!-- Incluir los estilos específicos para esta página -->
-<link rel="stylesheet" href="../../assets/css/admin.css">
-<link rel="stylesheet" href="../../assets/css/admin_crud.css">
-<link rel="stylesheet" href="../../assets/css/admin_partidos.css">
-<!-- Incluir Font Awesome para los iconos -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<!-- Incluir los estilos comunes para el panel de administración -->
+<?php include_once '../../components/admin_styles.php'; ?>
 
 <div class="container">
     <div class="breadcrumb">
@@ -161,6 +157,18 @@ if ($esEdicion) {
                     <?php endforeach; ?>
                 </select>
                 <div class="form-error" id="error-equipo-visitante"></div>
+            </div>
+            
+            <!-- Fase del torneo -->
+            <div class="form-group">
+                <label for="fase">Fase del Torneo <span class="required">*</span></label>
+                <select id="fase" name="fase" class="form-control" required>
+                    <option value="">Selecciona la fase</option>
+                    <option value="cuartos">Cuartos de Final</option>
+                    <option value="semis">Semifinales</option>
+                    <option value="final">Final</option>
+                </select>
+                <div class="form-error" id="error-fase"></div>
             </div>
             <?php else: ?>
             <!-- Mostrar equipos (para partidos en edición) -->

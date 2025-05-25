@@ -1,14 +1,21 @@
 /**
- * Función para ocultar notificaciones después de 5 segundos
+ * Función para ocultar notificaciones después de 3 segundos
+ * Esta función ahora usa el método centralizado en notifications.js
  */
 function ocultarNotificaciones() {
-    document.querySelectorAll('.mensaje-error, .mensaje-exito').forEach(function(el) {
-        setTimeout(function() {
-            el.style.transition = 'opacity 0.5s';
-            el.style.opacity = '0';
-            setTimeout(function() { el.style.display = 'none'; }, 500);
-        }, 5000);
-    });
+    // Llamar a la función centralizada
+    if (typeof hideAllNotifications === 'function') {
+        hideAllNotifications();
+    } else {
+        // Fallback por si el script centralizado no está cargado
+        document.querySelectorAll('.mensaje-error, .mensaje-exito').forEach(function(el) {
+            setTimeout(function() {
+                el.style.transition = 'opacity 0.5s';
+                el.style.opacity = '0';
+                setTimeout(function() { el.style.display = 'none'; }, 500);
+            }, 3000);
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {

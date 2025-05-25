@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function setupJugadorForm() {
     const jugadorForm = document.getElementById('form-jugador');
-    console.log('jugadorForm:', jugadorForm);
     if (!jugadorForm) return;
     
     jugadorForm.addEventListener('submit', function(e) {
@@ -491,28 +490,34 @@ function deleteTempStat(id, tipo, showMsg = false) {
 
 // Función para mostrar notificaciones
 function showNotification(type, message) {
-    // Verificar si el mensaje está relacionado con goles, asistencias o faltas
-    // Si es así, no mostrar la notificación
-    if (message.includes('Gol') || 
-        message.includes('gol') || 
-        message.includes('Asistencia') || 
-        message.includes('asistencia') || 
-        message.includes('Falta') || 
-        message.includes('falta') ||
-        message.includes('Tarjeta') ||
-        message.includes('tarjeta')) {
-        return; // No mostrar notificación para estas operaciones
+    // Utilizar la función centralizada si está disponible
+    if (typeof window.showNotification === 'function') {
+        window.showNotification(type, message);
+    } else {
+        // Fallback por si el script centralizado no está cargado
+        // Verificar si el mensaje está relacionado con goles, asistencias o faltas
+        // Si es así, no mostrar la notificación
+        if (message.includes('Gol') || 
+            message.includes('gol') || 
+            message.includes('Asistencia') || 
+            message.includes('asistencia') || 
+            message.includes('Falta') || 
+            message.includes('falta') ||
+            message.includes('Tarjeta') ||
+            message.includes('tarjeta')) {
+            return; // No mostrar notificación para estas operaciones
+        }
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
     }
-    
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
 }
 
 // Función para abrir un modal

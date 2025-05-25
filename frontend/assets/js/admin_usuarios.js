@@ -9,8 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeFileInput();
     }
     
-    // Inicializar los botones de eliminación si existen
-    initializeDeleteButtons();
+    // No inicializar los botones de eliminación aquí, se hace en admin.js
 });
 
 /**
@@ -135,23 +134,6 @@ function initializeFileInput() {
             fileText.textContent = 'Ningún archivo seleccionado';
             preview.style.display = 'none';
         }
-    });
-}
-
-/**
- * Inicializar los botones de eliminación
- */
-function initializeDeleteButtons() {
-    const deleteButtons = document.querySelectorAll('.delete-btn');
-    
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const username = this.getAttribute('data-name');
-            
-            if (confirm(`¿Estás seguro de que deseas eliminar al usuario "${username}"? Esta acción no se puede deshacer.`)) {
-                this.closest('form').submit();
-            }
-        });
     });
 }
 

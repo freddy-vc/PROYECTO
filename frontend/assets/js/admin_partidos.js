@@ -28,8 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeFormValidation();
     }
     
-    // Inicializar los botones de eliminación si existen
-    initializeDeleteButtons();
+    // No inicializar los botones de eliminación aquí, se hace en admin.js
     
     // Inicializar las pestañas en la sección de estadísticas si existen
     initializeTabs();
@@ -165,6 +164,15 @@ function initializeFormValidation() {
             }
         }
         
+        // Validar fase del torneo
+        const fase = document.getElementById('fase');
+        if (fase && !fase.value) {
+            showError(fase, 'Selecciona una fase del torneo');
+            isValid = false;
+        } else if (fase) {
+            clearError(fase);
+        }
+        
         // Validar estado si está presente
         const estado = document.getElementById('estado');
         if (estado && !estado.value) {
@@ -178,23 +186,6 @@ function initializeFormValidation() {
         if (!isValid) {
             e.preventDefault();
         }
-    });
-}
-
-/**
- * Inicializar los botones de eliminación
- */
-function initializeDeleteButtons() {
-    const deleteButtons = document.querySelectorAll('.delete-btn');
-    
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const partidoName = this.getAttribute('data-name');
-            
-            if (confirm(`¿Estás seguro de que deseas eliminar el partido "${partidoName}"? Esta acción no se puede deshacer.`)) {
-                this.closest('form').submit();
-            }
-        });
     });
 }
 

@@ -398,9 +398,9 @@ function openDeleteFaltaModal(cod_falta) {
 <script>
 <?php if (isset($jugador)): ?>
 window.initialStats = {
-    goles: <?php echo json_encode($jugador['detalle_goles'] ?? []); ?>,
-    asistencias: <?php echo json_encode($jugador['detalle_asistencias'] ?? []); ?>,
-    faltas: <?php echo json_encode($jugador['detalle_faltas'] ?? []); ?>
+    goles: <?php echo json_encode(isset($jugador['detalle_goles']) ? $jugador['detalle_goles'] : []); ?>,
+    asistencias: <?php echo json_encode(isset($jugador['detalle_asistencias']) ? $jugador['detalle_asistencias'] : []); ?>,
+    faltas: <?php echo json_encode(isset($jugador['detalle_faltas']) ? $jugador['detalle_faltas'] : []); ?>
 };
 <?php endif; ?>
 </script>

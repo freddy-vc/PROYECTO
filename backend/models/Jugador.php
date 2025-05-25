@@ -31,8 +31,15 @@ class Jugador {
                 $jugador = $this->procesarFotoJugador($jugador);
                 
                 // Procesar el escudo del equipo
-                if ($jugador['escudo_equipo']) {
-                    $jugador['escudo_equipo'] = 'data:image/jpeg;base64,' . base64_encode($jugador['escudo_equipo']);
+                if (!empty($jugador['escudo_equipo'])) {
+                    // Verificar si es un recurso o un string
+                    if (is_resource($jugador['escudo_equipo'])) {
+                        $content = stream_get_contents($jugador['escudo_equipo']);
+                        rewind($jugador['escudo_equipo']);
+                        $jugador['escudo_equipo'] = 'data:image/jpeg;base64,' . base64_encode($content);
+                    } else {
+                        $jugador['escudo_equipo'] = 'data:image/jpeg;base64,' . base64_encode($jugador['escudo_equipo']);
+                    }
                 } else {
                     $jugador['escudo_equipo'] = '../assets/images/team.png';
                 }
@@ -517,6 +524,36 @@ class Jugador {
      */
     public function crear($datos) {
         try {
+            // Verificar si el número de camiseta ya está asignado a otro jugador en el mismo equipo
+            $query = "SELECT * FROM Jugadores WHERE dorsal = :dorsal AND cod_equ = :cod_equ";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':dorsal', $datos['dorsal'], PDO::PARAM_INT);
+            $stmt->bindParam(':cod_equ', $datos['cod_equ'], PDO::PARAM_INT);
+            $stmt->execute();
+            
+            if ($stmt->rowCount() > 0) {
+                $jugadorExistente = $stmt->fetch(PDO::FETCH_ASSOC);
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El número de camiseta ' . $datos['dorsal'] . ' ya está asignado a otro jugador en el mismo equipo: ' . $jugadorExistente['nombres'] . ' ' . $jugadorExistente['apellidos']
+                ];
+            }
+            
+            // Verificar si ya existe un jugador con el mismo nombre y apellido en el equipo
+            $query = "SELECT * FROM Jugadores WHERE nombres = :nombres AND apellidos = :apellidos AND cod_equ = :cod_equ";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':nombres', $datos['nombres']);
+            $stmt->bindParam(':apellidos', $datos['apellidos']);
+            $stmt->bindParam(':cod_equ', $datos['cod_equ'], PDO::PARAM_INT);
+            $stmt->execute();
+            
+            if ($stmt->rowCount() > 0) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'Ya existe un jugador con el mismo nombre y apellido en este equipo'
+                ];
+            }
+            
             // Preparar la consulta SQL
             $query = "INSERT INTO Jugadores (nombres, apellidos, posicion, dorsal, cod_equ, foto) 
                      VALUES (:nombres, :apellidos, :posicion, :dorsal, :cod_equ, :foto)";
@@ -529,15 +566,36 @@ class Jugador {
             $stmt->bindParam(':foto', $datos['foto'], PDO::PARAM_LOB);
             $stmt->execute();
             $jugadorId = $this->db->lastInsertId();
+            
+            if (!$jugadorId) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'No se pudo crear el jugador. Por favor, inténtelo de nuevo más tarde.'
+                ];
+            }
+            
             return [
                 'estado' => true,
                 'mensaje' => 'Jugador creado correctamente',
                 'id' => $jugadorId
             ];
         } catch (PDOException $e) {
+            $errorMessage = 'Error al crear el jugador';
+            
+            // Verificar el tipo de error específico
+            if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                if (strpos($e->getMessage(), 'dorsal') !== false) {
+                    $errorMessage = 'El número de camiseta ya está siendo utilizado por otro jugador en el mismo equipo';
+                } else {
+                    $errorMessage = 'Ya existe un jugador con datos similares';
+                }
+            } else if (strpos($e->getMessage(), 'foreign key constraint fails') !== false) {
+                $errorMessage = 'El equipo seleccionado no existe o no está disponible';
+            }
+            
             return [
                 'estado' => false,
-                'mensaje' => $e->getMessage()
+                'mensaje' => $errorMessage
             ];
         }
     }
@@ -547,6 +605,35 @@ class Jugador {
      */
     public function actualizar($datos) {
         try {
+            // Verificar primero si el jugador existe
+            $query = "SELECT * FROM Jugadores WHERE cod_jug = :cod_jug";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':cod_jug', $datos['cod_jug'], PDO::PARAM_INT);
+            $stmt->execute();
+            
+            if ($stmt->rowCount() === 0) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'No se pudo actualizar porque el jugador no existe o ya fue eliminado'
+                ];
+            }
+            
+            // Verificar si el número de camiseta ya está asignado a otro jugador en el mismo equipo
+            $query = "SELECT * FROM Jugadores WHERE dorsal = :dorsal AND cod_equ = :cod_equ AND cod_jug != :cod_jug";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':dorsal', $datos['dorsal'], PDO::PARAM_INT);
+            $stmt->bindParam(':cod_equ', $datos['cod_equ'], PDO::PARAM_INT);
+            $stmt->bindParam(':cod_jug', $datos['cod_jug'], PDO::PARAM_INT);
+            $stmt->execute();
+            
+            if ($stmt->rowCount() > 0) {
+                $jugadorExistente = $stmt->fetch(PDO::FETCH_ASSOC);
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El número de camiseta ' . $datos['dorsal'] . ' ya está asignado a otro jugador en el mismo equipo: ' . $jugadorExistente['nombres'] . ' ' . $jugadorExistente['apellidos']
+                ];
+            }
+            
             if ($datos['actualizar_foto']) {
                 $query = "UPDATE Jugadores SET nombres = :nombres, apellidos = :apellidos, 
                          posicion = :posicion, dorsal = :dorsal, cod_equ = :cod_equ, foto = :foto 
@@ -566,14 +653,35 @@ class Jugador {
             $stmt->bindParam(':cod_equ', $datos['cod_equ'], PDO::PARAM_INT);
             $stmt->bindParam(':cod_jug', $datos['cod_jug'], PDO::PARAM_INT);
             $stmt->execute();
+            
+            if ($stmt->rowCount() === 0) {
+                return [
+                    'estado' => true,
+                    'mensaje' => 'No se detectaron cambios en los datos del jugador'
+                ];
+            }
+            
             return [
                 'estado' => true,
                 'mensaje' => 'Jugador actualizado correctamente'
             ];
         } catch (PDOException $e) {
+            $errorMessage = 'Error al actualizar el jugador';
+            
+            // Verificar el tipo de error específico
+            if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                if (strpos($e->getMessage(), 'dorsal') !== false) {
+                    $errorMessage = 'El número de camiseta ya está siendo utilizado por otro jugador en el mismo equipo';
+                } else {
+                    $errorMessage = 'Existe un conflicto con datos duplicados';
+                }
+            } else if (strpos($e->getMessage(), 'foreign key constraint fails') !== false) {
+                $errorMessage = 'El equipo seleccionado no existe o no está disponible';
+            }
+            
             return [
                 'estado' => false,
-                'mensaje' => $e->getMessage()
+                'mensaje' => $errorMessage
             ];
         }
     }
@@ -592,7 +700,7 @@ class Jugador {
             if ($stmt->rowCount() === 0) {
                 return [
                     'estado' => false,
-                    'mensaje' => 'El jugador no existe en la base de datos'
+                    'mensaje' => 'No se pudo eliminar porque el jugador no existe o ya fue eliminado'
                 ];
             }
             
@@ -619,9 +727,14 @@ class Jugador {
             $faltas = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
             
             if ($goles > 0 || $asistencias > 0 || $faltas > 0) {
+                $detalles = [];
+                if ($goles > 0) $detalles[] = $goles . ' gol(es)';
+                if ($asistencias > 0) $detalles[] = $asistencias . ' asistencia(s)';
+                if ($faltas > 0) $detalles[] = $faltas . ' tarjeta(s)';
+                
                 return [
                     'estado' => false,
-                    'mensaje' => 'No se puede eliminar el jugador porque tiene registros asociados'
+                    'mensaje' => 'No se puede eliminar el jugador porque tiene registros asociados: ' . implode(', ', $detalles) . '. Elimine primero estos registros o considere inactivar al jugador en lugar de eliminarlo.'
                 ];
             }
             
@@ -631,14 +744,28 @@ class Jugador {
             $stmt->bindParam(':jugador_id', $jugadorId, PDO::PARAM_INT);
             $stmt->execute();
             
+            if ($stmt->rowCount() === 0) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'No se pudo eliminar el jugador. Por favor, inténtelo de nuevo más tarde.'
+                ];
+            }
+            
             return [
                 'estado' => true,
                 'mensaje' => 'Jugador eliminado correctamente'
             ];
         } catch (PDOException $e) {
+            $errorMessage = 'Error al eliminar el jugador';
+            
+            // Verificar si es error de clave foránea
+            if (strpos($e->getMessage(), 'foreign key constraint fails') !== false) {
+                $errorMessage = 'No se puede eliminar el jugador porque está siendo utilizado en otros registros del sistema';
+            }
+            
             return [
                 'estado' => false,
-                'mensaje' => $e->getMessage()
+                'mensaje' => $errorMessage
             ];
         }
     }
@@ -681,7 +808,16 @@ class Jugador {
             if ($stmt->rowCount() === 0) {
                 return [
                     'estado' => false,
-                    'mensaje' => 'El jugador no existe en la base de datos'
+                    'mensaje' => 'No se pudo eliminar la foto porque el jugador no existe o ya fue eliminado'
+                ];
+            }
+            
+            // Verificar si el jugador tiene foto
+            $jugador = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (empty($jugador['foto'])) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'El jugador no tiene foto asignada actualmente'
                 ];
             }
             
@@ -691,6 +827,13 @@ class Jugador {
             $stmt->bindParam(':jugador_id', $jugadorId, PDO::PARAM_INT);
             $stmt->execute();
             
+            if ($stmt->rowCount() === 0) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'No se pudo eliminar la foto. Por favor, inténtelo de nuevo más tarde.'
+                ];
+            }
+            
             return [
                 'estado' => true,
                 'mensaje' => 'Foto del jugador eliminada correctamente'
@@ -699,7 +842,7 @@ class Jugador {
         } catch (PDOException $e) {
             return [
                 'estado' => false,
-                'mensaje' => 'Error al eliminar la foto: ' . $e->getMessage()
+                'mensaje' => 'Error al eliminar la foto: ocurrió un problema con la base de datos'
             ];
         }
     }

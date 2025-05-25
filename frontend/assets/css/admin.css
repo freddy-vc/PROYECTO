@@ -518,4 +518,12 @@
 
 .btn-danger:hover {
     background-color: #c82333;
+}
+
+/* Delete modal submessage */
+.delete-modal-submessage {
+    font-size: 0.85em;
+    color: #666;
+    margin-top: 8px;
+    font-style: italic;
 } 

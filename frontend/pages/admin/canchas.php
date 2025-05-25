@@ -23,13 +23,11 @@ require_once '../../../backend/models/Cancha.php';
 $canchaModel = new Cancha();
 $canchas = $canchaModel->obtenerTodas();
 $canchas = $canchaModel->procesarImagenes($canchas);
+
 ?>
 
-<!-- Incluir Font Awesome para los iconos -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<!-- Incluir los estilos específicos para esta página -->
-<link rel="stylesheet" href="../../assets/css/admin.css">
-<link rel="stylesheet" href="../../assets/css/admin_crud.css">
+<!-- Incluir los estilos comunes para el panel de administración -->
+<?php include_once '../../components/admin_styles.php'; ?>
 
 <div class="container">
     <h1 class="page-title">Administración de Canchas</h1>

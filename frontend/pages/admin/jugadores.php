@@ -22,12 +22,7 @@ require_once '../../../backend/models/Equipo.php';
 
 // Obtener todos los jugadores
 $jugadorModel = new Jugador();
-try {
-$jugadores = $jugadorModel->obtenerTodosConEstadisticas();
-} catch (Exception $e) {
-    $jugadores = [];
-    $_SESSION['error_jugadores'] = "Error al cargar los jugadores: " . $e->getMessage();
-}
+$jugadores = $jugadorModel->obtenerTodos();
 
 // Obtener todos los equipos para el filtro
 $equipoModel = new Equipo();
@@ -55,9 +50,8 @@ foreach ($jugadores as $jugador) {
 
 <!-- Incluir Font Awesome para los iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<!-- Incluir los estilos específicos para esta página -->
-<link rel="stylesheet" href="../../assets/css/admin.css">
-<link rel="stylesheet" href="../../assets/css/admin_crud.css">
+<!-- Incluir los estilos comunes para el panel de administración -->
+<?php include_once '../../components/admin_styles.php'; ?>
 
 <div class="container">
     <h1 class="page-title">Administración de Jugadores</h1>
@@ -145,16 +139,16 @@ foreach ($jugadores as $jugador) {
                         <td>
                             <div class="player-stats">
                                 <span class="stat-item" title="Goles">
-                                    <i class="fas fa-futbol"></i> <?php echo $jugador['goles']; ?>
+                                    <i class="fas fa-futbol"></i> <?php echo isset($jugador['goles']) ? $jugador['goles'] : 0; ?>
                                 </span>
                                 <span class="stat-item" title="Asistencias">
-                                    <i class="fas fa-hands-helping"></i> <?php echo $jugador['asistencias']; ?>
+                                    <i class="fas fa-hands-helping"></i> <?php echo isset($jugador['asistencias']) ? $jugador['asistencias'] : 0; ?>
                                 </span>
                                 <span class="stat-item" title="Tarjetas Amarillas">
-                                    <i class="fas fa-square" style="color: #ffc107;"></i> <?php echo $jugador['tarjetas_amarillas']; ?>
+                                    <i class="fas fa-square" style="color: #ffc107;"></i> <?php echo isset($jugador['tarjetas_amarillas']) ? $jugador['tarjetas_amarillas'] : 0; ?>
                                 </span>
                                 <span class="stat-item" title="Tarjetas Rojas">
-                                    <i class="fas fa-square" style="color: #dc3545;"></i> <?php echo $jugador['tarjetas_rojas']; ?>
+                                    <i class="fas fa-square" style="color: #dc3545;"></i> <?php echo isset($jugador['tarjetas_rojas']) ? $jugador['tarjetas_rojas'] : 0; ?>
                                 </span>
                             </div>
                         </td>

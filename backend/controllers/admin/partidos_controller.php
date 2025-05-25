@@ -88,8 +88,41 @@ function crearPartido() {
     $equipo_visitante = intval($_POST['equipo_visitante']);
     $fase = trim($_POST['fase']);
     
-    // Crear el partido en la base de datos
+    // Validar límites de partidos por fase
     $partidoModel = new Partido();
+    $partidos_fase = $partidoModel->contarPartidosPorFase($fase);
+    
+    $limite_alcanzado = false;
+    $mensaje_error = '';
+    
+    switch ($fase) {
+        case 'cuartos':
+            if ($partidos_fase >= 4) {
+                $limite_alcanzado = true;
+                $mensaje_error = 'Ya se han creado los 4 partidos máximos para cuartos de final';
+            }
+            break;
+        case 'semis':
+            if ($partidos_fase >= 2) {
+                $limite_alcanzado = true;
+                $mensaje_error = 'Ya se han creado los 2 partidos máximos para semifinales';
+            }
+            break;
+        case 'final':
+            if ($partidos_fase >= 1) {
+                $limite_alcanzado = true;
+                $mensaje_error = 'Ya se ha creado el partido de la final';
+            }
+            break;
+    }
+    
+    if ($limite_alcanzado) {
+        $_SESSION['error_partidos'] = $mensaje_error;
+        header('Location: ../../../frontend/pages/admin/partidos_form.php');
+        exit;
+    }
+    
+    // Crear el partido en la base de datos
     $resultado = $partidoModel->crear($fecha, $hora, $cancha_id, $equipo_local, $equipo_visitante, $fase);
     
     if ($resultado['estado']) {
@@ -125,8 +158,48 @@ function actualizarPartido() {
     $estado = trim($_POST['estado']);
     $fase = trim($_POST['fase']);
     
-    // Actualizar el partido en la base de datos
+    // Validar límites de partidos por fase
     $partidoModel = new Partido();
+    
+    // Obtener el partido actual para verificar si se está cambiando la fase
+    $partido_actual = $partidoModel->obtenerPorId($id);
+    
+    // Si se está cambiando la fase, validar los límites
+    if ($partido_actual && $partido_actual['fase'] !== $fase) {
+        $partidos_fase = $partidoModel->contarPartidosPorFase($fase, $id);
+        
+        $limite_alcanzado = false;
+        $mensaje_error = '';
+        
+        switch ($fase) {
+            case 'cuartos':
+                if ($partidos_fase >= 4) {
+                    $limite_alcanzado = true;
+                    $mensaje_error = 'Ya existen 4 partidos en cuartos de final. No se puede cambiar la fase.';
+                }
+                break;
+            case 'semis':
+                if ($partidos_fase >= 2) {
+                    $limite_alcanzado = true;
+                    $mensaje_error = 'Ya existen 2 partidos en semifinales. No se puede cambiar la fase.';
+                }
+                break;
+            case 'final':
+                if ($partidos_fase >= 1) {
+                    $limite_alcanzado = true;
+                    $mensaje_error = 'Ya existe un partido de final. No se puede cambiar la fase.';
+                }
+                break;
+        }
+        
+        if ($limite_alcanzado) {
+            $_SESSION['error_partidos'] = $mensaje_error;
+            header('Location: ../../../frontend/pages/admin/partidos_form.php?id=' . $id);
+            exit;
+        }
+    }
+    
+    // Actualizar el partido en la base de datos
     $resultado = $partidoModel->actualizar($id, $fecha, $hora, $cancha_id, $estado, $fase);
     
     // --- Procesar estadísticas temporales si existen ---

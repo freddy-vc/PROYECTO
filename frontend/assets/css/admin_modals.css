@@ -1,0 +1,273 @@
+/* Estilos para modales de confirmación */
+.delete-modal-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.delete-modal {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 25px;
+    width: 90%;
+    max-width: 500px;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.delete-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.delete-modal-header h3 {
+    margin: 0;
+    color: #dc3545;
+    font-size: 1.3em;
+}
+
+.delete-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.delete-modal-close:hover {
+    color: #343a40;
+}
+
+.delete-modal-content {
+    margin-bottom: 20px;
+}
+
+.delete-modal-content p {
+    margin: 0;
+    font-size: 1.1em;
+    color: #343a40;
+}
+
+.delete-modal-content .warning-text {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.delete-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.delete-modal-cancel {
+    background-color: #6c757d;
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.delete-modal-cancel:hover {
+    background-color: #5a6268;
+}
+
+.delete-modal-confirm {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.delete-modal-confirm:hover {
+    background-color: #c82333;
+}
+
+/* Estilos específicos para cada CRUD */
+.delete-modal.equipos-modal .delete-modal-header h3 {
+    color: #0056b3;
+}
+
+.delete-modal.jugadores-modal .delete-modal-header h3 {
+    color: #28a745;
+}
+
+.delete-modal.partidos-modal .delete-modal-header h3 {
+    color: #fd7e14;
+}
+
+.delete-modal.canchas-modal .delete-modal-header h3 {
+    color: #6f42c1;
+}
+
+.delete-modal.ciudades-modal .delete-modal-header h3 {
+    color: #20c997;
+}
+
+.delete-modal.directores-modal .delete-modal-header h3 {
+    color: #e83e8c;
+}
+
+.delete-modal.usuarios-modal .delete-modal-header h3 {
+    color: #17a2b8;
+}
+
+/* Botón específico para equipos que se usará en todos los modales */
+.delete-modal-confirm.equipos-btn {
+    background-color: #0056b3;
+}
+
+.delete-modal-confirm.equipos-btn:hover {
+    background-color: #004494;
+}
+
+/* Mantener estos estilos para compatibilidad, pero no se usarán */
+.delete-modal.equipos-modal .delete-modal-confirm {
+    background-color: #0056b3;
+}
+
+.delete-modal.equipos-modal .delete-modal-confirm:hover {
+    background-color: #004494;
+}
+
+.delete-modal.jugadores-modal .delete-modal-confirm {
+    background-color: #28a745;
+}
+
+.delete-modal.jugadores-modal .delete-modal-confirm:hover {
+    background-color: #218838;
+}
+
+.delete-modal.partidos-modal .delete-modal-confirm {
+    background-color: #fd7e14;
+}
+
+.delete-modal.partidos-modal .delete-modal-confirm:hover {
+    background-color: #e76b00;
+}
+
+.delete-modal.canchas-modal .delete-modal-confirm {
+    background-color: #6f42c1;
+}
+
+.delete-modal.canchas-modal .delete-modal-confirm:hover {
+    background-color: #5e35a1;
+}
+
+.delete-modal.ciudades-modal .delete-modal-confirm {
+    background-color: #20c997;
+}
+
+.delete-modal.ciudades-modal .delete-modal-confirm:hover {
+    background-color: #1ba87e;
+}
+
+.delete-modal.directores-modal .delete-modal-confirm {
+    background-color: #e83e8c;
+}
+
+.delete-modal.directores-modal .delete-modal-confirm:hover {
+    background-color: #d6377c;
+}
+
+.delete-modal.usuarios-modal .delete-modal-confirm {
+    background-color: #17a2b8;
+}
+
+.delete-modal.usuarios-modal .delete-modal-confirm:hover {
+    background-color: #138496;
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease-in-out;
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* Íconos para cada tipo de entidad */
+.delete-modal-icon {
+    font-size: 3em;
+    margin-right: 15px;
+}
+
+.delete-modal-icon.equipos-icon {
+    color: #0056b3;
+}
+
+.delete-modal-icon.jugadores-icon {
+    color: #28a745;
+}
+
+.delete-modal-icon.partidos-icon {
+    color: #fd7e14;
+}
+
+.delete-modal-icon.canchas-icon {
+    color: #6f42c1;
+}
+
+.delete-modal-icon.ciudades-icon {
+    color: #20c997;
+}
+
+.delete-modal-icon.directores-icon {
+    color: #e83e8c;
+}
+
+.delete-modal-icon.usuarios-icon {
+    color: #17a2b8;
+}
+
+.delete-modal-content-wrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+} 

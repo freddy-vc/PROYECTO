@@ -8,8 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeFormValidation();
     }
     
-    // Inicializar los botones de eliminación si existen
-    initializeDeleteButtons();
+    // No inicializar los botones de eliminación aquí, se hace en admin.js
 });
 
 /**
@@ -44,23 +43,6 @@ function initializeFormValidation() {
         if (!isValid) {
             e.preventDefault();
         }
-    });
-}
-
-/**
- * Inicializar los botones de eliminación
- */
-function initializeDeleteButtons() {
-    const deleteButtons = document.querySelectorAll('.delete-btn');
-    
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const directorName = this.getAttribute('data-name');
-            
-            if (confirm(`¿Estás seguro de que deseas eliminar al director técnico "${directorName}"? Esta acción no se puede deshacer.`)) {
-                this.closest('form').submit();
-            }
-        });
     });
 }
 
