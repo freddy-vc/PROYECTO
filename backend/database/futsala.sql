@@ -22,13 +22,13 @@ CREATE TABLE Equipos (
     cod_equ SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     cod_ciu INT NOT NULL,
-    escudo BYTEA DEFAULT NULL, -- Imagen del equipo (binaria)
+    escudo BYTEA DEFAULT NULL,
     cod_dt INT NOT NULL UNIQUE,
     FOREIGN KEY (cod_ciu) REFERENCES Ciudades(cod_ciu)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
     FOREIGN KEY (cod_dt) REFERENCES Directores(cod_dt)
-        ON DELETE SET NULL
+        ON DELETE RESTRICT
         ON UPDATE CASCADE
 );
 
@@ -42,7 +42,7 @@ CREATE TABLE Jugadores (
     posicion VARCHAR(50),
     dorsal INT,
     cod_equ INT NOT NULL,
-    foto BYTEA DEFAULT NULL, -- Foto del jugador (binaria)
+    foto BYTEA DEFAULT NULL, 
     FOREIGN KEY (cod_equ) REFERENCES Equipos(cod_equ)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
@@ -94,7 +94,7 @@ CREATE TABLE Goles (
     minuto INT NOT NULL,
     tipo VARCHAR(50) NOT NULL,
     FOREIGN KEY (cod_par) REFERENCES Partidos(cod_par)
-        ON DELETE CASCADE
+        ON DELETE RESTRICT
         ON UPDATE CASCADE,
     FOREIGN KEY (cod_jug) REFERENCES Jugadores(cod_jug)
         ON DELETE RESTRICT
@@ -112,7 +112,7 @@ CREATE TABLE Asistencias (
     cod_jug INT NOT NULL,
     minuto INT NOT NULL,
     FOREIGN KEY (cod_par) REFERENCES Partidos(cod_par)
-        ON DELETE CASCADE
+        ON DELETE RESTRICT
         ON UPDATE CASCADE,
     FOREIGN KEY (cod_jug) REFERENCES Jugadores(cod_jug)
         ON DELETE RESTRICT
@@ -130,7 +130,7 @@ CREATE TABLE Faltas (
     minuto INT NOT NULL,
     tipo_falta VARCHAR(50) NOT NULL,
     FOREIGN KEY (cod_par) REFERENCES Partidos(cod_par)
-        ON DELETE CASCADE
+        ON DELETE RESTRICT
         ON UPDATE CASCADE,
     FOREIGN KEY (cod_jug) REFERENCES Jugadores(cod_jug)
         ON DELETE RESTRICT
@@ -148,7 +148,7 @@ CREATE TABLE Usuarios (
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     rol VARCHAR(50) DEFAULT 'usuario',
-    foto_perfil BYTEA DEFAULT NULL, -- Foto de perfil del usuario
+    foto_perfil BYTEA DEFAULT NULL, 
     CHECK (rol IN ('admin', 'usuario'))
 );
 

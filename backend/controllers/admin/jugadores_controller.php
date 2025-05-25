@@ -93,6 +93,13 @@ function crearJugador() {
             exit;
         }
         $foto = file_get_contents($_FILES['foto']['tmp_name']);
+        
+        // Verificar que el contenido de la imagen no esté vacío
+        if (empty($foto)) {
+            $_SESSION['error_jugadores'] = 'Error al procesar la imagen: contenido vacío.';
+            header('Location: ../../../frontend/pages/admin/jugadores_form.php');
+            exit;
+        }
     }
     
     // Crear el jugador en la base de datos
@@ -156,6 +163,13 @@ function actualizarJugador() {
         }
         $foto = file_get_contents($_FILES['foto']['tmp_name']);
         $actualizar_foto = true;
+        
+        // Verificar que el contenido de la imagen no esté vacío
+        if (empty($foto)) {
+            $_SESSION['error_jugadores'] = 'Error al procesar la imagen: contenido vacío.';
+            header('Location: ../../../frontend/pages/admin/jugadores_form.php?id=' . $id);
+            exit;
+        }
     }
 
     $jugadorModel = new Jugador();

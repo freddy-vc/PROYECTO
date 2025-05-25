@@ -28,19 +28,7 @@ class Jugador {
             // Procesar las fotos y escudos
             foreach ($jugadores as &$jugador) {
                 // Procesar la foto del jugador
-                if ($jugador['foto']) {
-                    $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
-                } else {
-                    // Detectar el contexto basado en la ruta del script
-                    $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
-                    if (strpos($script_path, '/frontend/pages/admin/') !== false) {
-                        // Si estamos en el panel admin
-                        $jugador['foto_base64'] = '../../assets/images/player.png';
-                    } else {
-                        // Si estamos en la interfaz de usuario
-                    $jugador['foto_base64'] = '../assets/images/player.png';
-                    }
-                }
+                $jugador = $this->procesarFotoJugador($jugador);
                 
                 // Procesar el escudo del equipo
                 if ($jugador['escudo_equipo']) {
@@ -75,19 +63,7 @@ class Jugador {
             // Procesar las fotos y escudos
             foreach ($jugadores as &$jugador) {
                 // Procesar la foto del jugador
-                if ($jugador['foto']) {
-                    $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
-                } else {
-                    // Detectar el contexto basado en la ruta del script
-                    $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
-                    if (strpos($script_path, '/frontend/pages/admin/') !== false) {
-                        // Si estamos en el panel admin
-                        $jugador['foto_base64'] = '../../assets/images/player.png';
-                    } else {
-                        // Si estamos en la interfaz de usuario
-                        $jugador['foto_base64'] = '../assets/images/player.png';
-                    }
-                }
+                $jugador = $this->procesarFotoJugador($jugador);
                 
                 // Procesar el escudo del equipo
                 if ($jugador['escudo_equipo']) {
@@ -130,19 +106,7 @@ class Jugador {
             // Procesar las fotos y escudos
             foreach ($jugadores as &$jugador) {
                 // Procesar la foto del jugador
-                if ($jugador['foto']) {
-                    $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
-                } else {
-                    // Detectar el contexto basado en la ruta del script
-                    $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
-                    if (strpos($script_path, '/frontend/pages/admin/') !== false) {
-                        // Si estamos en el panel admin
-                        $jugador['foto_base64'] = '../../assets/images/player.png';
-                    } else {
-                        // Si estamos en la interfaz de usuario
-                    $jugador['foto_base64'] = '../assets/images/player.png';
-                    }
-                }
+                $jugador = $this->procesarFotoJugador($jugador);
                 
                 // Procesar el escudo del equipo
                 if ($jugador['escudo_equipo']) {
@@ -189,19 +153,7 @@ class Jugador {
             }
             
             // Procesar la foto del jugador
-            if ($jugador['foto']) {
-                $jugador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($jugador['foto']);
-            } else {
-                // Detectar el contexto basado en la ruta del script
-                $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
-                if (strpos($script_path, '/frontend/pages/admin/') !== false) {
-                    // Si estamos en el panel admin
-                    $jugador['foto_base64'] = '../../assets/images/player.png';
-                } else {
-                    // Si estamos en la interfaz de usuario
-                $jugador['foto_base64'] = '../assets/images/player.png';
-                }
-            }
+            $jugador = $this->procesarFotoJugador($jugador);
             
             // Procesar el escudo del equipo
             if ($jugador['escudo_equipo']) {
@@ -479,22 +431,7 @@ class Jugador {
             }
             
             // Procesar la foto del jugador
-            if ($goleador['foto']) {
-                $goleador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($goleador['foto']);
-            } else {
-                // Detectar el contexto basado en la ruta del script
-                $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
-                if (strpos($script_path, '/frontend/pages/admin/') !== false) {
-                    // Si estamos en el panel admin
-                    $goleador['foto_base64'] = '../../assets/images/player.png';
-                } else if (strpos($script_path, '/frontend/pages/') !== false) {
-                    // Si estamos en la interfaz de usuario
-                    $goleador['foto_base64'] = '../assets/images/player.png';
-                } else {
-                    // Si estamos en la raíz
-                    $goleador['foto_base64'] = './frontend/assets/images/player.png';
-                }
-            }
+            $goleador = $this->procesarFotoJugador($goleador);
             
             // Procesar el escudo del equipo
             if ($goleador['escudo_equipo']) {
@@ -545,22 +482,7 @@ class Jugador {
             }
             
             // Procesar la foto del jugador
-            if ($asistidor['foto']) {
-                $asistidor['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($asistidor['foto']);
-            } else {
-                // Detectar el contexto basado en la ruta del script
-                $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
-                if (strpos($script_path, '/frontend/pages/admin/') !== false) {
-                    // Si estamos en el panel admin
-                    $asistidor['foto_base64'] = '../../assets/images/player.png';
-                } else if (strpos($script_path, '/frontend/pages/') !== false) {
-                    // Si estamos en la interfaz de usuario
-                    $asistidor['foto_base64'] = '../assets/images/player.png';
-                } else {
-                    // Si estamos en la raíz
-                    $asistidor['foto_base64'] = './frontend/assets/images/player.png';
-                }
-            }
+            $asistidor = $this->procesarFotoJugador($asistidor);
             
             // Procesar el escudo del equipo
             if ($asistidor['escudo_equipo']) {
@@ -715,5 +637,37 @@ class Jugador {
                 'mensaje' => $e->getMessage()
             ];
         }
+    }
+    
+    /**
+     * Procesa la foto del jugador para convertirla a base64
+     */
+    private function procesarFotoJugador($jugador)
+    {
+        if (isset($jugador['foto']) && $jugador['foto'] && !empty($jugador['foto'])) {
+            try {
+                // Verificar que la imagen sea válida antes de codificarla
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $mime_type = $finfo->buffer($jugador['foto']);
+                
+                if (strpos($mime_type, 'image/') === 0) {
+                    // Es una imagen válida
+                    $jugador['foto_base64'] = 'data:' . $mime_type . ';base64,' . base64_encode($jugador['foto']);
+                } else {
+                    // No es una imagen válida
+                    $jugador['foto_base64'] = '';
+                    error_log("Error en procesarFotoJugador: Tipo MIME no válido: " . $mime_type);
+                }
+            } catch (Exception $e) {
+                // Error al procesar la imagen
+                $jugador['foto_base64'] = '';
+                error_log("Error en procesarFotoJugador: " . $e->getMessage());
+            }
+        } else {
+            // No hay imagen o está vacía
+            $jugador['foto_base64'] = '';
+        }
+        
+        return $jugador;
     }
 } 

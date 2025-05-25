@@ -107,6 +107,13 @@ function crearUsuario() {
         
         // Leer el contenido del archivo
         $foto_perfil = file_get_contents($_FILES['foto_perfil']['tmp_name']);
+        
+        // Verificar que el contenido de la imagen no esté vacío
+        if (empty($foto_perfil)) {
+            $_SESSION['error_usuarios'] = 'Error al procesar la imagen: contenido vacío.';
+            header('Location: ../../../frontend/pages/admin/usuarios_form.php');
+            exit;
+        }
     }
     
     // Crear un objeto de la clase Usuario
@@ -191,6 +198,13 @@ function actualizarUsuario() {
         // Leer el contenido del archivo
         $foto_perfil = file_get_contents($_FILES['foto_perfil']['tmp_name']);
         $actualizar_foto = true;
+        
+        // Verificar que el contenido de la imagen no esté vacío
+        if (empty($foto_perfil)) {
+            $_SESSION['error_usuarios'] = 'Error al procesar la imagen: contenido vacío.';
+            header('Location: ../../../frontend/pages/admin/usuarios_form.php?id=' . $id);
+            exit;
+        }
     }
     
     // Crear un objeto de la clase Usuario

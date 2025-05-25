@@ -40,19 +40,7 @@ class Equipo
             
             // Procesar los escudos para mostrarlos como imágenes
             foreach ($equipos as &$equipo) {
-                if ($equipo['escudo']) {
-                    $equipo['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($equipo['escudo']);
-                } else {
-                    // Detectar el contexto basado en la ruta del script
-                    $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
-                    if (strpos($script_path, '/frontend/pages/admin/') !== false) {
-                        // Si estamos en el panel admin
-                    $equipo['escudo_base64'] = '../../assets/images/team.png';
-                    } else {
-                        // Si estamos en la interfaz de usuario
-                        $equipo['escudo_base64'] = '../assets/images/team.png';
-                    }
-                }
+                $this->procesarEscudo($equipo);
             }
             
             return $equipos;
@@ -80,19 +68,7 @@ class Equipo
                 } else {
                     $equipo['ciudad_nombre'] = null;
                 }
-                if ($equipo['escudo']) {
-                    $equipo['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($equipo['escudo']);
-                } else {
-                    // Detectar el contexto basado en la ruta del script
-                    $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
-                    if (strpos($script_path, '/frontend/pages/admin/') !== false) {
-                        // Si estamos en el panel admin
-                        $equipo['escudo_base64'] = '../../assets/images/team.png';
-                    } else {
-                        // Si estamos en la interfaz de usuario
-                    $equipo['escudo_base64'] = '../assets/images/team.png';
-                    }
-                }
+                $this->procesarEscudo($equipo);
             }
             return $equipo;
         } catch (PDOException $e) {
@@ -439,26 +415,45 @@ class Equipo
                 $equipo['puntos'] = ($equipo['victorias'] * 3) + $equipo['empates'];
                 $equipo['diferencia_goles'] = $equipo['goles_favor'] - $equipo['goles_contra'];
                 
-                // Procesar escudo
-                if ($equipo['escudo']) {
-                    $equipo['escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($equipo['escudo']);
-                } else {
-                    // Detectar el contexto basado en la ruta del script
-                    $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
-                    if (strpos($script_path, '/frontend/pages/admin/') !== false) {
-                        // Si estamos en el panel admin
-                    $equipo['escudo_base64'] = '../../assets/images/team.png';
-                    } else {
-                        // Si estamos en la interfaz de usuario
-                        $equipo['escudo_base64'] = '../assets/images/team.png';
-                    }
-                }
+                $this->procesarEscudo($equipo);
             }
             
             return $equipos;
         } catch (PDOException $e) {
             return [];
         }
+    }
+    
+    /**
+     * Procesa el escudo del equipo para convertirlo a base64
+     */
+    private function procesarEscudo(&$equipo)
+    {
+        if (isset($equipo['escudo']) && $equipo['escudo'] && !empty($equipo['escudo'])) {
+            try {
+                // Verificar que la imagen sea válida antes de codificarla
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $mime_type = $finfo->buffer($equipo['escudo']);
+                
+                if (strpos($mime_type, 'image/') === 0) {
+                    // Es una imagen válida
+                    $equipo['escudo_base64'] = 'data:' . $mime_type . ';base64,' . base64_encode($equipo['escudo']);
+                } else {
+                    // No es una imagen válida
+                    $equipo['escudo_base64'] = '';
+                    error_log("Error en procesarEscudo: Tipo MIME no válido: " . $mime_type);
+                }
+            } catch (Exception $e) {
+                // Error al procesar la imagen
+                $equipo['escudo_base64'] = '';
+                error_log("Error en procesarEscudo: " . $e->getMessage());
+            }
+        } else {
+            // No hay imagen o está vacía
+            $equipo['escudo_base64'] = '';
+        }
+        
+        return $equipo;
     }
 }
 ?> 

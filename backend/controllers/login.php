@@ -24,31 +24,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $resultado = $usuario->login($username, $password);
     
     if ($resultado['estado']) {
-        // Login exitoso, guardar datos en la sesión
+        // Guardar datos del usuario en la sesión
         $_SESSION['usuario_id'] = $resultado['usuario']['cod_user'];
         $_SESSION['usuario_nombre'] = $resultado['usuario']['username'];
         $_SESSION['usuario_email'] = $resultado['usuario']['email'];
         $_SESSION['usuario_rol'] = $resultado['usuario']['rol'];
         
-        // Si tiene foto de perfil, usar la versión base64 ya procesada por el modelo
-        if (isset($resultado['usuario']['foto_perfil_base64'])) {
+        // Guardar la foto de perfil en la sesión si existe
+        if (isset($resultado['usuario']['foto_perfil']) && !empty($resultado['usuario']['foto_perfil']) && isset($resultado['usuario']['foto_perfil_base64']) && !empty($resultado['usuario']['foto_perfil_base64'])) {
             $_SESSION['usuario_foto'] = $resultado['usuario']['foto_perfil_base64'];
-        } else if ($resultado['usuario']['foto_perfil']) {
-            $_SESSION['usuario_foto'] = 'data:image/jpeg;base64,' . base64_encode($resultado['usuario']['foto_perfil']);
         } else {
-            // Dejamos vacío para que el componente header determine la ruta correcta según la ubicación
             $_SESSION['usuario_foto'] = '';
         }
         
         // Guardar mensaje de éxito en la sesión
         $_SESSION['exito_login'] = '¡Sesión iniciada correctamente! Bienvenido/a ' . $username;
         
-        // Redireccionar al inicio
-        header('Location: ../../index.php');
+        // Redireccionar según el rol del usuario
+        if ($resultado['usuario']['rol'] === 'admin') {
+            header('Location: ../../frontend/pages/admin/index.php');
+        } else {
+            header('Location: ../../index.php');
+        }
         exit;
     } else {
-        // Login fallido, mostrar mensaje de error
+        // Guardar mensaje de error en la sesión
         $_SESSION['error_login'] = $resultado['mensaje'];
+        
+        // Redireccionar al formulario de login
         header('Location: ../../frontend/pages/login.php');
         exit;
     }

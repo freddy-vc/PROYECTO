@@ -193,10 +193,27 @@ class Usuario
      */
     private function procesarFotoPerfil($usuario)
     {
-        if (isset($usuario['foto_perfil']) && $usuario['foto_perfil']) {
-            $usuario['foto_perfil_base64'] = 'data:image/jpeg;base64,' . base64_encode($usuario['foto_perfil']);
+        if (isset($usuario['foto_perfil']) && $usuario['foto_perfil'] && !empty($usuario['foto_perfil'])) {
+            try {
+                // Verificar que la imagen sea válida antes de codificarla
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $mime_type = $finfo->buffer($usuario['foto_perfil']);
+                
+                if (strpos($mime_type, 'image/') === 0) {
+                    // Es una imagen válida
+                    $usuario['foto_perfil_base64'] = 'data:' . $mime_type . ';base64,' . base64_encode($usuario['foto_perfil']);
+                } else {
+                    // No es una imagen válida
+                    $usuario['foto_perfil_base64'] = '';
+                    error_log("Error en procesarFotoPerfil: Tipo MIME no válido: " . $mime_type);
+                }
+            } catch (Exception $e) {
+                // Error al procesar la imagen
+                $usuario['foto_perfil_base64'] = '';
+                error_log("Error en procesarFotoPerfil: " . $e->getMessage());
+            }
         } else {
-            // No establecemos ninguna ruta, el header.php se encargará de determinarla según el contexto
+            // No hay imagen o está vacía
             $usuario['foto_perfil_base64'] = '';
         }
         

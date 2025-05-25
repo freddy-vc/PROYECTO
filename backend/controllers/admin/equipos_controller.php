@@ -98,6 +98,13 @@ function crearEquipo() {
         
         // Leer el contenido del archivo
         $escudo = file_get_contents($_FILES['escudo']['tmp_name']);
+        
+        // Verificar que el contenido de la imagen no esté vacío
+        if (empty($escudo)) {
+            $_SESSION['error_equipos'] = 'Error al procesar la imagen: contenido vacío.';
+            header('Location: ../../../frontend/pages/admin/equipos_form.php');
+            exit;
+        }
     }
     
     // Crear el equipo en la base de datos
@@ -164,6 +171,13 @@ function actualizarEquipo() {
         // Leer el contenido del archivo
         $escudo = file_get_contents($_FILES['escudo']['tmp_name']);
         $actualizar_escudo = true;
+        
+        // Verificar que el contenido de la imagen no esté vacío
+        if (empty($escudo)) {
+            $_SESSION['error_equipos'] = 'Error al procesar la imagen: contenido vacío.';
+            header('Location: ../../../frontend/pages/admin/equipos_form.php?id=' . $id);
+            exit;
+        }
     }
     
     // Actualizar el equipo en la base de datos
