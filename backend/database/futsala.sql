@@ -23,7 +23,7 @@ CREATE TABLE Equipos (
     nombre VARCHAR(100) NOT NULL,
     cod_ciu INT NOT NULL,
     escudo BYTEA DEFAULT NULL, -- Imagen del equipo (binaria)
-    cod_dt INT,
+    cod_dt INT NOT NULL UNIQUE,
     FOREIGN KEY (cod_ciu) REFERENCES Ciudades(cod_ciu)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,

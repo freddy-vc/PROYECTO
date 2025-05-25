@@ -34,7 +34,7 @@ $usuarios = $usuarioModel->obtenerTodos();
     <h1 class="page-title">Administración de Usuarios</h1>
     
     <div class="section-intro">
-        <p>Gestiona los usuarios del sistema de administración del campeonato de Futsala Villavicencio</p>
+        <p>Gestiona los usuarios del sistema de administración de VILLAVOCUP</p>
     </div>
     
     <?php 
@@ -66,8 +66,8 @@ $usuarios = $usuarioModel->obtenerTodos();
             
             <select class="admin-filter-select" id="filtro-rol" data-table="usuarios-table" data-column="rol">
                 <option value="">Todos los roles</option>
-                <option value="admin">Administrador</option>
-                <option value="usuario">Usuario normal</option>
+                <option value="administrador">Administrador</option>
+                <option value="usuario">Usuario</option>
             </select>
             
             <a href="./usuarios_form.php" class="btn btn-primary">

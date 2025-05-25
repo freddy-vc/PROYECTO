@@ -35,7 +35,7 @@ $partidos = $partidoModel->obtenerTodos();
     <h1 class="page-title">Administración de Partidos</h1>
     
     <div class="section-intro">
-        <p>Gestiona los partidos del campeonato de Futsala Villavicencio</p>
+        <p>Gestiona los partidos de VILLAVOCUP</p>
     </div>
     
     <?php 
@@ -67,8 +67,8 @@ $partidos = $partidoModel->obtenerTodos();
             
             <select class="admin-filter-select" id="filtro-estado" data-table="partidos-table" data-column="estado">
                 <option value="">Todos los estados</option>
-                <option value="programado">Programados</option>
-                <option value="finalizado">Finalizados</option>
+                <option value="programado">Programado</option>
+                <option value="finalizado">Finalizado</option>
             </select>
             
             <a href="./partidos_form.php" class="btn btn-primary">
@@ -114,15 +114,11 @@ $partidos = $partidoModel->obtenerTodos();
                             </div>
                         </td>
                         <td>
-                            <?php if ($partido['estado'] === 'finalizado'): ?>
-                                <div class="resultado">
-                                    <span class="goles"><?php echo $partido['goles_local']; ?></span>
-                                    <span class="vs">-</span>
-                                    <span class="goles"><?php echo $partido['goles_visitante']; ?></span>
-                                </div>
-                            <?php else: ?>
-                                <span class="vs">vs</span>
-                            <?php endif; ?>
+                            <div class="resultado">
+                                <span class="goles"><?php echo (isset($partido['goles_local']) ? $partido['goles_local'] : 0); ?></span>
+                                <span class="vs">-</span>
+                                <span class="goles"><?php echo (isset($partido['goles_visitante']) ? $partido['goles_visitante'] : 0); ?></span>
+                            </div>
                         </td>
                         <td><?php echo $partido['cancha']; ?></td>
                         <td><?php echo ucfirst($partido['fase']); ?></td>
@@ -134,6 +130,9 @@ $partidos = $partidoModel->obtenerTodos();
                             <?php endif; ?>
                         </td>
                         <td class="admin-actions">
+                            <a href="../../pages/detalle-partido.php?id=<?php echo $partido['cod_par']; ?>" class="action-btn view" title="Ver detalle">
+                                <i class="fas fa-eye"></i>
+                            </a>
                             <a href="./partidos_form.php?id=<?php echo $partido['cod_par']; ?>" class="action-btn edit" title="Editar">
                                 <i class="fas fa-edit"></i>
                             </a>

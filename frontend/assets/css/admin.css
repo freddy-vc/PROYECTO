@@ -44,6 +44,7 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
+    min-height: 240px;
 }
 
 .admin-card:hover {
@@ -57,7 +58,7 @@
     color: var(--primary-color);
 }
 
-.admin-card h2 {
+.admin-card h2, .admin-card h3 {
     color: var(--dark-color);
     margin-bottom: 10px;
     font-size: 1.4rem;
@@ -72,6 +73,9 @@
 .admin-card .btn {
     margin-top: auto;
     transition: background-color 0.3s ease;
+    display: block;
+    width: 100%;
+    padding: 10px 0;
 }
 
 /* Estilos para la página de listados */

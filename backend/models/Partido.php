@@ -53,13 +53,9 @@ class Partido
             
             // Para cada partido, obtener los goles si está finalizado
             foreach ($partidos as &$partido) {
-                if ($partido['estado'] === 'finalizado') {
-                    $goles_local = $this->contarGoles($partido['cod_par'], $partido['local_id']);
-                    $goles_visitante = $this->contarGoles($partido['cod_par'], $partido['visitante_id']);
-                    
-                    $partido['goles_local'] = $goles_local;
-                    $partido['goles_visitante'] = $goles_visitante;
-                }
+                $marcador = $this->calcularMarcadorPorDetalle($partido['cod_par'], $partido['local_nombre'], $partido['visitante_nombre']);
+                $partido['goles_local'] = $marcador['goles_local'];
+                $partido['goles_visitante'] = $marcador['goles_visitante'];
             }
             
             return $partidos;
@@ -79,7 +75,7 @@ class Partido
     public function obtenerPorId($cod_par)
     {
         try {
-            $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado, p.fase,
+            $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado, p.fase, p.cod_cancha,
                     e1.cod_equ as local_id, e1.nombre as local_nombre, e1.escudo as local_escudo,
                     e2.cod_equ as visitante_id, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,
                     c.nombre as cancha, c.direccion as cancha_direccion
@@ -98,11 +94,10 @@ class Partido
             if ($partido) {
                 // Obtener goles y más detalles si está finalizado
                 if ($partido['estado'] === 'finalizado') {
-                    $goles_local = $this->contarGoles($partido['cod_par'], $partido['local_id']);
-                    $goles_visitante = $this->contarGoles($partido['cod_par'], $partido['visitante_id']);
+                    $marcador = $this->calcularMarcadorPorDetalle($partido['cod_par'], $partido['local_nombre'], $partido['visitante_nombre']);
                     
-                    $partido['goles_local'] = $goles_local;
-                    $partido['goles_visitante'] = $goles_visitante;
+                    $partido['goles_local'] = $marcador['goles_local'];
+                    $partido['goles_visitante'] = $marcador['goles_visitante'];
                     
                     // Obtener detalles de goles, asistencias y faltas
                     $partido['detalle_goles'] = $this->obtenerDetalleGoles($partido['cod_par']);
@@ -484,8 +479,9 @@ class Partido
                 }
                 
                 // Obtener los goles
-                $partido['goles_local'] = $this->contarGoles($partido['cod_par'], $partido['local_id']);
-                $partido['goles_visitante'] = $this->contarGoles($partido['cod_par'], $partido['visitante_id']);
+                $marcador = $this->calcularMarcadorPorDetalle($partido['cod_par'], $partido['local_nombre'], $partido['visitante_nombre']);
+                $partido['goles_local'] = $marcador['goles_local'];
+                $partido['goles_visitante'] = $marcador['goles_visitante'];
                 
                 // Formatear fecha
                 $fecha = new DateTime($partido['fecha']);
@@ -570,8 +566,9 @@ class Partido
                 
                 // Si el partido está finalizado, añadir conteo de goles
                 if ($partido['estado'] === 'finalizado') {
-                    $partido['goles_local'] = $this->contarGoles($partido['cod_par'], $partido['equ_local']);
-                    $partido['goles_visitante'] = $this->contarGoles($partido['cod_par'], $partido['equ_visitante']);
+                    $marcador = $this->calcularMarcadorPorDetalle($partido['cod_par'], $partido['local_nombre'], $partido['visitante_nombre']);
+                    $partido['goles_local'] = $marcador['goles_local'];
+                    $partido['goles_visitante'] = $marcador['goles_visitante'];
                 }
                 
                 // Formatear fecha
@@ -591,7 +588,12 @@ class Partido
      */
     public function obtenerPorFase($fase) {
         try {
-            $sql = "SELECT * FROM Partidos WHERE fase = :fase ORDER BY cod_par ASC";
+            $sql = "SELECT p.*, e1.nombre as local_nombre, e2.nombre as visitante_nombre
+                    FROM Partidos p
+                    JOIN Equipos e1 ON p.equ_local = e1.cod_equ
+                    JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ
+                    WHERE p.fase = :fase
+                    ORDER BY p.cod_par ASC";
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':fase', $fase);
             $stmt->execute();
@@ -723,6 +725,40 @@ class Partido
         $stmt->bindParam(':cod_equ', $cod_equ, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function calcularMarcadorPorDetalle($cod_par, $local_nombre, $visitante_nombre) {
+        $sql = "SELECT g.tipo, j.cod_jug, j.nombres, j.apellidos, j.dorsal, e.nombre as equipo
+                FROM Goles g
+                JOIN Jugadores j ON g.cod_jug = j.cod_jug
+                JOIN Equipos e ON j.cod_equ = e.cod_equ
+                WHERE g.cod_par = :cod_par";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':cod_par', $cod_par);
+        $stmt->execute();
+        $goles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $marcadorLocal = 0;
+        $marcadorVisitante = 0;
+        foreach ($goles as $gol) {
+            $equipoJugador = $gol['equipo'];
+            if ($gol['tipo'] === 'autogol') {
+                if ($equipoJugador === $local_nombre) {
+                    $marcadorVisitante++;
+                } elseif ($equipoJugador === $visitante_nombre) {
+                    $marcadorLocal++;
+                }
+            } else {
+                if ($equipoJugador === $local_nombre) {
+                    $marcadorLocal++;
+                } elseif ($equipoJugador === $visitante_nombre) {
+                    $marcadorVisitante++;
+                }
+            }
+        }
+        return [
+            'goles_local' => $marcadorLocal,
+            'goles_visitante' => $marcadorVisitante
+        ];
     }
 }
 ?> 

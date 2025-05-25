@@ -65,11 +65,11 @@ function verificarJugadoresDestacados() {
                     html += `
                         <div class="player-card">
                             <div class="player-header">
-                                <img src="${data.goleador.foto_base64}" alt="${data.goleador.nombres} ${data.goleador.apellidos}">
+                                <img src="${data.goleador.foto_base64 || '../../frontend/assets/images/player.png'}" alt="${data.goleador.nombres} ${data.goleador.apellidos}">
                                 <div class="player-info">
                                     <h3>${data.goleador.nombres} ${data.goleador.apellidos}</h3>
                                     <p class="player-team">
-                                        <img src="${data.goleador.escudo_equipo_base64}" alt="${data.goleador.nombre_equipo}">
+                                        <img src="${data.goleador.escudo_equipo_base64 || '../../frontend/assets/images/team.png'}" alt="${data.goleador.nombre_equipo}">
                                         ${data.goleador.nombre_equipo}
                                     </p>
                                 </div>
@@ -97,11 +97,11 @@ function verificarJugadoresDestacados() {
                     html += `
                         <div class="player-card">
                             <div class="player-header">
-                                <img src="${data.asistidor.foto_base64}" alt="${data.asistidor.nombres} ${data.asistidor.apellidos}">
+                                <img src="${data.asistidor.foto_base64 || '../../frontend/assets/images/player.png'}" alt="${data.asistidor.nombres} ${data.asistidor.apellidos}">
                                 <div class="player-info">
                                     <h3>${data.asistidor.nombres} ${data.asistidor.apellidos}</h3>
                                     <p class="player-team">
-                                        <img src="${data.asistidor.escudo_equipo_base64}" alt="${data.asistidor.nombre_equipo}">
+                                        <img src="${data.asistidor.escudo_equipo_base64 || '../../frontend/assets/images/team.png'}" alt="${data.asistidor.nombre_equipo}">
                                         ${data.asistidor.nombre_equipo}
                                     </p>
                                 </div>
@@ -155,14 +155,14 @@ function cargarUltimosPartidos() {
                             <div class="match-date">${partido.fecha_formateada}</div>
                             <div class="match-teams">
                                 <div class="team">
-                                    <img src="${partido.local_escudo_base64}" alt="${partido.local_nombre}">
+                                    <img src="${partido.local_escudo_base64 || './frontend/assets/images/team.png'}" alt="${partido.local_nombre}">
                                     <span>${partido.local_nombre}</span>
                                 </div>
                                 <div class="match-score">
                                     <span>${partido.goles_local} - ${partido.goles_visitante}</span>
                                 </div>
                                 <div class="team">
-                                    <img src="${partido.visitante_escudo_base64}" alt="${partido.visitante_nombre}">
+                                    <img src="${partido.visitante_escudo_base64 || './frontend/assets/images/team.png'}" alt="${partido.visitante_nombre}">
                                     <span>${partido.visitante_nombre}</span>
                                 </div>
                             </div>

@@ -13,11 +13,14 @@ if ($id_equipo <= 0) {
     exit;
 }
 
-// Incluir el header
-include_once '../components/header.php';
+// Ruta relativa para acceder a los componentes desde la raíz
+$ruta_raiz = '../../';
+
+// Incluir el header principal
+include_once $ruta_raiz . 'frontend/components/header.php';
 
 // Incluir el componente de notificaciones
-include_once '../components/notificaciones.php';
+include_once $ruta_raiz . 'frontend/components/notificaciones.php';
 ?>
 
 <!-- Incluir los estilos específicos para esta página -->
@@ -43,5 +46,5 @@ include_once '../components/notificaciones.php';
 
 <?php
 // Incluir el footer
-include_once '../components/footer.php';
+include_once $ruta_raiz . 'frontend/components/footer.php';
 ?> 

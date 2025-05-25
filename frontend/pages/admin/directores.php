@@ -34,7 +34,7 @@ $directores = $directorModel->obtenerTodos();
     <h1 class="page-title">Administración de Directores Técnicos</h1>
     
     <div class="section-intro">
-        <p>Gestiona los directores técnicos del campeonato de Futsala Villavicencio</p>
+        <p>Gestiona los directores técnicos de VILLAVOCUP</p>
     </div>
     
     <?php 

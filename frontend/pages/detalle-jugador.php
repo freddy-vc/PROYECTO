@@ -3,12 +3,6 @@
 $titulo_pagina = 'Detalle del Jugador';
 $pagina_actual = 'detalle_jugador';
 
-// Incluir el header
-include_once '../components/header.php';
-
-// Incluir el componente de notificaciones
-include_once '../components/notificaciones.php';
-
 // Verificar que se ha recibido un ID de jugador
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     // Si no se ha recibido un ID, redirigir a la página de jugadores
@@ -18,6 +12,15 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 // Obtener el ID del jugador
 $jugadorId = intval($_GET['id']);
+
+// Ruta relativa para acceder a los componentes desde la raíz
+$ruta_raiz = '../../';
+
+// Incluir el header principal
+include_once $ruta_raiz . 'frontend/components/header.php';
+
+// Incluir el componente de notificaciones
+include_once $ruta_raiz . 'frontend/components/notificaciones.php';
 ?>
 
 <!-- Incluir Font Awesome para los iconos -->
@@ -43,5 +46,5 @@ $jugadorId = intval($_GET['id']);
 
 <?php
 // Incluir el footer
-include_once '../components/footer.php';
+include_once $ruta_raiz . 'frontend/components/footer.php';
 ?> 

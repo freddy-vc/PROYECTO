@@ -35,7 +35,7 @@ $canchas = $canchaModel->procesarImagenes($canchas);
     <h1 class="page-title">Administración de Canchas</h1>
     
     <div class="section-intro">
-        <p>Gestiona las canchas del campeonato de Futsala Villavicencio</p>
+        <p>Gestiona las canchas de VILLAVOCUP</p>
     </div>
     
     <?php 

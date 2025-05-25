@@ -129,6 +129,54 @@ function actualizarPartido() {
     $partidoModel = new Partido();
     $resultado = $partidoModel->actualizar($id, $fecha, $hora, $cancha_id, $estado, $fase);
     
+    // --- Procesar estadísticas temporales si existen ---
+    if (isset($_POST['estadisticas_temporales'])) {
+        $stats = json_decode($_POST['estadisticas_temporales'], true);
+        if ($stats) {
+            // Goles
+            foreach ($stats['goles'] as $gol) {
+                if (isset($gol['id']) && strpos($gol['id'], 'temp_') === 0) {
+                    // Nuevo gol
+                    $partidoModel->registrarGol($id, $gol['jugador_id'], $gol['minuto'], $gol['tipo']);
+                } elseif (isset($gol['cod_gol'])) {
+                    // Actualizar gol existente
+                    $partidoModel->actualizarGol($gol['cod_gol'], $id, $gol['jugador_id'], $gol['minuto'], $gol['tipo']);
+                }
+            }
+            // Asistencias
+            foreach ($stats['asistencias'] as $asis) {
+                if (isset($asis['id']) && strpos($asis['id'], 'temp_') === 0) {
+                    $partidoModel->registrarAsistencia($id, $asis['jugador_id'], $asis['minuto']);
+                } elseif (isset($asis['cod_asis'])) {
+                    $partidoModel->actualizarAsistencia($asis['cod_asis'], $id, $asis['jugador_id'], $asis['minuto']);
+                }
+            }
+            // Faltas
+            foreach ($stats['faltas'] as $falta) {
+                if (isset($falta['id']) && strpos($falta['id'], 'temp_') === 0) {
+                    $partidoModel->registrarFalta($id, $falta['jugador_id'], $falta['minuto'], $falta['tipo_falta']);
+                } elseif (isset($falta['cod_falta'])) {
+                    $partidoModel->actualizarFalta($falta['cod_falta'], $id, $falta['jugador_id'], $falta['minuto'], $falta['tipo_falta']);
+                }
+            }
+        }
+    }
+    // --- Procesar eliminados ---
+    if (isset($_POST['estadisticas_eliminadas'])) {
+        $deleted = json_decode($_POST['estadisticas_eliminadas'], true);
+        if ($deleted) {
+            foreach ($deleted['goles'] as $cod_gol) {
+                $partidoModel->eliminarGol($cod_gol);
+            }
+            foreach ($deleted['asistencias'] as $cod_asis) {
+                $partidoModel->eliminarAsistencia($cod_asis);
+            }
+            foreach ($deleted['faltas'] as $cod_falta) {
+                $partidoModel->eliminarFalta($cod_falta);
+            }
+        }
+    }
+    // ---
     if ($resultado['estado']) {
         // Éxito al actualizar el partido
         $_SESSION['exito_partidos'] = 'Partido actualizado correctamente';

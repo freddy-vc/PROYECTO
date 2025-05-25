@@ -132,22 +132,40 @@ function setupFilters() {
     // Configurar filtros
     filterSelects.forEach(select => {
         select.addEventListener('change', function() {
-            const filterValue = this.value;
+            const filterValue = this.value.toLowerCase();
+            
             const filterColumn = this.getAttribute('data-column');
             const tableId = this.getAttribute('data-table');
+            
             const table = document.getElementById(tableId);
             
             if (table) {
                 const rows = table.querySelectorAll('tbody tr');
                 
                 rows.forEach(row => {
-                    const cell = row.querySelector(`td[data-column="${filterColumn}"]`);
-                    
-                    if (filterValue === '' || (cell && cell.textContent === filterValue)) {
+                    // Si no hay valor de filtro, mostrar todas las filas
+                    if (filterValue === '') {
                         row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
+                        return;
                     }
+                    
+                    const cell = row.querySelector(`td[data-column="${filterColumn}"]`);
+                    if (!cell) {
+                        row.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Contenido general de la celda
+                    const cellContent = cell.textContent.toLowerCase().trim();
+                    
+                    // Si el contenido general incluye el valor de filtro, mostrar la fila
+                    if (cellContent.includes(filterValue)) {
+                        row.style.display = '';
+                        return;
+                    }
+                    
+                    // Ocultar la fila si no hay coincidencia
+                    row.style.display = 'none';
                 });
             }
         });

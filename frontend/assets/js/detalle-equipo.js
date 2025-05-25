@@ -172,8 +172,27 @@ function mostrarPartidos(partidos, idEquipo) {
         const esFinalizado = partido.estado === 'finalizado';
         const esLocal = parseInt(partido.local_id) === parseInt(idEquipo);
         
+        // Para cada partido finalizado, consultar los goles si no vienen ya incluidos
+        if (esFinalizado && (!partido.hasOwnProperty('goles_local') || !partido.hasOwnProperty('goles_visitante'))) {
+            fetch(`../../backend/controllers/partidos_controller.php?accion=obtener_goles&partido_id=${partido.cod_par}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.estado) {
+                        partido.goles_local = data.goles_local;
+                        partido.goles_visitante = data.goles_visitante;
+                        
+                        // Actualizar el marcador en el DOM
+                        const marcadorElement = document.querySelector(`#partido-${partido.cod_par} .partido-resultado`);
+                        if (marcadorElement) {
+                            marcadorElement.textContent = `${data.goles_local} - ${data.goles_visitante}`;
+                        }
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        
         html += `
-            <div class="partido-card">
+            <div class="partido-card" id="partido-${partido.cod_par}">
                 <div class="partido-header">
                     <span class="partido-fecha">${partido.fecha_formateada || partido.fecha}</span>
                     <span class="partido-estado ${partido.estado}">${partido.estado === 'programado' ? 'Programado' : 'Finalizado'}</span>
@@ -182,19 +201,19 @@ function mostrarPartidos(partidos, idEquipo) {
                 <div class="partido-content">
                     <div class="partido-equipos">
                         <div class="partido-equipo">
-                            <img src="${partido.local_escudo_base64}" alt="${partido.local_nombre}">
+                            <img src="${partido.local_escudo_base64 || '../../frontend/assets/images/team.png'}" alt="${partido.local_nombre}">
                             <h4>${partido.local_nombre}</h4>
                         </div>
                         
                         <div class="partido-vs">
                             ${esFinalizado ? 
-                                `<div class="partido-resultado">${partido.goles_local} - ${partido.goles_visitante}</div>` : 
+                                `<div class="partido-resultado">${partido.goles_local !== undefined ? partido.goles_local : '?'} - ${partido.goles_visitante !== undefined ? partido.goles_visitante : '?'}</div>` : 
                                 `<div class="partido-hora">${partido.hora.substring(0, 5)}</div>`
                             }
                         </div>
                         
                         <div class="partido-equipo">
-                            <img src="${partido.visitante_escudo_base64}" alt="${partido.visitante_nombre}">
+                            <img src="${partido.visitante_escudo_base64 || '../../frontend/assets/images/team.png'}" alt="${partido.visitante_nombre}">
                             <h4>${partido.visitante_nombre}</h4>
                         </div>
                     </div>

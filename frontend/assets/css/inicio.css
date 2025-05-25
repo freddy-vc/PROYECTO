@@ -1,5 +1,13 @@
 /* Estilos específicos para la página de inicio */
 
+/* Estilos para los iconos de características */
+.feature-icon {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    display: block;
+}
+
 /* Estilos para la sección de últimos resultados */
 .recent-matches {
     margin-bottom: 40px;

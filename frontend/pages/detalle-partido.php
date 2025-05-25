@@ -3,11 +3,14 @@
 $titulo_pagina = 'Detalle del Partido';
 $pagina_actual = 'partidos';
 
-// Incluir el header
-include_once '../components/header.php';
+// Ruta relativa para acceder a los componentes desde la raíz
+$ruta_raiz = '../../';
+
+// Incluir el header principal
+include_once $ruta_raiz . 'frontend/components/header.php';
 
 // Incluir el componente de notificaciones
-include_once '../components/notificaciones.php';
+include_once $ruta_raiz . 'frontend/components/notificaciones.php';
 
 // Verificar que se ha enviado un ID válido
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
@@ -19,28 +22,24 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $partido_id = intval($_GET['id']);
 ?>
 
-<!-- Incluir los estilos específicos para esta página -->
-<link rel="stylesheet" href="../assets/css/detalle-partido.css">
+<!-- Font Awesome ya se carga en el header -->
+<div class="back-link">
+    <a href="partidos.php"><i class="fas fa-arrow-left"></i> Volver a Partidos</a>
+</div>
 
-<div class="container">
-    <div class="back-link">
-        <a href="partidos.php"><i class="fas fa-arrow-left"></i> Volver a Partidos</a>
-    </div>
-    
-    <?php 
-    // Mostrar notificaciones si las hay
-    mostrarNotificaciones(['error_partido', 'exito_partido']);
-    ?>
-    
-    <div class="partido-detalle" id="partido-detalle">
-        <div class="loading">Cargando información del partido...</div>
-    </div>
+<?php 
+// Mostrar notificaciones si las hay
+mostrarNotificaciones(['error_partido', 'exito_partido']);
+?>
+
+<div class="partido-detalle" id="partido-detalle">
+    <div class="loading">Cargando información del partido...</div>
 </div>
 
 <!-- Incluir el script específico para esta página -->
-<script src="../assets/js/detalle-partido.js?v=<?php echo time(); ?>"></script>
+<script src="<?php echo $ruta_raiz; ?>frontend/assets/js/detalle-partido.js"></script>
 
 <?php
 // Incluir el footer
-include_once '../components/footer.php';
+include_once $ruta_raiz . 'frontend/components/footer.php';
 ?> 

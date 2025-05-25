@@ -32,13 +32,13 @@ function mostrarPerfilJugador(jugador) {
     profileContainer.style.display = 'block';
     let html = `
         <div class="player-header">
-            <img src="${jugador.foto_base64}" alt="${jugador.nombres} ${jugador.apellidos}" class="player-photo">
+            <img src="${jugador.foto_base64 || '../../frontend/assets/images/player.png'}" alt="${jugador.nombres} ${jugador.apellidos}" class="player-photo">
             <div class="player-info">
                 <div class="player-number">${jugador.num_camiseta || ''}</div>
                 <h1 class="player-name">${jugador.nombres} ${jugador.apellidos}</h1>
                 <div class="player-position">${jugador.posicion || 'Posición no especificada'}</div>
                 <div class="player-team">
-                    <img src="${jugador.escudo_equipo}" alt="${jugador.nombre_equipo}" class="team-logo">
+                    <img src="${jugador.escudo_equipo || '../../frontend/assets/images/team.png'}" alt="${jugador.nombre_equipo}" class="team-logo">
                     <span>${jugador.nombre_equipo || 'Sin equipo'}</span>
                 </div>
             </div>
@@ -93,6 +93,7 @@ function mostrarPerfilJugador(jugador) {
             const faltasEnPartido = jugador.detalle_faltas ? jugador.detalle_faltas.filter(f => f.cod_partido == partido.cod_partido) : [];
             const tarjetasAmarillasEnPartido = faltasEnPartido.filter(f => f.tipo_tarjeta === 'amarilla').length;
             const tarjetasRojasEnPartido = faltasEnPartido.filter(f => f.tipo_tarjeta === 'roja').length;
+            
             html += `
                 <li class="match-item">
                     <div class="match-date">${formatDate(partido.fecha)}</div>

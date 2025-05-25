@@ -111,6 +111,46 @@ switch ($accion) {
         ]);
         break;
         
+    case 'obtener_goles':
+        // Obtener el ID del partido
+        $partido_id = isset($_GET['partido_id']) ? intval($_GET['partido_id']) : 0;
+        
+        if ($partido_id <= 0) {
+            // ID no válido
+            header('Content-Type: application/json');
+            echo json_encode([
+                'estado' => false,
+                'mensaje' => 'ID de partido no válido'
+            ]);
+            break;
+        }
+        
+        // Obtener datos del partido para saber equipos
+        $datos_partido = $partido->obtenerPorId($partido_id);
+        
+        if (!$datos_partido) {
+            // Partido no encontrado
+            header('Content-Type: application/json');
+            echo json_encode([
+                'estado' => false,
+                'mensaje' => 'Partido no encontrado'
+            ]);
+            break;
+        }
+        
+        // Contar goles de cada equipo
+        $goles_local = $partido->contarGoles($partido_id, $datos_partido['local_id']);
+        $goles_visitante = $partido->contarGoles($partido_id, $datos_partido['visitante_id']);
+        
+        // Devolver los datos en formato JSON
+        header('Content-Type: application/json');
+        echo json_encode([
+            'estado' => true,
+            'goles_local' => $goles_local,
+            'goles_visitante' => $goles_visitante
+        ]);
+        break;
+        
     default:
         // Acción no válida
         header('Content-Type: application/json');

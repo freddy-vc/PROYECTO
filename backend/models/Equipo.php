@@ -106,6 +106,21 @@ class Equipo
     public function crear($nombre, $ciudad_id, $director_id = null, $escudo = null)
     {
         try {
+            // Verificar si el director técnico ya está asignado a otro equipo
+            if ($director_id !== null) {
+                $query_check_dt = "SELECT cod_equ FROM Equipos WHERE cod_dt = :cod_dt";
+                $stmt_check_dt = $this->db->prepare($query_check_dt);
+                $stmt_check_dt->bindParam(':cod_dt', $director_id, PDO::PARAM_INT);
+                $stmt_check_dt->execute();
+                
+                if ($stmt_check_dt->rowCount() > 0) {
+                    return [
+                        'estado' => false,
+                        'mensaje' => 'No es posible asignar este director técnico porque ya está dirigiendo a otro equipo.'
+                    ];
+                }
+            }
+            
             // Preparar la consulta SQL
             $query = "INSERT INTO Equipos (nombre, cod_ciu, cod_dt, escudo) 
                      VALUES (:nombre, :cod_ciu, :cod_dt, :escudo)";
@@ -128,6 +143,15 @@ class Equipo
             ];
             
         } catch (PDOException $e) {
+            // Capturar el error específico de restricción única en cod_dt
+            if (strpos($e->getMessage(), 'uq_director_tecnico') !== false || 
+                strpos($e->getMessage(), 'duplicate key') !== false) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'No es posible asignar este director técnico porque ya está dirigiendo a otro equipo.'
+                ];
+            }
+            
             return [
                 'estado' => false,
                 'mensaje' => 'Error al crear el equipo: ' . $e->getMessage()
@@ -141,6 +165,22 @@ class Equipo
     public function actualizar($id, $nombre, $ciudad_id, $director_id = null, $escudo = null, $actualizar_escudo = false)
     {
         try {
+            // Verificar si el director técnico ya está asignado a otro equipo
+            if ($director_id !== null) {
+                $query_check_dt = "SELECT cod_equ FROM Equipos WHERE cod_dt = :cod_dt AND cod_equ != :id";
+                $stmt_check_dt = $this->db->prepare($query_check_dt);
+                $stmt_check_dt->bindParam(':cod_dt', $director_id, PDO::PARAM_INT);
+                $stmt_check_dt->bindParam(':id', $id, PDO::PARAM_INT);
+                $stmt_check_dt->execute();
+                
+                if ($stmt_check_dt->rowCount() > 0) {
+                    return [
+                        'estado' => false,
+                        'mensaje' => 'No es posible asignar este director técnico porque ya está dirigiendo a otro equipo.'
+                    ];
+                }
+            }
+            
             // Preparar la consulta SQL base
             $query = "UPDATE Equipos SET 
                      nombre = :nombre, 
@@ -176,6 +216,15 @@ class Equipo
             ];
             
         } catch (PDOException $e) {
+            // Capturar el error específico de restricción única en cod_dt
+            if (strpos($e->getMessage(), 'uq_director_tecnico') !== false || 
+                strpos($e->getMessage(), 'duplicate key') !== false) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'No es posible asignar este director técnico porque ya está dirigiendo a otro equipo.'
+                ];
+            }
+            
             return [
                 'estado' => false,
                 'mensaje' => 'Error al actualizar el equipo: ' . $e->getMessage()

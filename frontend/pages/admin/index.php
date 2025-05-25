@@ -30,7 +30,7 @@ include_once '../../components/notificaciones.php';
 
     <!-- Información de bienvenida -->
     <div class="section-intro">
-        <p>Bienvenido al panel de administración del Campeonato de Futsala Villavicencio</p>
+        <p>Bienvenido al panel de administración de VILLAVOCUP</p>
     </div>
 
     <div class="admin-container">
@@ -66,11 +66,9 @@ include_once '../../components/notificaciones.php';
                 <div class="admin-card-icon">
                     <i class="fas fa-futbol"></i>
                 </div>
-                <div class="admin-card-content">
-                    <h3>Partidos</h3>
-                    <p>Gestiona los partidos y fases del torneo</p>
-                    <a href="./partidos.php" class="btn">Administrar</a>
-                </div>
+                <h2>Partidos</h2>
+                <p>Gestionar los partidos y fases del torneo</p>
+                <a href="./partidos.php" class="btn">Administrar</a>
             </div>
             
             <div class="admin-card">
@@ -86,11 +84,9 @@ include_once '../../components/notificaciones.php';
                 <div class="admin-card-icon">
                     <i class="fas fa-users"></i>
                 </div>
-                <div class="admin-card-content">
-                    <h3>Usuarios</h3>
-                    <p>Gestiona los usuarios del sistema</p>
-                    <a href="./usuarios.php" class="btn">Administrar</a>
-                </div>
+                <h2>Usuarios</h2>
+                <p>Gestionar los usuarios del sistema</p>
+                <a href="./usuarios.php" class="btn">Administrar</a>
             </div>
         </div>
     </div>

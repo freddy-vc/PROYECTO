@@ -363,8 +363,8 @@ class Jugador {
     public function obtenerPartidosJugador($jugadorId) {
         try {
             $query = "SELECT DISTINCT p.*, 
-                            e_local.nombre as equipo_local, 
-                            e_visit.nombre as equipo_visitante,
+                            e_local.nombre as local_nombre, 
+                            e_visit.nombre as visitante_nombre,
                             e_local.escudo as escudo_local,
                             e_visit.escudo as escudo_visitante,
                             c.nombre as cancha
@@ -390,15 +390,29 @@ class Jugador {
             foreach ($partidos as &$partido) {
                 // Procesar escudos
                 if ($partido['escudo_local']) {
-                    $partido['escudo_local_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['escudo_local']);
+                    $partido['local_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['escudo_local']);
                 } else {
-                    $partido['escudo_local_base64'] = '../assets/images/team.png';
+                    // Usar una imagen base64 por defecto en lugar de una ruta relativa
+                    $default_image_path = __DIR__ . '/../../frontend/assets/images/team.png';
+                    if (file_exists($default_image_path)) {
+                        $partido['local_escudo_base64'] = 'data:image/png;base64,' . base64_encode(file_get_contents($default_image_path));
+                    } else {
+                        // Si no existe el archivo, usamos una URL relativa como fallback
+                        $partido['local_escudo_base64'] = '../../frontend/assets/images/team.png';
+                    }
                 }
                 
                 if ($partido['escudo_visitante']) {
-                    $partido['escudo_visitante_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['escudo_visitante']);
+                    $partido['visitante_escudo_base64'] = 'data:image/jpeg;base64,' . base64_encode($partido['escudo_visitante']);
                 } else {
-                    $partido['escudo_visitante_base64'] = '../assets/images/team.png';
+                    // Usar una imagen base64 por defecto en lugar de una ruta relativa
+                    $default_image_path = __DIR__ . '/../../frontend/assets/images/team.png';
+                    if (file_exists($default_image_path)) {
+                        $partido['visitante_escudo_base64'] = 'data:image/png;base64,' . base64_encode(file_get_contents($default_image_path));
+                    } else {
+                        // Si no existe el archivo, usamos una URL relativa como fallback
+                        $partido['visitante_escudo_base64'] = '../../frontend/assets/images/team.png';
+                    }
                 }
                 
                 // Formatear fecha
@@ -468,14 +482,36 @@ class Jugador {
             if ($goleador['foto']) {
                 $goleador['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($goleador['foto']);
             } else {
-                $goleador['foto_base64'] = '../assets/images/player.png';
+                // Detectar el contexto basado en la ruta del script
+                $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
+                if (strpos($script_path, '/frontend/pages/admin/') !== false) {
+                    // Si estamos en el panel admin
+                    $goleador['foto_base64'] = '../../assets/images/player.png';
+                } else if (strpos($script_path, '/frontend/pages/') !== false) {
+                    // Si estamos en la interfaz de usuario
+                    $goleador['foto_base64'] = '../assets/images/player.png';
+                } else {
+                    // Si estamos en la raíz
+                    $goleador['foto_base64'] = './frontend/assets/images/player.png';
+                }
             }
             
             // Procesar el escudo del equipo
             if ($goleador['escudo_equipo']) {
                 $goleador['escudo_equipo_base64'] = 'data:image/jpeg;base64,' . base64_encode($goleador['escudo_equipo']);
             } else {
-                $goleador['escudo_equipo_base64'] = '../assets/images/team.png';
+                // Detectar el contexto basado en la ruta del script
+                $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
+                if (strpos($script_path, '/frontend/pages/admin/') !== false) {
+                    // Si estamos en el panel admin
+                    $goleador['escudo_equipo_base64'] = '../../assets/images/team.png';
+                } else if (strpos($script_path, '/frontend/pages/') !== false) {
+                    // Si estamos en la interfaz de usuario
+                    $goleador['escudo_equipo_base64'] = '../assets/images/team.png';
+                } else {
+                    // Si estamos en la raíz
+                    $goleador['escudo_equipo_base64'] = './frontend/assets/images/team.png';
+                }
             }
             
             return $goleador;
@@ -512,14 +548,36 @@ class Jugador {
             if ($asistidor['foto']) {
                 $asistidor['foto_base64'] = 'data:image/jpeg;base64,' . base64_encode($asistidor['foto']);
             } else {
-                $asistidor['foto_base64'] = '../assets/images/player.png';
+                // Detectar el contexto basado en la ruta del script
+                $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
+                if (strpos($script_path, '/frontend/pages/admin/') !== false) {
+                    // Si estamos en el panel admin
+                    $asistidor['foto_base64'] = '../../assets/images/player.png';
+                } else if (strpos($script_path, '/frontend/pages/') !== false) {
+                    // Si estamos en la interfaz de usuario
+                    $asistidor['foto_base64'] = '../assets/images/player.png';
+                } else {
+                    // Si estamos en la raíz
+                    $asistidor['foto_base64'] = './frontend/assets/images/player.png';
+                }
             }
             
             // Procesar el escudo del equipo
             if ($asistidor['escudo_equipo']) {
                 $asistidor['escudo_equipo_base64'] = 'data:image/jpeg;base64,' . base64_encode($asistidor['escudo_equipo']);
             } else {
-                $asistidor['escudo_equipo_base64'] = '../assets/images/team.png';
+                // Detectar el contexto basado en la ruta del script
+                $script_path = $_SERVER['SCRIPT_NAME'] ?? '';
+                if (strpos($script_path, '/frontend/pages/admin/') !== false) {
+                    // Si estamos en el panel admin
+                    $asistidor['escudo_equipo_base64'] = '../../assets/images/team.png';
+                } else if (strpos($script_path, '/frontend/pages/') !== false) {
+                    // Si estamos en la interfaz de usuario
+                    $asistidor['escudo_equipo_base64'] = '../assets/images/team.png';
+                } else {
+                    // Si estamos en la raíz
+                    $asistidor['escudo_equipo_base64'] = './frontend/assets/images/team.png';
+                }
             }
             
             return $asistidor;

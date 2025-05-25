@@ -63,7 +63,7 @@ foreach ($jugadores as $jugador) {
     <h1 class="page-title">Administración de Jugadores</h1>
     
     <div class="section-intro">
-        <p>Gestiona los jugadores del campeonato de Futsala Villavicencio</p>
+        <p>Gestiona los jugadores de VILLAVOCUP</p>
     </div>
     
     <?php 

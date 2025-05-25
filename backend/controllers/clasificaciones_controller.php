@@ -37,12 +37,13 @@ switch ($accion) {
         for ($i = 0; $i < 4; $i++) {
             if (isset($cuartos[$i])) {
                 $p = $cuartos[$i];
+                $marcador = $partidoModel->calcularMarcadorPorDetalle($p['cod_par'], $p['local_nombre'], $p['visitante_nombre']);
                 $clasificaciones['cuartos'][] = [
                     'id' => $p['cod_par'],
                     'local' => getEquipoData($p['equ_local'], $equipoModel),
                     'visitante' => getEquipoData($p['equ_visitante'], $equipoModel),
-                    'goles_local' => $p['estado'] === 'finalizado' ? $partidoModel->contarGoles($p['cod_par'], $p['equ_local']) : '-',
-                    'goles_visitante' => $p['estado'] === 'finalizado' ? $partidoModel->contarGoles($p['cod_par'], $p['equ_visitante']) : '-',
+                    'goles_local' => $p['estado'] === 'finalizado' ? $marcador['goles_local'] : '-',
+                    'goles_visitante' => $p['estado'] === 'finalizado' ? $marcador['goles_visitante'] : '-',
                     'estado' => $p['estado']
                 ];
             } else {
@@ -53,12 +54,13 @@ switch ($accion) {
         for ($i = 0; $i < 2; $i++) {
             if (isset($semis[$i])) {
                 $p = $semis[$i];
+                $marcador = $partidoModel->calcularMarcadorPorDetalle($p['cod_par'], $p['local_nombre'], $p['visitante_nombre']);
                 $clasificaciones['semifinales'][] = [
                     'id' => $p['cod_par'],
                     'local' => getEquipoData($p['equ_local'], $equipoModel),
                     'visitante' => getEquipoData($p['equ_visitante'], $equipoModel),
-                    'goles_local' => $p['estado'] === 'finalizado' ? $partidoModel->contarGoles($p['cod_par'], $p['equ_local']) : '-',
-                    'goles_visitante' => $p['estado'] === 'finalizado' ? $partidoModel->contarGoles($p['cod_par'], $p['equ_visitante']) : '-',
+                    'goles_local' => $p['estado'] === 'finalizado' ? $marcador['goles_local'] : '-',
+                    'goles_visitante' => $p['estado'] === 'finalizado' ? $marcador['goles_visitante'] : '-',
                     'estado' => $p['estado']
                 ];
             } else {
@@ -68,12 +70,13 @@ switch ($accion) {
         $final = $partidoModel->obtenerPorFase('final');
         if (isset($final[0])) {
             $p = $final[0];
+            $marcador = $partidoModel->calcularMarcadorPorDetalle($p['cod_par'], $p['local_nombre'], $p['visitante_nombre']);
             $clasificaciones['final'] = [
                 'id' => $p['cod_par'],
                 'local' => getEquipoData($p['equ_local'], $equipoModel),
                 'visitante' => getEquipoData($p['equ_visitante'], $equipoModel),
-                'goles_local' => $p['estado'] === 'finalizado' ? $partidoModel->contarGoles($p['cod_par'], $p['equ_local']) : '-',
-                'goles_visitante' => $p['estado'] === 'finalizado' ? $partidoModel->contarGoles($p['cod_par'], $p['equ_visitante']) : '-',
+                'goles_local' => $p['estado'] === 'finalizado' ? $marcador['goles_local'] : '-',
+                'goles_visitante' => $p['estado'] === 'finalizado' ? $marcador['goles_visitante'] : '-',
                 'estado' => $p['estado']
             ];
         } else {

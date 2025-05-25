@@ -264,7 +264,6 @@ function setupStatsForms() {
                 tempStats.goles.push(data);
             }
             closeModal('modal-gol');
-            showNotification('success', 'Gol guardado');
             updateStatsTable('goles');
             this.reset();
         });
@@ -290,7 +289,6 @@ function setupStatsForms() {
                 tempStats.asistencias.push(data);
             }
             closeModal('modal-asistencia');
-            showNotification('success', 'Asistencia guardada');
             updateStatsTable('asistencias');
             this.reset();
         });
@@ -316,7 +314,6 @@ function setupStatsForms() {
                 tempStats.faltas.push(data);
             }
             closeModal('modal-falta');
-            showNotification('success', 'Falta guardada');
             updateStatsTable('faltas');
             this.reset();
         });
@@ -478,7 +475,7 @@ function editTempStat(id, tipo) {
 });
 
 // Función para eliminar estadística temporal
-function deleteTempStat(id, tipo, showMsg = true) {
+function deleteTempStat(id, tipo, showMsg = false) {
     const stat = tempStats[tipo].find(item => item.id == id);
     if (stat && (stat.cod_gol || stat.cod_asis || stat.cod_falta)) {
         // Es de la BD
@@ -488,11 +485,25 @@ function deleteTempStat(id, tipo, showMsg = true) {
     }
     tempStats[tipo] = tempStats[tipo].filter(item => item.id != id);
     updateStatsTable(tipo);
+    // Solo mostrar notificación si se solicita explícitamente
     if (showMsg) showNotification('success', `${tipo.charAt(0).toUpperCase() + tipo.slice(1)} eliminado`);
 }
 
 // Función para mostrar notificaciones
 function showNotification(type, message) {
+    // Verificar si el mensaje está relacionado con goles, asistencias o faltas
+    // Si es así, no mostrar la notificación
+    if (message.includes('Gol') || 
+        message.includes('gol') || 
+        message.includes('Asistencia') || 
+        message.includes('asistencia') || 
+        message.includes('Falta') || 
+        message.includes('falta') ||
+        message.includes('Tarjeta') ||
+        message.includes('tarjeta')) {
+        return; // No mostrar notificación para estas operaciones
+    }
+    
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.textContent = message;

@@ -12,10 +12,11 @@ include_once 'frontend/components/notificaciones.php';
 
 <!-- Incluir los estilos específicos para esta página -->
 <link rel="stylesheet" href="./frontend/assets/css/inicio.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <div class="container">
     <!-- Título de la página -->
-    <h1 class="page-title">Campeonato de Futsala Villavicencio</h1>
+    <h1 class="page-title">Campeonato de Futsala  en Villavicencio</h1>
     
     <!-- Mostrar notificaciones de éxito -->
     <?php mostrarNotificaciones(['exito_login']); ?>
@@ -24,33 +25,34 @@ include_once 'frontend/components/notificaciones.php';
 <!-- Contenido principal de la página de inicio -->
 <section class="hero">
     <div class="hero-content">
-        <h1>Campeonato de Futsala Villavicencio</h1>
+        <h1>VILLAVOCUP</h1>
         <img src="./frontend/assets/images/logo.png" alt="Logo VILLAVOCUP" class="hero-logo">
-        <p>Toda la información del campeonato en un solo lugar</p>
+        <p>¡Bienvenidos a VILLAVOCUP!
+El torneo de futsala que reúne a los mejores equipos de toda Colombia en la ciudad de Villavicencio, la puerta al llano.
+Prepárate para vivir una experiencia deportiva de alto nivel, con partidos vibrantes, talento nacional y un ambiente competitivo y fraterno.</p>
         <div class="hero-buttons">
-            <a href="./frontend/pages/partidos.php" class="btn btn-primary">Ver Próximos Partidos</a>
-            <a href="./frontend/pages/clasificaciones.php" class="btn btn-secondary">Ver Clasificaciones</a>
+            <a href="./frontend/pages/clasificaciones.php" class="btn btn-primary">Ver Clasificaciones</a>
         </div>
     </div>
 </section>
 
 <section class="home-features">
     <div class="feature">
-        <img src="./frontend/assets/images/equipos-icon.png" alt="Equipos">
+        <i class="fas fa-shield-alt feature-icon"></i>
         <h2>Equipos</h2>
         <p>Conoce los equipos participantes en el campeonato</p>
         <a href="./frontend/pages/equipos.php" class="btn">Ver Equipos</a>
     </div>
     
     <div class="feature">
-        <img src="./frontend/assets/images/jugadores-icon.png" alt="Jugadores">
+        <i class="fas fa-user-alt feature-icon"></i>
         <h2>Jugadores</h2>
         <p>Información detallada de todos los jugadores del torneo</p>
         <a href="./frontend/pages/jugadores.php" class="btn">Ver Jugadores</a>
     </div>
     
     <div class="feature">
-        <img src="./frontend/assets/images/partidos-icon.png" alt="Partidos">
+        <i class="fas fa-futbol feature-icon"></i>
         <h2>Partidos</h2>
         <p>Calendario y resultados de todos los encuentros</p>
         <a href="./frontend/pages/partidos.php" class="btn">Ver Partidos</a>

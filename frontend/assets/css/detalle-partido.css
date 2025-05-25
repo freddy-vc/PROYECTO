@@ -1,4 +1,4 @@
-.container {
+.main-content .container {
     max-width: 900px;
     margin: 0 auto;
     padding: 20px;
@@ -6,6 +6,7 @@
 
 .back-link {
     margin-bottom: 20px;
+    padding: 0 15px;
 }
 
 .back-link a {
@@ -30,12 +31,13 @@
     color: #777;
 }
 
-.error-message {
+.main-content .error-message {
     background-color: rgba(229, 57, 53, 0.1);
     color: var(--danger-color);
     padding: 20px;
     border-radius: 5px;
     text-align: center;
+    margin: 0 15px 20px;
 }
 
 .partido-detalle {
@@ -43,6 +45,7 @@
     border-radius: 10px;
     box-shadow: var(--shadow);
     overflow: hidden;
+    margin: 0 15px;
 }
 
 .partido-header {

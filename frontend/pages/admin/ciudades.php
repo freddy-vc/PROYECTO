@@ -34,7 +34,7 @@ $ciudades = $ciudadModel->obtenerTodas();
     <h1 class="page-title">Administración de Ciudades</h1>
     
     <div class="section-intro">
-        <p>Gestiona las ciudades del campeonato de Futsala Villavicencio</p>
+        <p>Gestiona las ciudades de VILLAVOCUP</p>
     </div>
     
     <?php 

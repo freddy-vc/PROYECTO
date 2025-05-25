@@ -32,6 +32,9 @@ $equipos = $equipoModel->obtenerTodos();
 
 <div class="container">
     <h1 class="page-title">Administración de Equipos</h1>
+    <div class="admin-header">
+            <p>Gestiona los equipos de VILLAVOCUP</p>
+        </div>
     
     <?php 
     // Mostrar notificaciones si las hay
@@ -51,10 +54,6 @@ $equipos = $equipoModel->obtenerTodos();
                 <li><a href="./partidos.php">Partidos</a></li>
                 <li><a href="./usuarios.php">Usuarios</a></li>
             </ul>
-        </div>
-        
-        <div class="admin-header">
-            <p>Gestiona los equipos del campeonato de Futsala Villavicencio</p>
         </div>
         
         <!-- Sección de filtros y búsqueda -->
