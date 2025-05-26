@@ -19,20 +19,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    // Validar longitud del nombre de usuario
-    if (strlen($username) < 3) {
-        $_SESSION['error_login'] = 'El nombre de usuario debe tener al menos 3 caracteres';
-        header('Location: ../../frontend/pages/login.php');
-        exit;
-    }
-    
-    // Validar longitud de la contraseña
-    if (strlen($password) < 6) {
-        $_SESSION['error_login'] = 'La contraseña debe tener al menos 6 caracteres';
-        header('Location: ../../frontend/pages/login.php');
-        exit;
-    }
-    
     // Intentar iniciar sesión
     $usuario = new Usuario();
     $resultado = $usuario->login($username, $password);

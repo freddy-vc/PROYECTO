@@ -130,30 +130,38 @@ class Usuario
     public function login($username, $password)
     {
         try {
-            $sql = "SELECT * FROM Usuarios WHERE username = :username AND password = :password";
+            // Primero verificar si el usuario existe
+            $sql = "SELECT * FROM Usuarios WHERE username = :username";
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':username', $username);
-            $stmt->bindParam(':password', $password);
             $stmt->execute();
             
             $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            // Verificar si existe el usuario
-            if ($usuario) {
-                // Procesar la foto de perfil
-                $usuario = $this->procesarFotoPerfil($usuario);
-                
-                return [
-                    'estado' => true,
-                    'usuario' => $usuario,
-                    'mensaje' => 'Inicio de sesión exitoso'
-                ];
-            } else {
+            // Si el usuario no existe
+            if (!$usuario) {
                 return [
                     'estado' => false,
-                    'mensaje' => 'Nombre de usuario o contraseña incorrectos'
+                    'mensaje' => 'Usuario no encontrado'
                 ];
             }
+            
+            // Si el usuario existe, verificar la contraseña
+            if ($usuario['password'] !== $password) {
+                return [
+                    'estado' => false,
+                    'mensaje' => 'Contraseña incorrecta'
+                ];
+            }
+            
+            // Si todo es correcto, procesar la foto de perfil y devolver el usuario
+            $usuario = $this->procesarFotoPerfil($usuario);
+            
+            return [
+                'estado' => true,
+                'usuario' => $usuario,
+                'mensaje' => 'Inicio de sesión exitoso'
+            ];
             
         } catch (PDOException $e) {
             return [

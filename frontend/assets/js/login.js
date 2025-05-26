@@ -16,17 +16,16 @@ document.addEventListener('DOMContentLoaded', function() {
         loginForm.addEventListener('submit', function(event) {
             let formValid = true;
             
-            // Validar nombre de usuario
-            if (!usernameInput || usernameInput.value.trim().length < 3) {
-                mostrarError(usernameInput, 'El nombre de usuario debe tener al menos 3 caracteres');
+            // Validar que los campos no estén vacíos
+            if (!usernameInput || !usernameInput.value.trim()) {
+                mostrarError(usernameInput, 'El nombre de usuario es obligatorio');
                 formValid = false;
             } else {
                 limpiarError(usernameInput);
             }
             
-            // Validar contraseña
-            if (!passwordInput || passwordInput.value.length < 6) {
-                mostrarError(passwordInput, 'La contraseña debe tener al menos 6 caracteres');
+            if (!passwordInput || !passwordInput.value) {
+                mostrarError(passwordInput, 'La contraseña es obligatoria');
                 formValid = false;
             } else {
                 limpiarError(passwordInput);
