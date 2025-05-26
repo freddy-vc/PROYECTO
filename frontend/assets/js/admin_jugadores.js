@@ -29,13 +29,94 @@ function setupJugadorForm() {
     const jugadorForm = document.getElementById('form-jugador');
     if (!jugadorForm) return;
     
+    // Asegurarse de que el campo numero_camiseta tenga el mismo valor que dorsal al cargar la página
+    const dorsalInput = document.getElementById('dorsal');
+    const numeroCamisetaInput = document.querySelector('input[name="numero_camiseta"]');
+    if (dorsalInput && numeroCamisetaInput) {
+        numeroCamisetaInput.value = dorsalInput.value;
+        
+        // También actualizar el campo oculto cuando cambie el dorsal
+        dorsalInput.addEventListener('change', function() {
+            numeroCamisetaInput.value = this.value;
+        });
+        
+        dorsalInput.addEventListener('input', function() {
+            numeroCamisetaInput.value = this.value;
+        });
+    }
+    
+    // Añadir evento de clic al botón de guardar
+    const btnGuardar = document.getElementById('btn-guardar-jugador');
+    if (btnGuardar) {
+        btnGuardar.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Validar el formulario
+            if (validarFormulario()) {
+                // Asegurarse de que el campo numero_camiseta tenga el mismo valor que dorsal
+                if (dorsalInput && numeroCamisetaInput) {
+                    numeroCamisetaInput.value = dorsalInput.value;
+                }
+                
+                // Preparar datos de estadísticas si existen
+                if (typeof tempStats !== 'undefined') {
+                    // Asegurarse de que todos los elementos tengan partido_id
+                    ['goles', 'asistencias', 'faltas'].forEach(tipo => {
+                        if (tempStats[tipo] && tempStats[tipo].length > 0) {
+                            tempStats[tipo].forEach(item => {
+                                if (!item.partido_id && item.cod_par) {
+                                    item.partido_id = item.cod_par;
+                                }
+                            });
+                        }
+                    });
+                    
+                    // Crear un campo oculto para las estadísticas temporales
+                    if (Object.keys(tempStats).length > 0) {
+                        const statsInput = document.createElement('input');
+                        statsInput.type = 'hidden';
+                        statsInput.name = 'estadisticas_temporales';
+                        statsInput.value = JSON.stringify(tempStats);
+                        jugadorForm.appendChild(statsInput);
+                    }
+                    
+                    // Crear un campo oculto para las estadísticas eliminadas
+                    if (typeof deletedStats !== 'undefined' && (
+                        deletedStats.goles.length > 0 || 
+                        deletedStats.asistencias.length > 0 || 
+                        deletedStats.faltas.length > 0
+                    )) {
+                        const deletedInput = document.createElement('input');
+                        deletedInput.type = 'hidden';
+                        deletedInput.name = 'estadisticas_eliminadas';
+                        deletedInput.value = JSON.stringify(deletedStats);
+                        jugadorForm.appendChild(deletedInput);
+                    }
+                }
+                
+                // Enviar el formulario
+                jugadorForm.submit();
+            }
+        });
+    }
+    
     jugadorForm.addEventListener('submit', function(e) {
+        // Si el evento no viene del botón guardar, validar
+        if (e.submitter !== btnGuardar) {
+            if (!validarFormulario()) {
+                e.preventDefault();
+            }
+        }
+    });
+    
+    // Función para validar el formulario
+    function validarFormulario() {
         // Validación de los campos del formulario
         const nombres = document.getElementById('nombres');
         const apellidos = document.getElementById('apellidos');
-        const equipo = document.getElementById('equipo');
+        const equipo = document.getElementById('equipo_id');
         const posicion = document.getElementById('posicion');
-        const numeroCamiseta = document.getElementById('numero_camiseta');
+        const dorsal = document.getElementById('dorsal');
         let isValid = true;
         
         // Validar nombre del jugador
@@ -70,15 +151,15 @@ function setupJugadorForm() {
             clearError(posicion);
         }
         
-        // Validar número de camiseta
-        if (!numeroCamiseta.value) {
-            showError(numeroCamiseta, 'El número de camiseta es obligatorio');
+        // Validar número de camiseta (dorsal)
+        if (!dorsal.value) {
+            showError(dorsal, 'El número de camiseta es obligatorio');
             isValid = false;
-        } else if (isNaN(numeroCamiseta.value) || numeroCamiseta.value < 1 || numeroCamiseta.value > 99) {
-            showError(numeroCamiseta, 'El número de camiseta debe estar entre 1 y 99');
+        } else if (isNaN(dorsal.value) || dorsal.value < 1 || dorsal.value > 99) {
+            showError(dorsal, 'El número de camiseta debe estar entre 1 y 99');
             isValid = false;
         } else {
-            clearError(numeroCamiseta);
+            clearError(dorsal);
         }
         
         // Validar imagen si se ha seleccionado
@@ -102,10 +183,8 @@ function setupJugadorForm() {
             }
         }
         
-        if (!isValid) {
-            e.preventDefault();
-        }
-    });
+        return isValid;
+    }
     
     // Mostrar vista previa de la imagen
     const fotoInput = document.getElementById('foto');
@@ -249,11 +328,22 @@ function setupStatsForms() {
             const formData = new FormData(this);
             const data = {};
             formData.forEach((value, key) => data[key] = value);
+            
+            // Asegurarse de que partido_id esté presente
+            if (!data.partido_id) {
+                showNotification('error', 'Debe seleccionar un partido');
+                return;
+            }
+            
             if (editingStat.id && editingStat.tipo === 'goles') {
                 // Actualizar
                 const idx = tempStats.goles.findIndex(item => item.id == editingStat.id);
                 if (idx !== -1) {
                     tempStats.goles[idx] = { ...tempStats.goles[idx], ...data };
+                    // Asegurarnos de que cod_par también esté presente si existía
+                    if (tempStats.goles[idx].cod_par) {
+                        tempStats.goles[idx].partido_id = tempStats.goles[idx].cod_par;
+                    }
                 }
                 editingStat = { id: null, tipo: null };
             } else {
@@ -276,10 +366,21 @@ function setupStatsForms() {
             const formData = new FormData(this);
             const data = {};
             formData.forEach((value, key) => data[key] = value);
+            
+            // Asegurarse de que partido_id esté presente
+            if (!data.partido_id) {
+                showNotification('error', 'Debe seleccionar un partido');
+                return;
+            }
+            
             if (editingStat.id && editingStat.tipo === 'asistencias') {
                 const idx = tempStats.asistencias.findIndex(item => item.id == editingStat.id);
                 if (idx !== -1) {
                     tempStats.asistencias[idx] = { ...tempStats.asistencias[idx], ...data };
+                    // Asegurarnos de que cod_par también esté presente si existía
+                    if (tempStats.asistencias[idx].cod_par) {
+                        tempStats.asistencias[idx].partido_id = tempStats.asistencias[idx].cod_par;
+                    }
                 }
                 editingStat = { id: null, tipo: null };
             } else {
@@ -301,10 +402,21 @@ function setupStatsForms() {
             const formData = new FormData(this);
             const data = {};
             formData.forEach((value, key) => data[key] = value);
+            
+            // Asegurarse de que partido_id esté presente
+            if (!data.partido_id) {
+                showNotification('error', 'Debe seleccionar un partido');
+                return;
+            }
+            
             if (editingStat.id && editingStat.tipo === 'faltas') {
                 const idx = tempStats.faltas.findIndex(item => item.id == editingStat.id);
                 if (idx !== -1) {
                     tempStats.faltas[idx] = { ...tempStats.faltas[idx], ...data };
+                    // Asegurarnos de que cod_par también esté presente si existía
+                    if (tempStats.faltas[idx].cod_par) {
+                        tempStats.faltas[idx].partido_id = tempStats.faltas[idx].cod_par;
+                    }
                 }
                 editingStat = { id: null, tipo: null };
             } else {
@@ -315,25 +427,6 @@ function setupStatsForms() {
             closeModal('modal-falta');
             updateStatsTable('faltas');
             this.reset();
-        });
-    }
-
-    // Modificar el formulario principal para incluir las estadísticas temporales y eliminadas
-    const jugadorForm = document.getElementById('form-jugador');
-    if (jugadorForm) {
-        jugadorForm.addEventListener('submit', function(e) {
-            // Agregar las estadísticas temporales al formulario
-            const statsInput = document.createElement('input');
-            statsInput.type = 'hidden';
-            statsInput.name = 'estadisticas_temporales';
-            statsInput.value = JSON.stringify(tempStats);
-            this.appendChild(statsInput);
-            // Agregar los eliminados
-            const deletedInput = document.createElement('input');
-            deletedInput.type = 'hidden';
-            deletedInput.name = 'estadisticas_eliminadas';
-            deletedInput.value = JSON.stringify(deletedStats);
-            this.appendChild(deletedInput);
         });
     }
 }
@@ -353,11 +446,18 @@ function updateStatsTable(tipo) {
 // Función para crear una fila de estadísticas
 function createStatsRow(item, tipo) {
     const row = document.createElement('tr');
-    let partido = item.partido_id || item.partido || '';
+    let partido = item.partido_id || item.cod_par || '';
+    
     // Si viene de la base de datos, mostrar el nombre del partido
     if (item.equipo_local && item.equipo_visitante) {
         partido = `${item.equipo_local} vs ${item.equipo_visitante}`;
     }
+    
+    // Asegurarnos de que el item tenga el campo partido_id
+    if (!item.partido_id && item.cod_par) {
+        item.partido_id = item.cod_par;
+    }
+    
     switch(tipo) {
         case 'goles':
             row.innerHTML = `

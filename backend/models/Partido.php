@@ -27,11 +27,13 @@ class Partido
     {
         try {
             // Consulta base
-            $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado, p.fase,
+            $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado, 
+                    b.fase,
                     e1.cod_equ as local_id, e1.nombre as local_nombre, e1.escudo as local_escudo,
                     e2.cod_equ as visitante_id, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,
                     c.nombre as cancha
                     FROM Partidos p
+                    LEFT JOIN Brackets b ON p.cod_par = b.cod_par
                     JOIN Equipos e1 ON p.equ_local = e1.cod_equ
                     JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ
                     JOIN Canchas c ON p.cod_cancha = c.cod_cancha";
@@ -114,11 +116,13 @@ class Partido
     public function obtenerPorId($cod_par)
     {
         try {
-            $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado, p.fase, p.cod_cancha,
+            $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado, p.cod_cancha,
+                    b.fase, b.bracket_id,
                     e1.cod_equ as local_id, e1.nombre as local_nombre, e1.escudo as local_escudo,
                     e2.cod_equ as visitante_id, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,
                     c.nombre as cancha, c.direccion as cancha_direccion
                     FROM Partidos p
+                    LEFT JOIN Brackets b ON p.cod_par = b.cod_par
                     JOIN Equipos e1 ON p.equ_local = e1.cod_equ
                     JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ
                     JOIN Canchas c ON p.cod_cancha = c.cod_cancha
@@ -328,19 +332,14 @@ class Partido
     /**
      * Crear un nuevo partido
      */
-    public function crear($fecha, $hora, $cod_cancha, $equ_local, $equ_visitante, $fase)
+    public function crear($fecha, $hora, $cod_cancha, $equ_local, $equ_visitante, $fase = null)
     {
         try {
-            // Verificar que los equipos sean diferentes
-            if ($equ_local === $equ_visitante) {
-                return [
-                    'estado' => false,
-                    'mensaje' => 'El equipo local y visitante no pueden ser el mismo'
-                ];
-            }
+            $this->conexion->beginTransaction();
             
-            $sql = "INSERT INTO Partidos (fecha, hora, cod_cancha, equ_local, equ_visitante, estado, fase) 
-                    VALUES (:fecha, :hora, :cod_cancha, :equ_local, :equ_visitante, 'programado', :fase)";
+            // Insertar el partido
+            $sql = "INSERT INTO Partidos (fecha, hora, cod_cancha, equ_local, equ_visitante, estado) 
+                    VALUES (:fecha, :hora, :cod_cancha, :equ_local, :equ_visitante, 'programado')";
             
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':fecha', $fecha);
@@ -348,55 +347,212 @@ class Partido
             $stmt->bindParam(':cod_cancha', $cod_cancha);
             $stmt->bindParam(':equ_local', $equ_local);
             $stmt->bindParam(':equ_visitante', $equ_visitante);
-            $stmt->bindParam(':fase', $fase);
-            
             $stmt->execute();
             
-            return [
-                'estado' => true,
-                'mensaje' => 'Partido creado correctamente',
-                'id' => $this->conexion->lastInsertId()
-            ];
+            // Obtener el ID del partido recién creado
+            $cod_par = $this->conexion->lastInsertId();
+            
+            // Si se proporciona una fase, actualizar el bracket correspondiente
+            if ($fase) {
+                // Buscar un bracket disponible para esta fase
+                $sql = "SELECT bracket_id FROM Brackets 
+                        WHERE fase = :fase AND cod_par IS NULL 
+                        ORDER BY bracket_id ASC 
+                        LIMIT 1";
+                
+                $stmt = $this->conexion->prepare($sql);
+                $stmt->bindParam(':fase', $fase);
+                $stmt->execute();
+                
+                $bracket = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($bracket) {
+                    // Actualizar el bracket con el partido creado
+                    $sql = "UPDATE Brackets SET cod_par = :cod_par WHERE bracket_id = :bracket_id";
+                    $stmt = $this->conexion->prepare($sql);
+                    $stmt->bindParam(':cod_par', $cod_par);
+                    $stmt->bindParam(':bracket_id', $bracket['bracket_id']);
+                    $stmt->execute();
+                }
+            }
+            
+            $this->conexion->commit();
+            return $cod_par;
             
         } catch (PDOException $e) {
-            return [
-                'estado' => false,
-                'mensaje' => 'Error al crear el partido: ' . $e->getMessage()
-            ];
+            $this->conexion->rollBack();
+            error_log('Error al crear partido: ' . $e->getMessage());
+            return false;
         }
     }
     
     /**
-     * Actualizar partido
+     * Actualizar un partido existente
      */
-    public function actualizar($cod_par, $fecha, $hora, $cod_cancha, $estado, $fase)
+    public function actualizar($cod_par, $fecha, $hora, $cod_cancha, $estado)
     {
         try {
-            $sql = "UPDATE Partidos 
-                    SET fecha = :fecha, hora = :hora, 
-                    cod_cancha = :cod_cancha, estado = :estado, fase = :fase
-                    WHERE cod_par = :cod_par";
+            // Iniciar transacción
+            $this->conexion->beginTransaction();
             
-            $stmt = $this->conexion->prepare($sql);
-            $stmt->bindParam(':cod_par', $cod_par);
-            $stmt->bindParam(':fecha', $fecha);
-            $stmt->bindParam(':hora', $hora);
-            $stmt->bindParam(':cod_cancha', $cod_cancha);
-            $stmt->bindParam(':estado', $estado);
-            $stmt->bindParam(':fase', $fase);
+            // Obtener el estado actual del partido antes de actualizarlo
+            $sql_select = "SELECT estado FROM Partidos WHERE cod_par = :cod_par";
+            $stmt_select = $this->conexion->prepare($sql_select);
+            $stmt_select->bindParam(':cod_par', $cod_par);
+            $stmt_select->execute();
+            $estado_actual = $stmt_select->fetchColumn();
             
-            $stmt->execute();
+            // Log para depuración
+            error_log("Actualizando partido ID: {$cod_par} - Estado actual: {$estado_actual} - Nuevo estado: {$estado}");
             
-            return [
-                'estado' => true,
-                'mensaje' => 'Partido actualizado correctamente'
-            ];
+            // Si estamos cambiando a finalizado, usar sentencia SQL directa para activar el trigger correctamente
+            if ($estado === 'finalizado' && $estado_actual === 'programado') {
+                error_log("Cambiando estado a finalizado utilizando SQL directo para activar trigger");
+                
+                // Actualizar primero los otros campos
+                $sql_resto = "UPDATE Partidos SET 
+                        fecha = :fecha, 
+                        hora = :hora, 
+                        cod_cancha = :cod_cancha
+                        WHERE cod_par = :cod_par";
+                
+                $stmt_resto = $this->conexion->prepare($sql_resto);
+                $stmt_resto->bindParam(':fecha', $fecha);
+                $stmt_resto->bindParam(':hora', $hora);
+                $stmt_resto->bindParam(':cod_cancha', $cod_cancha);
+                $stmt_resto->bindParam(':cod_par', $cod_par);
+                $stmt_resto->execute();
+                
+                // Verificar si hay goles registrados para este partido
+                $sql_check_goles = "SELECT COUNT(*) FROM Goles WHERE cod_par = :cod_par";
+                $stmt_check = $this->conexion->prepare($sql_check_goles);
+                $stmt_check->bindParam(':cod_par', $cod_par);
+                $stmt_check->execute();
+                $total_goles = $stmt_check->fetchColumn();
+                
+                error_log("Total de goles para el partido {$cod_par}: {$total_goles}");
+                
+                if ($total_goles == 0) {
+                    error_log("⚠️ ADVERTENCIA: No hay goles registrados para este partido. El trigger podría no funcionar correctamente.");
+                }
+                
+                // Verificar marcador actual
+                $local_id = 0;
+                $visitante_id = 0;
+                $sql_equipos = "SELECT equ_local, equ_visitante FROM Partidos WHERE cod_par = :cod_par";
+                $stmt_equipos = $this->conexion->prepare($sql_equipos);
+                $stmt_equipos->bindParam(':cod_par', $cod_par);
+                $stmt_equipos->execute();
+                $equipos = $stmt_equipos->fetch(PDO::FETCH_ASSOC);
+                
+                if ($equipos) {
+                    $local_id = $equipos['equ_local'];
+                    $visitante_id = $equipos['equ_visitante'];
+                    
+                    // Calcular goles local (incluye autogoles del rival)
+                    $sql_goles_local = "SELECT 
+                        (SELECT COUNT(*) FROM Goles WHERE cod_par = :cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = :local_id) AND tipo IN ('normal', 'penal'))
+                        + (SELECT COUNT(*) FROM Goles WHERE cod_par = :cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = :visitante_id) AND tipo = 'autogol')";
+                    $stmt_goles_local = $this->conexion->prepare($sql_goles_local);
+                    $stmt_goles_local->bindParam(':cod_par', $cod_par);
+                    $stmt_goles_local->bindParam(':local_id', $local_id);
+                    $stmt_goles_local->bindParam(':visitante_id', $visitante_id);
+                    $stmt_goles_local->execute();
+                    $goles_local = $stmt_goles_local->fetchColumn();
+                    
+                    // Calcular goles visitante (incluye autogoles del rival)
+                    $sql_goles_visitante = "SELECT 
+                        (SELECT COUNT(*) FROM Goles WHERE cod_par = :cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = :visitante_id) AND tipo IN ('normal', 'penal'))
+                        + (SELECT COUNT(*) FROM Goles WHERE cod_par = :cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = :local_id) AND tipo = 'autogol')";
+                    $stmt_goles_visitante = $this->conexion->prepare($sql_goles_visitante);
+                    $stmt_goles_visitante->bindParam(':cod_par', $cod_par);
+                    $stmt_goles_visitante->bindParam(':local_id', $local_id);
+                    $stmt_goles_visitante->bindParam(':visitante_id', $visitante_id);
+                    $stmt_goles_visitante->execute();
+                    $goles_visitante = $stmt_goles_visitante->fetchColumn();
+                    
+                    error_log("Marcador calculado: Local {$goles_local} - Visitante {$goles_visitante}");
+                    
+                    if ($goles_local == 0 && $goles_visitante == 0) {
+                        error_log("⚠️ ADVERTENCIA: Marcador 0-0 detectado. Debe haber al menos un gol para determinar el ganador.");
+                    }
+                }
+                
+                // Luego actualizar el estado para activar el trigger
+                $sql_estado = "UPDATE Partidos SET estado = 'finalizado' WHERE cod_par = :cod_par AND estado = 'programado'";
+                $stmt_estado = $this->conexion->prepare($sql_estado);
+                $stmt_estado->bindParam(':cod_par', $cod_par);
+                $resultado = $stmt_estado->execute();
+                
+                if ($stmt_estado->rowCount() == 0) {
+                    error_log("⚠️ ADVERTENCIA: No se actualizó ninguna fila al cambiar el estado. Posible condición de carrera.");
+                } else {
+                    error_log("✅ Estado actualizado correctamente. Filas afectadas: " . $stmt_estado->rowCount());
+                }
+                
+                // Verificar si se activó el trigger mirando si se crearon partidos en semis o final
+                $fase_actual = "";
+                $sql_fase = "SELECT fase FROM Brackets WHERE cod_par = :cod_par";
+                $stmt_fase = $this->conexion->prepare($sql_fase);
+                $stmt_fase->bindParam(':cod_par', $cod_par);
+                $stmt_fase->execute();
+                $fase_actual = $stmt_fase->fetchColumn();
+                
+                if ($fase_actual) {
+                    error_log("Fase actual del partido: {$fase_actual}");
+                    
+                    // Verificar si se crearon partidos en la siguiente fase
+                    if ($fase_actual == 'cuartos') {
+                        $sql_check_semis = "SELECT COUNT(*) FROM Partidos p JOIN Brackets b ON p.cod_par = b.cod_par WHERE b.fase = 'semis'";
+                        $stmt_check_semis = $this->conexion->prepare($sql_check_semis);
+                        $stmt_check_semis->execute();
+                        $total_semis = $stmt_check_semis->fetchColumn();
+                        error_log("Total de partidos en semifinales: {$total_semis}");
+                    } elseif ($fase_actual == 'semis') {
+                        $sql_check_final = "SELECT COUNT(*) FROM Partidos p JOIN Brackets b ON p.cod_par = b.cod_par WHERE b.fase = 'final'";
+                        $stmt_check_final = $this->conexion->prepare($sql_check_final);
+                        $stmt_check_final->execute();
+                        $total_final = $stmt_check_final->fetchColumn();
+                        error_log("Total de partidos en la final: {$total_final}");
+                    }
+                } else {
+                    error_log("⚠️ No se pudo determinar la fase actual del partido. Verificar la tabla Brackets.");
+                }
+            } else {
+                // Si no estamos cambiando a finalizado, o ya estaba finalizado, hacer update normal
+                error_log("Actualizando todos los campos del partido en una sola operación");
+                $sql = "UPDATE Partidos SET 
+                        fecha = :fecha, 
+                        hora = :hora, 
+                        cod_cancha = :cod_cancha, 
+                        estado = :estado
+                        WHERE cod_par = :cod_par";
+                
+                $stmt = $this->conexion->prepare($sql);
+                $stmt->bindParam(':fecha', $fecha);
+                $stmt->bindParam(':hora', $hora);
+                $stmt->bindParam(':cod_cancha', $cod_cancha);
+                $stmt->bindParam(':estado', $estado);
+                $stmt->bindParam(':cod_par', $cod_par);
+                $stmt->execute();
+            }
+            
+            // Si todo fue bien, confirmar transacción
+            $this->conexion->commit();
+            error_log("Actualización completada exitosamente para el partido ID: {$cod_par}");
+            
+            return true;
             
         } catch (PDOException $e) {
-            return [
-                'estado' => false,
-                'mensaje' => 'Error al actualizar el partido: ' . $e->getMessage()
-            ];
+            // Si hubo error, deshacer cambios
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            
+            // Registrar el error detallado y propagarlo
+            $errorMessage = 'Error al actualizar partido: ' . $e->getMessage();
+            error_log($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
     
@@ -406,6 +562,8 @@ class Partido
     public function registrarGol($cod_par, $cod_jug, $minuto, $tipo)
     {
         try {
+            $this->conexion->beginTransaction();
+            
             $sql = "INSERT INTO Goles (cod_par, cod_jug, minuto, tipo) 
                     VALUES (:cod_par, :cod_jug, :minuto, :tipo)";
             
@@ -416,18 +574,24 @@ class Partido
             $stmt->bindParam(':tipo', $tipo);
             
             $stmt->execute();
+            $gol_id = $this->conexion->lastInsertId();
+            
+            $this->conexion->commit();
             
             return [
                 'estado' => true,
                 'mensaje' => 'Gol registrado correctamente',
-                'id' => $this->conexion->lastInsertId()
+                'id' => $gol_id
             ];
             
         } catch (PDOException $e) {
-            return [
-                'estado' => false,
-                'mensaje' => 'Error al registrar el gol: ' . $e->getMessage()
-            ];
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            
+            $errorMessage = 'Error al registrar el gol: ' . $e->getMessage();
+            error_log($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
     
@@ -437,6 +601,8 @@ class Partido
     public function registrarAsistencia($cod_par, $cod_jug, $minuto)
     {
         try {
+            $this->conexion->beginTransaction();
+            
             $sql = "INSERT INTO Asistencias (cod_par, cod_jug, minuto) 
                     VALUES (:cod_par, :cod_jug, :minuto)";
             
@@ -446,18 +612,24 @@ class Partido
             $stmt->bindParam(':minuto', $minuto);
             
             $stmt->execute();
+            $asis_id = $this->conexion->lastInsertId();
+            
+            $this->conexion->commit();
             
             return [
                 'estado' => true,
                 'mensaje' => 'Asistencia registrada correctamente',
-                'id' => $this->conexion->lastInsertId()
+                'id' => $asis_id
             ];
             
         } catch (PDOException $e) {
-            return [
-                'estado' => false,
-                'mensaje' => 'Error al registrar la asistencia: ' . $e->getMessage()
-            ];
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            
+            $errorMessage = 'Error al registrar la asistencia: ' . $e->getMessage();
+            error_log($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
     
@@ -467,6 +639,8 @@ class Partido
     public function registrarFalta($cod_par, $cod_jug, $minuto, $tipo_falta)
     {
         try {
+            $this->conexion->beginTransaction();
+            
             $sql = "INSERT INTO Faltas (cod_par, cod_jug, minuto, tipo_falta) 
                     VALUES (:cod_par, :cod_jug, :minuto, :tipo_falta)";
             
@@ -477,18 +651,24 @@ class Partido
             $stmt->bindParam(':tipo_falta', $tipo_falta);
             
             $stmt->execute();
+            $falta_id = $this->conexion->lastInsertId();
+            
+            $this->conexion->commit();
             
             return [
                 'estado' => true,
                 'mensaje' => 'Falta registrada correctamente',
-                'id' => $this->conexion->lastInsertId()
+                'id' => $falta_id
             ];
             
         } catch (PDOException $e) {
-            return [
-                'estado' => false,
-                'mensaje' => 'Error al registrar la falta: ' . $e->getMessage()
-            ];
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            
+            $errorMessage = 'Error al registrar la falta: ' . $e->getMessage();
+            error_log($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
     
@@ -498,6 +678,8 @@ class Partido
     public function eliminar($cod_par)
     {
         try {
+            $this->conexion->beginTransaction();
+            
             // Verificar primero si el partido existe
             $query = "SELECT * FROM Partidos WHERE cod_par = :cod_par";
             $stmt = $this->conexion->prepare($query);
@@ -505,10 +687,7 @@ class Partido
             $stmt->execute();
             
             if ($stmt->rowCount() === 0) {
-                return [
-                    'estado' => false,
-                    'mensaje' => 'No se pudo eliminar porque el partido no existe o ya fue eliminado'
-                ];
+                throw new Exception('No se pudo eliminar porque el partido no existe o ya fue eliminado');
             }
             
             // Verificar si hay estadísticas asociadas al partido
@@ -536,11 +715,15 @@ class Partido
                 if ($asistencias > 0) $detalles[] = $asistencias . ' asistencia(s)';
                 if ($faltas > 0) $detalles[] = $faltas . ' tarjeta(s)';
                 
-                return [
-                    'estado' => false,
-                    'mensaje' => 'No se puede eliminar el partido porque tiene estadísticas asociadas: ' . implode(', ', $detalles) . '. Elimine primero estas estadísticas o considere marcar el partido como cancelado en lugar de eliminarlo.'
-                ];
+                $errorMessage = 'No se puede eliminar el partido porque tiene estadísticas asociadas: ' . implode(', ', $detalles) . '. Elimine primero estas estadísticas o considere marcar el partido como cancelado en lugar de eliminarlo.';
+                throw new Exception($errorMessage);
             }
+            
+            // Actualizar brackets que hacen referencia a este partido
+            $sqlUpdateBrackets = "UPDATE Brackets SET cod_par = NULL WHERE cod_par = :cod_par";
+            $stmtUpdateBrackets = $this->conexion->prepare($sqlUpdateBrackets);
+            $stmtUpdateBrackets->bindParam(':cod_par', $cod_par);
+            $stmtUpdateBrackets->execute();
             
             // Eliminar el partido
             $sql = "DELETE FROM Partidos WHERE cod_par = :cod_par";
@@ -549,29 +732,38 @@ class Partido
             $stmt->execute();
             
             if ($stmt->rowCount() === 0) {
-                return [
-                    'estado' => false,
-                    'mensaje' => 'No se pudo eliminar el partido. Por favor, inténtelo de nuevo más tarde.'
-                ];
+                throw new Exception('No se pudo eliminar el partido. Por favor, inténtelo de nuevo más tarde.');
             }
             
+            $this->conexion->commit();
             return [
                 'estado' => true,
                 'mensaje' => 'Partido eliminado correctamente'
             ];
             
         } catch (PDOException $e) {
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            
             $errorMessage = 'Error al eliminar el partido';
             
             // Verificar si es error de clave foránea
             if (strpos($e->getMessage(), 'foreign key constraint fails') !== false) {
                 $errorMessage = 'No se puede eliminar el partido porque está siendo referenciado por otros registros del sistema';
+            } else {
+                $errorMessage = 'Error en la base de datos: ' . $e->getMessage();
             }
             
-            return [
-                'estado' => false,
-                'mensaje' => $errorMessage
-            ];
+            error_log('Error al eliminar partido: ' . $e->getMessage());
+            throw new Exception($errorMessage);
+        } catch (Exception $e) {
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            
+            // Propagar la excepción
+            throw $e;
         }
     }
     
@@ -582,10 +774,12 @@ class Partido
     {
         try {
             $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado,
+                    b.fase,
                     e1.cod_equ as local_id, e1.nombre as local_nombre, e1.escudo as local_escudo,
                     e2.cod_equ as visitante_id, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,
                     c.nombre as cancha
                     FROM Partidos p
+                    LEFT JOIN Brackets b ON p.cod_par = b.cod_par
                     JOIN Equipos e1 ON p.equ_local = e1.cod_equ
                     JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ
                     JOIN Canchas c ON p.cod_cancha = c.cod_cancha
@@ -668,34 +862,26 @@ class Partido
             $fasesStr = "'" . implode("','", $fases) . "'";
             
             $sql = "SELECT 
-                    p.cod_par, p.fecha, p.hora, p.estado, p.fase,
+                    p.cod_par, p.fecha, p.hora, p.estado,
+                    b.fase, b.bracket_id,
                     e1.cod_equ as equ_local, e1.nombre as local_nombre, e1.escudo as local_escudo,
                     e2.cod_equ as equ_visitante, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,
                     c.nombre as cancha,
-                    CASE 
-                        WHEN p.fase = 'cuartos' THEN
-                            (SELECT COUNT(*) FROM Partidos p2
-                            WHERE p2.fase = 'cuartos'
-                            AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
-                        WHEN p.fase = 'semis' THEN
-                            (SELECT COUNT(*) FROM Partidos p2
-                            WHERE p2.fase = 'semis'
-                            AND p2.fecha <= p.fecha AND p2.cod_par <= p.cod_par)
-                        ELSE 1
-                    END as orden
-                FROM Partidos p
+                    b.bracket_id as orden
+                FROM Brackets b
+                JOIN Partidos p ON b.cod_par = p.cod_par
                 JOIN Equipos e1 ON p.equ_local = e1.cod_equ
                 JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ
                 JOIN Canchas c ON p.cod_cancha = c.cod_cancha
-                WHERE p.fase IN ($fasesStr)
+                WHERE b.fase IN ($fasesStr)
                 ORDER BY 
-                    CASE p.fase
+                    CASE b.fase
                         WHEN 'final' THEN 1
                         WHEN 'semis' THEN 2
                         WHEN 'cuartos' THEN 3
                         ELSE 4
                     END,
-                   p.fecha, p.hora";
+                   b.bracket_id";
             
             $stmt = $this->conexion->prepare($sql);
             $stmt->execute();
@@ -766,12 +952,13 @@ class Partido
      */
     public function obtenerPorFase($fase) {
         try {
-            $sql = "SELECT p.*, e1.nombre as local_nombre, e2.nombre as visitante_nombre
-                    FROM Partidos p
+            $sql = "SELECT p.*, b.fase, e1.nombre as local_nombre, e2.nombre as visitante_nombre
+                    FROM Brackets b
+                    JOIN Partidos p ON b.cod_par = p.cod_par
                     JOIN Equipos e1 ON p.equ_local = e1.cod_equ
                     JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ
-                    WHERE p.fase = :fase
-                    ORDER BY p.cod_par ASC";
+                    WHERE b.fase = :fase
+                    ORDER BY b.bracket_id ASC";
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':fase', $fase);
             $stmt->execute();
@@ -787,6 +974,8 @@ class Partido
     public function actualizarGol($cod_gol, $cod_par, $cod_jug, $minuto, $tipo)
     {
         try {
+            $this->conexion->beginTransaction();
+            
             $sql = "UPDATE Goles SET cod_par = :cod_par, cod_jug = :cod_jug, minuto = :minuto, tipo = :tipo WHERE cod_gol = :cod_gol";
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':cod_par', $cod_par);
@@ -795,9 +984,18 @@ class Partido
             $stmt->bindParam(':tipo', $tipo);
             $stmt->bindParam(':cod_gol', $cod_gol);
             $stmt->execute();
+            
+            $this->conexion->commit();
+            
             return ['estado' => true, 'mensaje' => 'Gol actualizado correctamente'];
         } catch (PDOException $e) {
-            return ['estado' => false, 'mensaje' => 'Error al actualizar el gol: ' . $e->getMessage()];
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            
+            $errorMessage = 'Error al actualizar el gol: ' . $e->getMessage();
+            error_log($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
 
@@ -807,13 +1005,24 @@ class Partido
     public function eliminarGol($cod_gol)
     {
         try {
+            $this->conexion->beginTransaction();
+            
             $sql = "DELETE FROM Goles WHERE cod_gol = :cod_gol";
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':cod_gol', $cod_gol);
             $stmt->execute();
+            
+            $this->conexion->commit();
+            
             return ['estado' => true, 'mensaje' => 'Gol eliminado correctamente'];
         } catch (PDOException $e) {
-            return ['estado' => false, 'mensaje' => 'Error al eliminar el gol: ' . $e->getMessage()];
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            
+            $errorMessage = 'Error al eliminar el gol: ' . $e->getMessage();
+            error_log($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
 
@@ -823,6 +1032,8 @@ class Partido
     public function actualizarAsistencia($cod_asis, $cod_par, $cod_jug, $minuto)
     {
         try {
+            $this->conexion->beginTransaction();
+            
             $sql = "UPDATE Asistencias SET cod_par = :cod_par, cod_jug = :cod_jug, minuto = :minuto WHERE cod_asis = :cod_asis";
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':cod_par', $cod_par);
@@ -830,9 +1041,18 @@ class Partido
             $stmt->bindParam(':minuto', $minuto);
             $stmt->bindParam(':cod_asis', $cod_asis);
             $stmt->execute();
+            
+            $this->conexion->commit();
+            
             return ['estado' => true, 'mensaje' => 'Asistencia actualizada correctamente'];
         } catch (PDOException $e) {
-            return ['estado' => false, 'mensaje' => 'Error al actualizar la asistencia: ' . $e->getMessage()];
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            
+            $errorMessage = 'Error al actualizar la asistencia: ' . $e->getMessage();
+            error_log($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
 
@@ -842,13 +1062,24 @@ class Partido
     public function eliminarAsistencia($cod_asis)
     {
         try {
+            $this->conexion->beginTransaction();
+            
             $sql = "DELETE FROM Asistencias WHERE cod_asis = :cod_asis";
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':cod_asis', $cod_asis);
             $stmt->execute();
+            
+            $this->conexion->commit();
+            
             return ['estado' => true, 'mensaje' => 'Asistencia eliminada correctamente'];
         } catch (PDOException $e) {
-            return ['estado' => false, 'mensaje' => 'Error al eliminar la asistencia: ' . $e->getMessage()];
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            
+            $errorMessage = 'Error al eliminar la asistencia: ' . $e->getMessage();
+            error_log($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
 
@@ -858,6 +1089,8 @@ class Partido
     public function actualizarFalta($cod_falta, $cod_par, $cod_jug, $minuto, $tipo_falta)
     {
         try {
+            $this->conexion->beginTransaction();
+            
             $sql = "UPDATE Faltas SET cod_par = :cod_par, cod_jug = :cod_jug, minuto = :minuto, tipo_falta = :tipo_falta WHERE cod_falta = :cod_falta";
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':cod_par', $cod_par);
@@ -866,9 +1099,18 @@ class Partido
             $stmt->bindParam(':tipo_falta', $tipo_falta);
             $stmt->bindParam(':cod_falta', $cod_falta);
             $stmt->execute();
+            
+            $this->conexion->commit();
+            
             return ['estado' => true, 'mensaje' => 'Falta actualizada correctamente'];
         } catch (PDOException $e) {
-            return ['estado' => false, 'mensaje' => 'Error al actualizar la falta: ' . $e->getMessage()];
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            
+            $errorMessage = 'Error al actualizar la falta: ' . $e->getMessage();
+            error_log($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
 
@@ -878,13 +1120,24 @@ class Partido
     public function eliminarFalta($cod_falta)
     {
         try {
+            $this->conexion->beginTransaction();
+            
             $sql = "DELETE FROM Faltas WHERE cod_falta = :cod_falta";
             $stmt = $this->conexion->prepare($sql);
             $stmt->bindParam(':cod_falta', $cod_falta);
             $stmt->execute();
+            
+            $this->conexion->commit();
+            
             return ['estado' => true, 'mensaje' => 'Falta eliminada correctamente'];
         } catch (PDOException $e) {
-            return ['estado' => false, 'mensaje' => 'Error al eliminar la falta: ' . $e->getMessage()];
+            if ($this->conexion->inTransaction()) {
+                $this->conexion->rollBack();
+            }
+            
+            $errorMessage = 'Error al eliminar la falta: ' . $e->getMessage();
+            error_log($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
 
@@ -894,10 +1147,12 @@ class Partido
     public function obtenerPorEquipo($cod_equ) {
         try {
             $sql = "SELECT p.cod_par, p.fecha, p.hora, p.estado,
+                       b.fase,
                        e1.cod_equ as local_id, e1.nombre as local_nombre, e1.escudo as local_escudo,
                        e2.cod_equ as visitante_id, e2.nombre as visitante_nombre, e2.escudo as visitante_escudo,
                        c.nombre as cancha
                 FROM Partidos p
+                LEFT JOIN Brackets b ON p.cod_par = b.cod_par
                 JOIN Equipos e1 ON p.equ_local = e1.cod_equ
                 JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ
                 JOIN Canchas c ON p.cod_cancha = c.cod_cancha
@@ -1010,11 +1265,11 @@ class Partido
     public function contarPartidosPorFase($fase, $excluir_partido_id = null)
     {
         try {
-            $sql = "SELECT COUNT(*) as total FROM Partidos WHERE fase = :fase";
+            $sql = "SELECT COUNT(*) as total FROM Brackets b JOIN Partidos p ON b.cod_par = p.cod_par WHERE b.fase = :fase";
             
             // Si se proporciona un ID para excluir, añadirlo a la consulta
             if ($excluir_partido_id !== null) {
-                $sql .= " AND cod_par != :excluir_partido_id";
+                $sql .= " AND p.cod_par != :excluir_partido_id";
             }
             
             $stmt = $this->conexion->prepare($sql);
@@ -1032,6 +1287,43 @@ class Partido
         } catch (PDOException $e) {
             error_log("Error al contar partidos por fase: " . $e->getMessage());
             return 0;
+        }
+    }
+
+    /**
+     * Obtiene la estructura completa de brackets del torneo con sus partidos asociados
+     */
+    public function obtenerEstructuraBrackets()
+    {
+        try {
+            $sql = "SELECT b.bracket_id, b.fase, b.cod_par, b.bracket_siguiente, b.posicion_siguiente,
+                    p.fecha, p.hora, p.estado,
+                    e1.cod_equ as equ_local, e1.nombre as local_nombre,
+                    e2.cod_equ as equ_visitante, e2.nombre as visitante_nombre
+                    FROM Brackets b
+                    LEFT JOIN Partidos p ON b.cod_par = p.cod_par
+                    LEFT JOIN Equipos e1 ON p.equ_local = e1.cod_equ
+                    LEFT JOIN Equipos e2 ON p.equ_visitante = e2.cod_equ
+                    ORDER BY b.bracket_id";
+            
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute();
+            
+            $brackets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Para cada bracket, obtener los marcadores si el partido está finalizado
+            foreach ($brackets as &$bracket) {
+                if (isset($bracket['cod_par']) && $bracket['estado'] === 'finalizado') {
+                    $marcador = $this->calcularMarcadorPorDetalle($bracket['cod_par'], $bracket['local_nombre'], $bracket['visitante_nombre']);
+                    $bracket['goles_local'] = $marcador['goles_local'];
+                    $bracket['goles_visitante'] = $marcador['goles_visitante'];
+                }
+            }
+            
+            return $brackets;
+        } catch (PDOException $e) {
+            error_log('Error al obtener estructura de brackets: ' . $e->getMessage());
+            return [];
         }
     }
 }

@@ -70,7 +70,6 @@ CREATE TABLE Partidos (
     equ_local INT NOT NULL,
     equ_visitante INT NOT NULL,
     estado VARCHAR(20) DEFAULT 'programado',
-    fase VARCHAR(50) NOT NULL,
     FOREIGN KEY (cod_cancha) REFERENCES Canchas(cod_cancha)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
@@ -80,9 +79,36 @@ CREATE TABLE Partidos (
     FOREIGN KEY (equ_visitante) REFERENCES Equipos(cod_equ)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    CHECK (estado IN ('programado', 'finalizado')),
-    CHECK (fase IN ('cuartos', 'semis', 'final'))
+    CHECK (estado IN ('programado', 'finalizado'))
 );
+
+-- ----------------------
+-- 6b. Brackets (Estructura del torneo)
+-- ----------------------
+CREATE TABLE Brackets (
+    bracket_id INT PRIMARY KEY,
+    fase VARCHAR(50) NOT NULL,
+    cod_par INT NULL,
+    bracket_siguiente INT NULL,
+    posicion_siguiente VARCHAR(10) NULL, -- 'local' o 'visitante'
+    CHECK (fase IN ('cuartos', 'semis', 'final')),
+    FOREIGN KEY (cod_par) REFERENCES Partidos(cod_par)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
+    FOREIGN KEY (bracket_siguiente) REFERENCES Brackets(bracket_id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
+);
+
+-- Insertar la estructura de brackets (1-4: cuartos, 5-6: semis, 7: final)
+INSERT INTO Brackets (bracket_id, fase, bracket_siguiente, posicion_siguiente) VALUES
+(1, 'cuartos', 5, 'local'),
+(2, 'cuartos', 5, 'visitante'),
+(3, 'cuartos', 6, 'local'),
+(4, 'cuartos', 6, 'visitante'),
+(5, 'semis', 7, 'local'),
+(6, 'semis', 7, 'visitante'),
+(7, 'final', NULL, NULL);
 
 -- ----------------------
 -- 7. Goles
@@ -94,10 +120,10 @@ CREATE TABLE Goles (
     minuto INT NOT NULL,
     tipo VARCHAR(50) NOT NULL,
     FOREIGN KEY (cod_par) REFERENCES Partidos(cod_par)
-        ON DELETE RESTRICT
+        ON DELETE CASCADE
         ON UPDATE CASCADE,
     FOREIGN KEY (cod_jug) REFERENCES Jugadores(cod_jug)
-        ON DELETE RESTRICT
+        ON DELETE CASCADE
         ON UPDATE CASCADE,
     CHECK (tipo IN ('normal', 'penal', 'autogol')),
     CHECK (minuto >= 0 AND minuto <= 50)
@@ -112,10 +138,10 @@ CREATE TABLE Asistencias (
     cod_jug INT NOT NULL,
     minuto INT NOT NULL,
     FOREIGN KEY (cod_par) REFERENCES Partidos(cod_par)
-        ON DELETE RESTRICT
+        ON DELETE CASCADE
         ON UPDATE CASCADE,
     FOREIGN KEY (cod_jug) REFERENCES Jugadores(cod_jug)
-        ON DELETE RESTRICT
+        ON DELETE CASCADE
         ON UPDATE CASCADE,
     CHECK (minuto >= 0 AND minuto <= 50)
 );
@@ -130,10 +156,10 @@ CREATE TABLE Faltas (
     minuto INT NOT NULL,
     tipo_falta VARCHAR(50) NOT NULL,
     FOREIGN KEY (cod_par) REFERENCES Partidos(cod_par)
-        ON DELETE RESTRICT
+        ON DELETE CASCADE
         ON UPDATE CASCADE,
     FOREIGN KEY (cod_jug) REFERENCES Jugadores(cod_jug)
-        ON DELETE RESTRICT
+        ON DELETE CASCADE
         ON UPDATE CASCADE,
     CHECK (tipo_falta IN ('roja', 'amarilla', 'normal')),
     CHECK (minuto >= 0 AND minuto <= 50)
@@ -270,9 +296,39 @@ RETURNING *;
 -- ----------------------
 -- 6. Insertar Partidos (fase de cuartos)
 -- ----------------------
-INSERT INTO Partidos (fecha, hora, cod_cancha, equ_local, equ_visitante, estado, fase) VALUES
-('2025-06-20', '15:00', 1, 1, 2, 'programado', 'cuartos'),
-('2025-06-20', '19:00', 3, 3, 4, 'programado', 'cuartos'),
-('2025-06-21', '15:00', 5, 5, 6, 'programado', 'cuartos'),
-('2025-06-21', '19:00', 7, 7, 8, 'programado', 'cuartos')
+INSERT INTO Partidos (fecha, hora, cod_cancha, equ_local, equ_visitante, estado) VALUES
+('2025-06-20', '15:00', 1, 1, 2, 'programado'),
+('2025-06-20', '19:00', 3, 3, 4, 'programado'),
+('2025-06-21', '15:00', 5, 5, 6, 'programado'),
+('2025-06-21', '19:00', 7, 7, 8, 'programado')
 RETURNING *;
+
+
+INSERT INTO usuarios (cod_user, username, email, password, rol) VALUES
+(0, 'admin', 'admin@admin.com', 'admin', 'admin')
+RETURNING *;
+
+-- ----------------------
+-- 6b. Asociar brackets con partidos iniciales
+-- ----------------------
+-- Para realizar la asignación de manera más segura, utilizamos los IDs de partidos directamente
+-- Declaramos como variables para asignarlas a los brackets
+DO $$
+DECLARE
+    partido1 INT;
+    partido2 INT;
+    partido3 INT;
+    partido4 INT;
+BEGIN
+    -- Obtenemos los IDs de los 4 partidos creados (en orden)
+    SELECT cod_par INTO partido1 FROM Partidos ORDER BY cod_par ASC LIMIT 1 OFFSET 0;
+    SELECT cod_par INTO partido2 FROM Partidos ORDER BY cod_par ASC LIMIT 1 OFFSET 1;
+    SELECT cod_par INTO partido3 FROM Partidos ORDER BY cod_par ASC LIMIT 1 OFFSET 2;
+    SELECT cod_par INTO partido4 FROM Partidos ORDER BY cod_par ASC LIMIT 1 OFFSET 3;
+    
+    -- Asignamos los partidos a los brackets correspondientes
+    UPDATE Brackets SET cod_par = partido1 WHERE bracket_id = 1;
+    UPDATE Brackets SET cod_par = partido2 WHERE bracket_id = 2;
+    UPDATE Brackets SET cod_par = partido3 WHERE bracket_id = 3;
+    UPDATE Brackets SET cod_par = partido4 WHERE bracket_id = 4;
+END $$;

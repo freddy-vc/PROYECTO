@@ -17,7 +17,7 @@ function setupEquipoForm() {
     equipoForm.addEventListener('submit', function(e) {
         // Validación de los campos del formulario
         const nombre = document.getElementById('nombre');
-        const ciudad = document.getElementById('ciudad');
+        const ciudad = document.getElementById('ciudad_id');
         let isValid = true;
         
         // Validar nombre del equipo
@@ -59,6 +59,9 @@ function setupEquipoForm() {
         
         if (!isValid) {
             e.preventDefault();
+        } else {
+            // Asegurar que el formulario se envíe correctamente
+            console.log('Formulario válido, enviando...');
         }
     });
     

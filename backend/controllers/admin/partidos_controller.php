@@ -125,14 +125,14 @@ function crearPartido() {
     // Crear el partido en la base de datos
     $resultado = $partidoModel->crear($fecha, $hora, $cancha_id, $equipo_local, $equipo_visitante, $fase);
     
-    if ($resultado['estado']) {
+    if ($resultado) {
         // Éxito al crear el partido
         $_SESSION['exito_partidos'] = 'Partido creado correctamente';
         header('Location: ../../../frontend/pages/admin/partidos.php');
         exit;
     } else {
         // Error al crear el partido
-        $_SESSION['error_partidos'] = 'Error al crear el partido: ' . $resultado['mensaje'];
+        $_SESSION['error_partidos'] = 'Error al crear el partido';
         header('Location: ../../../frontend/pages/admin/partidos_form.php');
         exit;
     }
@@ -144,10 +144,20 @@ function crearPartido() {
 function actualizarPartido() {
     // Verificar que se han enviado los datos necesarios
     if (!isset($_POST['id']) || !isset($_POST['fecha']) || !isset($_POST['hora']) || 
-        !isset($_POST['cancha_id']) || !isset($_POST['estado']) || !isset($_POST['fase'])) {
-        $_SESSION['error_partidos'] = 'Faltan datos obligatorios';
-        header('Location: ../../../frontend/pages/admin/partidos.php');
-        exit;
+        !isset($_POST['cancha_id']) || !isset($_POST['estado'])) {
+        $isAjax = (
+            isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
+        );
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Faltan datos obligatorios']);
+            exit;
+        } else {
+            $_SESSION['error_partidos'] = 'Faltan datos obligatorios';
+            header('Location: ../../../frontend/pages/admin/partidos.php');
+            exit;
+        }
     }
     
     // Obtener los datos del formulario
@@ -156,110 +166,121 @@ function actualizarPartido() {
     $hora = trim($_POST['hora']);
     $cancha_id = intval($_POST['cancha_id']);
     $estado = trim($_POST['estado']);
-    $fase = trim($_POST['fase']);
     
-    // Validar límites de partidos por fase
+    // Verificar si es una actualización AJAX en dos pasos
+    $isAjax = (
+        isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+        strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
+    );
+    
+    // Verificar si es el paso 1 (guardar estadísticas)
+    $isFirstStep = isset($_POST['_ajax_save_stats']) && $_POST['_ajax_save_stats'] === '1';
+    
+    // Verificar si es el paso 2 (finalizar partido)
+    $isSecondStep = isset($_POST['_ajax_finalize']) && $_POST['_ajax_finalize'] === '1';
+    
+    // Actualizar el partido en la base de datos
     $partidoModel = new Partido();
-    
-    // Obtener el partido actual para verificar si se está cambiando la fase
-    $partido_actual = $partidoModel->obtenerPorId($id);
-    
-    // Si se está cambiando la fase, validar los límites
-    if ($partido_actual && $partido_actual['fase'] !== $fase) {
-        $partidos_fase = $partidoModel->contarPartidosPorFase($fase, $id);
-        
-        $limite_alcanzado = false;
-        $mensaje_error = '';
-        
-        switch ($fase) {
-            case 'cuartos':
-                if ($partidos_fase >= 4) {
-                    $limite_alcanzado = true;
-                    $mensaje_error = 'Ya existen 4 partidos en cuartos de final. No se puede cambiar la fase.';
+    try {
+        // --- Procesar estadísticas temporales si existen ---
+        if (isset($_POST['estadisticas_temporales'])) {
+            $stats = json_decode($_POST['estadisticas_temporales'], true);
+            if ($stats) {
+                // Goles
+                foreach ($stats['goles'] as $gol) {
+                    if (isset($gol['id']) && strpos($gol['id'], 'temp_') === 0) {
+                        // Nuevo gol
+                        $partidoModel->registrarGol($id, $gol['jugador_id'], $gol['minuto'], $gol['tipo']);
+                    } elseif (isset($gol['cod_gol'])) {
+                        // Actualizar gol existente
+                        $partidoModel->actualizarGol($gol['cod_gol'], $id, $gol['jugador_id'], $gol['minuto'], $gol['tipo']);
+                    }
                 }
-                break;
-            case 'semis':
-                if ($partidos_fase >= 2) {
-                    $limite_alcanzado = true;
-                    $mensaje_error = 'Ya existen 2 partidos en semifinales. No se puede cambiar la fase.';
+                // Asistencias
+                foreach ($stats['asistencias'] as $asis) {
+                    if (isset($asis['id']) && strpos($asis['id'], 'temp_') === 0) {
+                        $partidoModel->registrarAsistencia($id, $asis['jugador_id'], $asis['minuto']);
+                    } elseif (isset($asis['cod_asis'])) {
+                        $partidoModel->actualizarAsistencia($asis['cod_asis'], $id, $asis['jugador_id'], $asis['minuto']);
+                    }
                 }
-                break;
-            case 'final':
-                if ($partidos_fase >= 1) {
-                    $limite_alcanzado = true;
-                    $mensaje_error = 'Ya existe un partido de final. No se puede cambiar la fase.';
+                // Faltas
+                foreach ($stats['faltas'] as $falta) {
+                    if (isset($falta['id']) && strpos($falta['id'], 'temp_') === 0) {
+                        $partidoModel->registrarFalta($id, $falta['jugador_id'], $falta['minuto'], $falta['tipo_falta']);
+                    } elseif (isset($falta['cod_falta'])) {
+                        $partidoModel->actualizarFalta($falta['cod_falta'], $id, $falta['jugador_id'], $falta['minuto'], $falta['tipo_falta']);
+                    }
                 }
-                break;
+            }
         }
         
-        if ($limite_alcanzado) {
-            $_SESSION['error_partidos'] = $mensaje_error;
+        // --- Procesar eliminados ---
+        if (isset($_POST['estadisticas_eliminadas'])) {
+            $deleted = json_decode($_POST['estadisticas_eliminadas'], true);
+            if ($deleted) {
+                foreach ($deleted['goles'] as $cod_gol) {
+                    $partidoModel->eliminarGol($cod_gol);
+                }
+                foreach ($deleted['asistencias'] as $cod_asis) {
+                    $partidoModel->eliminarAsistencia($cod_asis);
+                }
+                foreach ($deleted['faltas'] as $cod_falta) {
+                    $partidoModel->eliminarFalta($cod_falta);
+                }
+            }
+        }
+        
+        // Si es el primer paso (solo guardando estadísticas), no cambiar el estado a finalizado
+        if ($isFirstStep && $estado === 'finalizado') {
+            $estado = 'programado'; // Forzar a programado para el primer paso
+        }
+        
+        // Actualizar el partido
+        $resultado = $partidoModel->actualizar($id, $fecha, $hora, $cancha_id, $estado);
+        
+        if ($resultado) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => true, 
+                    'id' => $id,
+                    'message' => $isFirstStep ? 'Estadísticas guardadas correctamente' : 'Partido actualizado correctamente',
+                    'step' => $isFirstStep ? 1 : ($isSecondStep ? 2 : 0)
+                ]);
+                exit;
+            } else {
+                $_SESSION['exito_partidos'] = 'Partido actualizado correctamente';
+                header('Location: ../../../frontend/pages/admin/partidos.php');
+                exit;
+            }
+        } else {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false, 
+                    'message' => 'Error al actualizar el partido. La base de datos no reportó detalles adicionales.'
+                ]);
+                exit;
+            } else {
+                $_SESSION['error_partidos'] = 'Error al actualizar el partido. La base de datos no reportó detalles adicionales.';
+                header('Location: ../../../frontend/pages/admin/partidos_form.php?id=' . $id);
+                exit;
+            }
+        }
+    } catch (Exception $e) {
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false, 
+                'message' => 'Error al actualizar el partido: ' . $e->getMessage()
+            ]);
+            exit;
+        } else {
+            $_SESSION['error_partidos'] = 'Error al actualizar el partido: ' . $e->getMessage();
             header('Location: ../../../frontend/pages/admin/partidos_form.php?id=' . $id);
             exit;
         }
-    }
-    
-    // Actualizar el partido en la base de datos
-    $resultado = $partidoModel->actualizar($id, $fecha, $hora, $cancha_id, $estado, $fase);
-    
-    // --- Procesar estadísticas temporales si existen ---
-    if (isset($_POST['estadisticas_temporales'])) {
-        $stats = json_decode($_POST['estadisticas_temporales'], true);
-        if ($stats) {
-            // Goles
-            foreach ($stats['goles'] as $gol) {
-                if (isset($gol['id']) && strpos($gol['id'], 'temp_') === 0) {
-                    // Nuevo gol
-                    $partidoModel->registrarGol($id, $gol['jugador_id'], $gol['minuto'], $gol['tipo']);
-                } elseif (isset($gol['cod_gol'])) {
-                    // Actualizar gol existente
-                    $partidoModel->actualizarGol($gol['cod_gol'], $id, $gol['jugador_id'], $gol['minuto'], $gol['tipo']);
-                }
-            }
-            // Asistencias
-            foreach ($stats['asistencias'] as $asis) {
-                if (isset($asis['id']) && strpos($asis['id'], 'temp_') === 0) {
-                    $partidoModel->registrarAsistencia($id, $asis['jugador_id'], $asis['minuto']);
-                } elseif (isset($asis['cod_asis'])) {
-                    $partidoModel->actualizarAsistencia($asis['cod_asis'], $id, $asis['jugador_id'], $asis['minuto']);
-                }
-            }
-            // Faltas
-            foreach ($stats['faltas'] as $falta) {
-                if (isset($falta['id']) && strpos($falta['id'], 'temp_') === 0) {
-                    $partidoModel->registrarFalta($id, $falta['jugador_id'], $falta['minuto'], $falta['tipo_falta']);
-                } elseif (isset($falta['cod_falta'])) {
-                    $partidoModel->actualizarFalta($falta['cod_falta'], $id, $falta['jugador_id'], $falta['minuto'], $falta['tipo_falta']);
-                }
-            }
-        }
-    }
-    // --- Procesar eliminados ---
-    if (isset($_POST['estadisticas_eliminadas'])) {
-        $deleted = json_decode($_POST['estadisticas_eliminadas'], true);
-        if ($deleted) {
-            foreach ($deleted['goles'] as $cod_gol) {
-                $partidoModel->eliminarGol($cod_gol);
-            }
-            foreach ($deleted['asistencias'] as $cod_asis) {
-                $partidoModel->eliminarAsistencia($cod_asis);
-            }
-            foreach ($deleted['faltas'] as $cod_falta) {
-                $partidoModel->eliminarFalta($cod_falta);
-            }
-        }
-    }
-    // ---
-    if ($resultado['estado']) {
-        // Éxito al actualizar el partido
-        $_SESSION['exito_partidos'] = 'Partido actualizado correctamente';
-        header('Location: ../../../frontend/pages/admin/partidos.php');
-        exit;
-    } else {
-        // Error al actualizar el partido
-        $_SESSION['error_partidos'] = 'Error al actualizar el partido: ' . $resultado['mensaje'];
-        header('Location: ../../../frontend/pages/admin/partidos_form.php?id=' . $id);
-        exit;
     }
 }
 
@@ -278,15 +299,20 @@ function eliminarPartido() {
     $id = intval($_POST['id']);
     
     // Eliminar el partido de la base de datos
-    $partidoModel = new Partido();
-    $resultado = $partidoModel->eliminar($id);
-    
-    if ($resultado['estado']) {
-        // Éxito al eliminar el partido
-        $_SESSION['exito_partidos'] = 'Partido eliminado correctamente';
-    } else {
+    try {
+        $partidoModel = new Partido();
+        $resultado = $partidoModel->eliminar($id);
+        
+        if ($resultado['estado']) {
+            // Éxito al eliminar el partido
+            $_SESSION['exito_partidos'] = 'Partido eliminado correctamente';
+        } else {
+            // Error al eliminar el partido
+            $_SESSION['error_partidos'] = $resultado['mensaje'];
+        }
+    } catch (Exception $e) {
         // Error al eliminar el partido
-        $_SESSION['error_partidos'] = 'Error al eliminar el partido: ' . $resultado['mensaje'];
+        $_SESSION['error_partidos'] = 'Error al eliminar el partido: ' . $e->getMessage();
     }
     
     // Redireccionar a la lista de partidos
@@ -313,15 +339,15 @@ function registrarGol() {
     $tipo_gol = trim($_POST['tipo_gol']);
     
     // Registrar el gol
-    $partidoModel = new Partido();
-    $resultado = $partidoModel->registrarGol($partido_id, $jugador_id, $minuto, $tipo_gol);
-    
-    if ($resultado['estado']) {
+    try {
+        $partidoModel = new Partido();
+        $resultado = $partidoModel->registrarGol($partido_id, $jugador_id, $minuto, $tipo_gol);
+        
         // Éxito al registrar el gol
         $_SESSION['exito_partidos'] = 'Gol registrado correctamente';
-    } else {
+    } catch (Exception $e) {
         // Error al registrar el gol
-        $_SESSION['error_partidos'] = 'Error al registrar el gol: ' . $resultado['mensaje'];
+        $_SESSION['error_partidos'] = 'Error al registrar el gol: ' . $e->getMessage();
     }
     
     // Redireccionar a la página del partido
@@ -346,15 +372,15 @@ function registrarAsistencia() {
     $minuto = intval($_POST['minuto']);
     
     // Registrar la asistencia
-    $partidoModel = new Partido();
-    $resultado = $partidoModel->registrarAsistencia($partido_id, $jugador_id, $minuto);
-    
-    if ($resultado['estado']) {
+    try {
+        $partidoModel = new Partido();
+        $resultado = $partidoModel->registrarAsistencia($partido_id, $jugador_id, $minuto);
+        
         // Éxito al registrar la asistencia
         $_SESSION['exito_partidos'] = 'Asistencia registrada correctamente';
-    } else {
+    } catch (Exception $e) {
         // Error al registrar la asistencia
-        $_SESSION['error_partidos'] = 'Error al registrar la asistencia: ' . $resultado['mensaje'];
+        $_SESSION['error_partidos'] = 'Error al registrar la asistencia: ' . $e->getMessage();
     }
     
     // Redireccionar a la página del partido
@@ -381,15 +407,15 @@ function registrarFalta() {
     $tipo_falta = trim($_POST['tipo_falta']);
     
     // Registrar la falta
-    $partidoModel = new Partido();
-    $resultado = $partidoModel->registrarFalta($partido_id, $jugador_id, $minuto, $tipo_falta);
-    
-    if ($resultado['estado']) {
+    try {
+        $partidoModel = new Partido();
+        $resultado = $partidoModel->registrarFalta($partido_id, $jugador_id, $minuto, $tipo_falta);
+        
         // Éxito al registrar la falta
         $_SESSION['exito_partidos'] = 'Falta registrada correctamente';
-    } else {
+    } catch (Exception $e) {
         // Error al registrar la falta
-        $_SESSION['error_partidos'] = 'Error al registrar la falta: ' . $resultado['mensaje'];
+        $_SESSION['error_partidos'] = 'Error al registrar la falta: ' . $e->getMessage();
     }
     
     // Redireccionar a la página del partido

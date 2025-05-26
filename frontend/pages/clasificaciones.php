@@ -21,7 +21,13 @@ include_once '../components/notificaciones.php';
     mostrarNotificaciones(['error_clasificaciones', 'exito_clasificaciones']);
     ?>
     
-    <div id="clasificaciones-container"></div>
+    <!-- Contenedor principal para el cuadro de eliminatorias -->
+    <div id="clasificaciones-container">
+        <!-- El contenido será cargado mediante JavaScript -->
+        <div class="loading-message">
+            <i class="fas fa-spinner fa-spin"></i> Cargando cuadro de eliminatorias...
+        </div>
+    </div>
 </div>
 
 <!-- Incluir los scripts específicos para esta página -->

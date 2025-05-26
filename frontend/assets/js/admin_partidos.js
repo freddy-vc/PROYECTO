@@ -26,6 +26,55 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('partido-form');
     if (form) {
         initializeFormValidation();
+        
+        // Guardar el valor inicial del estado
+        const estadoSelect = document.getElementById('estado');
+        if (estadoSelect) {
+            estadoSelect.setAttribute('data-old-value', estadoSelect.value);
+            
+            // Agregar un listener para el cambio de estado para mostrar una alerta
+            estadoSelect.addEventListener('change', function() {
+                if (this.value === 'finalizado' && this.getAttribute('data-old-value') === 'programado') {
+                    console.log('Estado cambiado a finalizado');
+                }
+            });
+        }
+        
+        // Interceptar el envío del formulario
+        form.addEventListener('submit', function(e) {
+            console.log('Formulario enviado');
+            
+            const estadoSelect = document.getElementById('estado');
+            const cambioAFinalizado = estadoSelect && 
+                                      estadoSelect.value === 'finalizado' && 
+                                      estadoSelect.getAttribute('data-old-value') === 'programado';
+            
+            if (cambioAFinalizado) {
+                console.log('Detectado cambio a finalizado, procesando en dos pasos');
+                e.preventDefault(); // Detener el envío normal del formulario
+                
+                // Mostrar indicador de carga
+                const submitButton = form.querySelector('button[type="submit"]');
+                const originalText = submitButton.textContent;
+                submitButton.disabled = true;
+                submitButton.textContent = 'Procesando...';
+                
+                // Primero guardar las estadísticas con estado programado
+                saveStatsFirst()
+                    .then(data => {
+                        console.log('Estadísticas guardadas correctamente, finalizando partido', data);
+                        // Luego cambiar el estado a finalizado
+                        return submitFormAjax();
+                    })
+                    .catch(error => {
+                        console.error('Error al guardar estadísticas:', error);
+                        alert('Error al guardar las estadísticas del partido: ' + error);
+                        submitButton.disabled = false;
+                        submitButton.textContent = originalText;
+                    });
+            }
+            // Si no es cambio a finalizado, el formulario se enviará normalmente
+        });
     }
     
     // No inicializar los botones de eliminación aquí, se hace en admin.js
@@ -98,6 +147,129 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 });
+
+/**
+ * Guardar primero las estadísticas antes de finalizar el partido
+ */
+function saveStatsFirst() {
+    return new Promise((resolve, reject) => {
+        const form = document.getElementById('partido-form');
+        if (!form) {
+            reject('Formulario no encontrado');
+            return;
+        }
+        
+        console.log('Guardando estadísticas primero...');
+        
+        // Crear una copia del formulario para enviar solo las estadísticas
+        const formData = new FormData(form);
+        
+        // Asegurarse de que el estado siga siendo 'programado' para esta primera petición
+        formData.set('estado', 'programado');
+        
+        // Agregar una marca para el backend para indicar que es el primer paso
+        formData.append('_ajax_save_stats', '1');
+        
+        console.log('Enviando solicitud AJAX para guardar estadísticas...');
+        
+        // Enviar la solicitud AJAX para guardar las estadísticas
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta recibida:', data);
+            if (data.success) {
+                console.log('Estadísticas guardadas correctamente');
+                resolve(data);
+            } else {
+                console.error('Error en la respuesta:', data);
+                reject(data.message || 'Error al guardar las estadísticas');
+            }
+        })
+        .catch(error => {
+            console.error('Error en la solicitud AJAX:', error);
+            reject(error.message || 'Error de red al guardar estadísticas');
+        });
+    });
+}
+
+/**
+ * Enviar el formulario completo con estado finalizado
+ */
+function submitFormAjax() {
+    return new Promise((resolve, reject) => {
+        const form = document.getElementById('partido-form');
+        if (!form) {
+            reject('Formulario no encontrado');
+            return;
+        }
+        
+        console.log('Finalizando partido...');
+        
+        const formData = new FormData(form);
+        formData.set('estado', 'finalizado');
+        
+        // Agregar una marca para el backend para indicar que es el segundo paso
+        formData.append('_ajax_finalize', '1');
+        
+        console.log('Enviando solicitud AJAX para finalizar partido...');
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta de finalización recibida:', data);
+            if (data.success) {
+                console.log('Partido finalizado correctamente');
+                // Redirigir a la página de partidos con mensaje de éxito
+                window.location.href = '../../../frontend/pages/admin/partidos.php?exito=Partido+finalizado+correctamente';
+                resolve(data);
+            } else {
+                console.error('Error en la respuesta de finalización:', data);
+                const errorMsg = data.message || 'Error desconocido al finalizar el partido';
+                alert('Error al finalizar el partido: ' + errorMsg);
+                // Restaurar el botón de envío
+                const submitButton = form.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Guardar Partido';
+                }
+                reject(errorMsg);
+            }
+        })
+        .catch(error => {
+            console.error('Error en la solicitud AJAX de finalización:', error);
+            alert('Error de red al finalizar el partido. Por favor, inténtelo de nuevo.');
+            // Restaurar el botón de envío
+            const submitButton = form.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Guardar Partido';
+            }
+            reject(error.message || 'Error de red al finalizar partido');
+        });
+    });
+}
 
 /**
  * Inicializar la validación del formulario
@@ -182,7 +354,6 @@ function initializeFormValidation() {
             clearError(estado);
         }
         
-        // Prevenir el envío del formulario si hay errores
         if (!isValid) {
             e.preventDefault();
         }

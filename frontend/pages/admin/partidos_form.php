@@ -223,14 +223,32 @@ if ($esEdicion) {
                 </select>
             </div>
 
-            <!-- Fase del partido -->
+            <!-- Mostrar la fase como información no editable -->
             <div class="form-group">
-                <label for="fase">Fase del Torneo</label>
-                <select name="fase" id="fase" class="form-control" required>
-                    <option value="cuartos" <?php echo ($partido && $partido['fase'] == 'cuartos') ? 'selected' : ''; ?>>Cuartos de Final</option>
-                    <option value="semis" <?php echo ($partido && $partido['fase'] == 'semis') ? 'selected' : ''; ?>>Semifinales</option>
-                    <option value="final" <?php echo ($partido && $partido['fase'] == 'final') ? 'selected' : ''; ?>>Final</option>
-                </select>
+                <label>Fase del Torneo</label>
+                <div class="form-static-text">
+                    <?php 
+                    $fase_nombre = '';
+                    if (isset($partido['fase'])) {
+                        switch($partido['fase']) {
+                            case 'cuartos':
+                                $fase_nombre = 'Cuartos de Final';
+                                break;
+                            case 'semis':
+                                $fase_nombre = 'Semifinales';
+                                break;
+                            case 'final':
+                                $fase_nombre = 'Final';
+                                break;
+                            default:
+                                $fase_nombre = $partido['fase'] ? ucfirst($partido['fase']) : 'No asignada';
+                        }
+                    } else {
+                        $fase_nombre = 'No asignada';
+                    }
+                    echo $fase_nombre;
+                    ?>
+                </div>
             </div>
             <?php endif; ?>
             
@@ -582,6 +600,22 @@ window.jugadoresDorsales["<?php echo $jugador['cod_jug']; ?>"] = { nombre: "<?ph
 <?php foreach ($jugadoresVisitante as $jugador): ?>
 window.jugadoresDorsales["<?php echo $jugador['cod_jug']; ?>"] = { nombre: "<?php echo addslashes($jugador['nombres'] . ' ' . $jugador['apellidos']); ?>", dorsal: "<?php echo $jugador['dorsal']; ?>", equipo: "<?php echo addslashes($partido['visitante_nombre']); ?>" };
 <?php endforeach; ?>
+
+// Asegurar que el estado inicial del selector de estado se guarde correctamente
+document.addEventListener('DOMContentLoaded', function() {
+    const estadoSelect = document.getElementById('estado');
+    if (estadoSelect) {
+        console.log('Inicializando estado inicial:', estadoSelect.value);
+        estadoSelect.setAttribute('data-old-value', estadoSelect.value);
+        
+        // Advertir si se intenta cambiar a finalizado
+        estadoSelect.addEventListener('change', function() {
+            if (this.value === 'finalizado' && this.getAttribute('data-old-value') === 'programado') {
+                console.log('Cambiando estado a finalizado - se procesará en dos pasos');
+            }
+        });
+    }
+});
 </script>
 <?php endif; ?>
 <!-- Incluir los scripts específicos para esta página -->

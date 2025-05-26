@@ -11,7 +11,7 @@ function cargarClasificaciones() {
         .then(response => response.json())
         .then(data => {
             if (data.estado) {
-                mostrarCuadroTorneo(data.fases, data.partidos, data.equipos);
+                mostrarCuadroTorneo(data.fases, data.partidos, data.equipos, data.brackets);
             } else {
                 document.querySelector('.bracket-container').innerHTML = 
                     `<div class="error-message">No hay clasificaciones para mostrar.</div>`;
@@ -27,65 +27,32 @@ function cargarClasificaciones() {
 /**
  * Función para mostrar el cuadro del torneo
  */
-function mostrarCuadroTorneo(fases, partidos, equipos) {
-    const container = document.querySelector('.bracket-container');
+function mostrarCuadroTorneo(fases, partidos, equipos, brackets) {
+    const container = document.getElementById('clasificaciones-container');
+    if (!container) return;
     
-    // Crear estructura del cuadro
-    let html = '<div class="tournament-bracket">';
+    // Estructura HTML inicial
+    let html = '<div class="bracket-container">';
+    html += '<div class="tournament-bracket">';
     
-    // Columna de cuartos de final (lado izquierdo)
-    html += `
-        <div class="round">
-            <div class="round-title">Cuartos de final</div>
-            
-            ${generarPartidosFase('cuartos', partidos, equipos, 'izquierda')}
-        </div>
-    `;
-    
-    // Columna de semifinales (lado izquierdo)
-    html += `
-        <div class="round">
-            <div class="round-title">Semifinal</div>
-            
-            ${generarPartidosFase('semis', partidos, equipos, 'izquierda')}
-        </div>
-    `;
-    
-    // Columna de la final
-    html += `
-        <div class="round">
-            <div class="round-title">Final</div>
-            
-            <div class="match-container">
-                <div class="match final-match">
-                    <div class="match-title">Final</div>
-                    ${generarPartidoFinal(partidos, equipos)}
-                </div>
-                
-                ${generarCampeon(partidos, equipos)}
-            </div>
-        </div>
-    `;
-    
-    // Columna de semifinales (lado derecho)
-    html += `
-        <div class="round">
-            <div class="round-title">Semifinal</div>
-            
-            ${generarPartidosFase('semis', partidos, equipos, 'derecha')}
-        </div>
-    `;
-    
-    // Columna de cuartos de final (lado derecho)
-    html += `
-        <div class="round">
-            <div class="round-title">Cuartos de final</div>
-            
-            ${generarPartidosFase('cuartos', partidos, equipos, 'derecha')}
-        </div>
-    `;
-    
+    // Crear columnas para cada fase
+    html += '<div class="round"><div class="round-title">Cuartos de final</div>';
+    // Generar partidos de cuartos
+    html += generarPartidosFase('cuartos', partidos, equipos, brackets);
     html += '</div>';
+    
+    html += '<div class="round"><div class="round-title">Semifinal</div>';
+    // Generar partidos de semifinal
+    html += generarPartidosFase('semis', partidos, equipos, brackets);
+    html += '</div>';
+    
+    html += '<div class="round"><div class="round-title">Final</div>';
+    // Generar partido de la final
+    html += generarPartidosFase('final', partidos, equipos, brackets);
+    html += generarCampeon(partidos, equipos, brackets);
+    html += '</div>';
+    
+    html += '</div></div>';
     
     container.innerHTML = html;
 }
@@ -93,214 +60,153 @@ function mostrarCuadroTorneo(fases, partidos, equipos) {
 /**
  * Función para generar los partidos de una fase específica
  */
-function generarPartidosFase(fase, partidos, equipos, lado) {
-    // Filtrar partidos de la fase
-    const partidosFase = partidos.filter(partido => {
-        // Verificar la fase del partido
-        if (!partido.fase || partido.fase !== fase) {
-            return false;
-        }
-        
-        // Para semifinales, separar por lados
-        if (fase === 'semis') {
-            if (lado === 'izquierda' && partido.orden <= 1) {
-                return true;
-            } else if (lado === 'derecha' && partido.orden > 1) {
-                return true;
-            } else {
-                return false;
-            }
-        } else if (fase === 'cuartos') {
-            if (lado === 'izquierda' && partido.orden <= 2) {
-                return true;
-            } else if (lado === 'derecha' && partido.orden > 2) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        
-        return true;
-    });
+function generarPartidosFase(fase, partidos, equipos, brackets) {
+    // Filtrar brackets por fase
+    const bracketsEnFase = brackets ? brackets.filter(b => b.fase === fase) : [];
     
-    // Ordenar por orden
-    partidosFase.sort((a, b) => a.orden - b.orden);
+    // Ordenar por ID de bracket
+    bracketsEnFase.sort((a, b) => a.bracket_id - b.bracket_id);
     
     let html = '';
     
-    // Si no hay partidos, mostrar espacios vacíos
-    if (partidosFase.length === 0) {
-        if (fase === 'cuartos') {
-            const numEspacios = lado === 'izquierda' ? 2 : 2;
-            for (let i = 0; i < numEspacios; i++) {
+    // Si no hay brackets para esta fase, mostrar mensaje
+    if (bracketsEnFase.length === 0) {
+        html += `
+            <div class="match-container">
+                <div class="match empty-match">
+                    <div class="team">
+                        <img src="../assets/images/team.png" alt="Por definir" class="team-logo">
+                        <div class="team-name">Por definir</div>
+                        <div class="team-score">-</div>
+                    </div>
+                    <div class="team">
+                        <img src="../assets/images/team.png" alt="Por definir" class="team-logo">
+                        <div class="team-name">Por definir</div>
+                        <div class="team-score">-</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        return html;
+    }
+    
+    // Generar HTML para cada bracket
+    bracketsEnFase.forEach(bracket => {
+        // Si el bracket tiene un partido asociado
+        if (bracket.cod_par) {
+            const partido = partidos.find(p => p.cod_par == bracket.cod_par);
+            
+            if (partido) {
+                const equipoLocal = equipos.find(e => e.cod_equ == partido.equ_local);
+                const equipoVisitante = equipos.find(e => e.cod_equ == partido.equ_visitante);
+                
+                // Determinar ganador si el partido está finalizado
+                let equipoGanador = null;
+                if (partido.estado === 'finalizado') {
+                    const golesLocal = parseInt(partido.goles_local || 0);
+                    const golesVisitante = parseInt(partido.goles_visitante || 0);
+                    
+                    if (golesLocal > golesVisitante) {
+                        equipoGanador = equipoLocal;
+                    } else if (golesVisitante > golesLocal) {
+                        equipoGanador = equipoVisitante;
+                    }
+                }
+                
+                // Construir el HTML del partido
                 html += `
-                    <div class="match-container">
-                        <div class="match empty-match">
-                            <div class="match-teams">
-                                <div class="team">
-                                    <div class="team-name">Por definir</div>
-                                </div>
-                                <div class="team">
-                                    <div class="team-name">Por definir</div>
-                                </div>
+                    <div class="match-container" data-bracket-id="${bracket.bracket_id}">
+                        <div class="match">
+                            <div class="team ${equipoGanador === equipoLocal ? 'winner' : ''}">
+                                <img src="${equipoLocal ? equipoLocal.escudo_base64 || '../assets/images/team.png' : '../assets/images/team.png'}" 
+                                     alt="${equipoLocal ? equipoLocal.nombre : 'Por definir'}" 
+                                     class="team-logo">
+                                <div class="team-name">${equipoLocal ? equipoLocal.nombre : 'Por definir'}</div>
+                                <div class="team-score">${partido.estado === 'finalizado' ? (partido.goles_local || 0) : '-'}</div>
+                            </div>
+                            <div class="team ${equipoGanador === equipoVisitante ? 'winner' : ''}">
+                                <img src="${equipoVisitante ? equipoVisitante.escudo_base64 || '../assets/images/team.png' : '../assets/images/team.png'}" 
+                                     alt="${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}" 
+                                     class="team-logo">
+                                <div class="team-name">${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}</div>
+                                <div class="team-score">${partido.estado === 'finalizado' ? (partido.goles_visitante || 0) : '-'}</div>
                             </div>
                         </div>
                     </div>
                 `;
+            } else {
+                // Partido no encontrado
+                html += generarPartidoVacio(bracket.bracket_id);
             }
-        } else if (fase === 'semis') {
-            html += `
-                <div class="match-container">
-                    <div class="match empty-match">
-                        <div class="match-teams">
-                            <div class="team">
-                                <div class="team-name">Por definir</div>
-                            </div>
-                            <div class="team">
-                                <div class="team-name">Por definir</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+        } else {
+            // Bracket sin partido asociado aún
+            html += generarPartidoVacio(bracket.bracket_id);
         }
-        
-        return html;
-    }
-    
-    // Generar HTML para cada partido
-    partidosFase.forEach(partido => {
-        const equipoLocal = equipos.find(e => e.cod_equ == partido.equ_local);
-        const equipoVisitante = equipos.find(e => e.cod_equ == partido.equ_visitante);
-        
-        // Determinar ganador si el partido está finalizado
-        let equipoGanador = null;
-        if (partido.estado === 'finalizado') {
-            const golesLocal = parseInt(partido.goles_local || 0);
-            const golesVisitante = parseInt(partido.goles_visitante || 0);
-            
-            if (golesLocal > golesVisitante) {
-                equipoGanador = equipoLocal;
-            } else if (golesVisitante > golesLocal) {
-                equipoGanador = equipoVisitante;
-            }
-        }
-        
-        html += `
-            <div class="match-container">
-                <div class="match">
-                    <div class="match-teams">
-                        <div class="team ${equipoGanador === equipoLocal ? 'winner' : ''}">
-                            <img src="${equipoLocal ? equipoLocal.escudo_base64 || '../assets/images/team.png' : '../assets/images/team.png'}" alt="${equipoLocal ? equipoLocal.nombre : 'Por definir'}" class="team-logo">
-                            <div class="team-name">${equipoLocal ? equipoLocal.nombre : 'Por definir'}</div>
-                            <div class="team-score">${partido.estado === 'finalizado' ? (partido.goles_local || 0) : '-'}</div>
-                        </div>
-                        <div class="team ${equipoGanador === equipoVisitante ? 'winner' : ''}">
-                            <img src="${equipoVisitante ? equipoVisitante.escudo_base64 || '../assets/images/team.png' : '../assets/images/team.png'}" alt="${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}" class="team-logo">
-                            <div class="team-name">${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}</div>
-                            <div class="team-score">${partido.estado === 'finalizado' ? (partido.goles_visitante || 0) : '-'}</div>
-                        </div>
-                    </div>
-                    ${partido.fecha ? `<div class="match-info">${formatDate(partido.fecha)}</div>` : ''}
-                </div>
-            </div>
-        `;
     });
     
     return html;
 }
 
 /**
- * Función para generar el partido de la final
+ * Genera un partido vacío (por definir)
  */
-function generarPartidoFinal(partidos, equipos) {
-    // Buscar el partido de la final
-    const partidoFinal = partidos.find(p => p.fase === 'final');
-    
-    if (!partidoFinal) {
-        return `
-            <div class="match-teams">
-                <div class="team">
-                    <div class="team-name">Por definir</div>
-                </div>
-                <div class="team">
-                    <div class="team-name">Por definir</div>
-                </div>
-            </div>
-        `;
-    }
-    
-    const equipoLocal = equipos.find(e => e.cod_equ == partidoFinal.equ_local);
-    const equipoVisitante = equipos.find(e => e.cod_equ == partidoFinal.equ_visitante);
-    
-    // Determinar ganador si el partido está finalizado
-    let equipoGanador = null;
-    if (partidoFinal.estado === 'finalizado') {
-        const golesLocal = parseInt(partidoFinal.goles_local || 0);
-        const golesVisitante = parseInt(partidoFinal.goles_visitante || 0);
-        
-        if (golesLocal > golesVisitante) {
-            equipoGanador = equipoLocal;
-        } else if (golesVisitante > golesLocal) {
-            equipoGanador = equipoVisitante;
-        }
-    }
-    
+function generarPartidoVacio(bracketId) {
     return `
-        <div class="match-teams">
-            <div class="team ${equipoGanador === equipoLocal ? 'winner' : ''}">
-                <img src="${equipoLocal ? equipoLocal.escudo_base64 || '../assets/images/team.png' : '../assets/images/team.png'}" alt="${equipoLocal ? equipoLocal.nombre : 'Por definir'}" class="team-logo">
-                <div class="team-name">${equipoLocal ? equipoLocal.nombre : 'Por definir'}</div>
-                <div class="team-score">${partidoFinal.estado === 'finalizado' ? (partidoFinal.goles_local || 0) : '-'}</div>
-            </div>
-            <div class="team ${equipoGanador === equipoVisitante ? 'winner' : ''}">
-                <img src="${equipoVisitante ? equipoVisitante.escudo_base64 || '../assets/images/team.png' : '../assets/images/team.png'}" alt="${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}" class="team-logo">
-                <div class="team-name">${equipoVisitante ? equipoVisitante.nombre : 'Por definir'}</div>
-                <div class="team-score">${partidoFinal.estado === 'finalizado' ? (partidoFinal.goles_visitante || 0) : '-'}</div>
+        <div class="match-container" data-bracket-id="${bracketId}">
+            <div class="match empty-match">
+                <div class="team">
+                    <img src="../assets/images/team.png" alt="Por definir" class="team-logo">
+                    <div class="team-name">Por definir</div>
+                    <div class="team-score">-</div>
+                </div>
+                <div class="team">
+                    <img src="../assets/images/team.png" alt="Por definir" class="team-logo">
+                    <div class="team-name">Por definir</div>
+                    <div class="team-score">-</div>
+                </div>
             </div>
         </div>
-        ${partidoFinal.fecha ? `<div class="match-info">${formatDate(partidoFinal.fecha)}</div>` : ''}
     `;
 }
 
 /**
- * Función para generar el campeón del torneo
+ * Función para generar el campeón
  */
-function generarCampeon(partidos, equipos) {
-    // Buscar el partido de la final
-    const partidoFinal = partidos.find(p => p.fase === 'final');
+function generarCampeon(partidos, equipos, brackets) {
+    // Buscar el bracket de la final
+    const bracketFinal = brackets ? brackets.find(b => b.fase === 'final') : null;
     
-    if (!partidoFinal || partidoFinal.estado !== 'finalizado') {
-        return '';
+    if (!bracketFinal || !bracketFinal.cod_par) {
+        return '<div class="champion"><div class="champion-placeholder">Campeón por definir</div></div>';
     }
     
-    const equipoLocal = equipos.find(e => e.cod_equ == partidoFinal.equ_local);
-    const equipoVisitante = equipos.find(e => e.cod_equ == partidoFinal.equ_visitante);
+    const partidoFinal = partidos.find(p => p.cod_par == bracketFinal.cod_par);
     
-    // Determinar ganador
-    let equipoCampeon = null;
+    if (!partidoFinal || partidoFinal.estado !== 'finalizado') {
+        return '<div class="champion"><div class="champion-placeholder">Campeón por definir</div></div>';
+    }
+    
+    // Determinar el campeón
+    let campeon = null;
     const golesLocal = parseInt(partidoFinal.goles_local || 0);
     const golesVisitante = parseInt(partidoFinal.goles_visitante || 0);
     
     if (golesLocal > golesVisitante) {
-        equipoCampeon = equipoLocal;
+        campeon = equipos.find(e => e.cod_equ == partidoFinal.equ_local);
     } else if (golesVisitante > golesLocal) {
-        equipoCampeon = equipoVisitante;
-    } else {
-        // En caso de empate (no debería ocurrir en una final)
-        return '';
+        campeon = equipos.find(e => e.cod_equ == partidoFinal.equ_visitante);
     }
     
-    if (!equipoCampeon) {
-        return '';
+    if (!campeon) {
+        return '<div class="champion"><div class="champion-placeholder">Campeón por definir</div></div>';
     }
     
     return `
         <div class="champion">
-            <div class="champion-label">¡Campeón!</div>
+            <div class="champion-title">Campeón</div>
             <div class="champion-team">
-                <img src="${equipoCampeon.escudo_base64 || '../assets/images/team.png'}" alt="${equipoCampeon.nombre}" class="champion-logo">
-                <div class="champion-name">${equipoCampeon.nombre}</div>
+                <img src="${campeon.escudo_base64 || '../assets/images/team.png'}" alt="${campeon.nombre}" class="champion-logo">
+                <div class="champion-name">${campeon.nombre}</div>
             </div>
         </div>
     `;
@@ -388,13 +294,4 @@ function renderClasificaciones(clasificaciones) {
         }
         container.appendChild(col);
     });
-}
-
-// Polling para refrescar las clasificaciones
-function fetchClasificaciones() {
-    fetch('../../backend/controllers/clasificaciones_controller.php?accion=eliminatorias')
-        .then(res => res.json())
-        .then(data => renderClasificaciones(data));
-}
-fetchClasificaciones();
-setInterval(fetchClasificaciones, 10000); // refresca cada 10 segundos 
+} 

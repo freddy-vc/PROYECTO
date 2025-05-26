@@ -8,86 +8,237 @@ DECLARE
     goles_local INT;
     goles_visitante INT;
     ganador INT;
-    siguiente_fase VARCHAR(50);
-    semifinal_num INT;
-    partido_semifinal RECORD;
-    cuartos_ids INT[];
-    idx INT;
+    bracket_actual RECORD;
+    bracket_siguiente_var INT;
+    posicion_en_siguiente VARCHAR(10);
+    partido_siguiente RECORD;
+    id_nueva_cancha INT;
+    fecha_siguiente DATE;
+    hora_siguiente TIME;
+    otro_ganador INT := NULL;
+    otro_bracket RECORD;
+    otro_partido RECORD;
+    goles_otro_local INT;
+    goles_otro_visitante INT;
+    ganador_decidido BOOLEAN := FALSE;
 BEGIN
-    IF NEW.estado = 'finalizado' THEN
+    -- Registrar información importante del trigger
+    RAISE NOTICE '⚠️ TRIGGER activado: Partido % estado OLD: % -> NEW: %', 
+                 NEW.cod_par, 
+                 COALESCE(OLD.estado, 'NULL'), 
+                 COALESCE(NEW.estado, 'NULL');
+    
+    -- Solo proceder si el partido cambió a estado finalizado
+    IF NEW.estado = 'finalizado' AND (OLD.estado IS NULL OR OLD.estado = 'programado') THEN
+        RAISE NOTICE '🏁 Partido % cambiado a finalizado', NEW.cod_par;
+        RAISE NOTICE '⚽ Equipos - Local: %, Visitante: %', NEW.equ_local, NEW.equ_visitante;
+        
         -- Calcular goles local (incluye autogoles del rival)
         SELECT 
-            (SELECT COUNT(*) FROM Goles WHERE cod_par = NEW.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = NEW.equ_local) AND tipo IN ('normal', 'penal'))
-            + (SELECT COUNT(*) FROM Goles WHERE cod_par = NEW.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = NEW.equ_visitante) AND tipo = 'autogol')
-            - (SELECT COUNT(*) FROM Goles WHERE cod_par = NEW.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = NEW.equ_local) AND tipo = 'autogol')
+            COALESCE((SELECT COUNT(*) FROM Goles WHERE cod_par = NEW.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = NEW.equ_local) AND tipo IN ('normal', 'penal')), 0)
+            + COALESCE((SELECT COUNT(*) FROM Goles WHERE cod_par = NEW.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = NEW.equ_visitante) AND tipo = 'autogol'), 0)
         INTO goles_local;
 
         -- Calcular goles visitante (incluye autogoles del rival)
         SELECT 
-            (SELECT COUNT(*) FROM Goles WHERE cod_par = NEW.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = NEW.equ_visitante) AND tipo IN ('normal', 'penal'))
-            + (SELECT COUNT(*) FROM Goles WHERE cod_par = NEW.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = NEW.equ_local) AND tipo = 'autogol')
-            - (SELECT COUNT(*) FROM Goles WHERE cod_par = NEW.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = NEW.equ_visitante) AND tipo = 'autogol')
+            COALESCE((SELECT COUNT(*) FROM Goles WHERE cod_par = NEW.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = NEW.equ_visitante) AND tipo IN ('normal', 'penal')), 0)
+            + COALESCE((SELECT COUNT(*) FROM Goles WHERE cod_par = NEW.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = NEW.equ_local) AND tipo = 'autogol'), 0)
         INTO goles_visitante;
+
+        RAISE NOTICE '📊 Marcador: Local % - Visitante %', goles_local, goles_visitante;
 
         -- Determinar el ganador
         IF goles_local > goles_visitante THEN
             ganador := NEW.equ_local;
+            ganador_decidido := TRUE;
+            RAISE NOTICE '🏆 Ganador: equipo local %', ganador;
         ELSIF goles_visitante > goles_local THEN
             ganador := NEW.equ_visitante;
+            ganador_decidido := TRUE;
+            RAISE NOTICE '🏆 Ganador: equipo visitante %', ganador;
         ELSE
-            ganador := NULL; -- Empate
-        END IF;
-
-        -- Determinar la siguiente fase
-        IF NEW.fase = 'cuartos' THEN
-            siguiente_fase := 'semis';
-        ELSIF NEW.fase = 'semis' THEN
-            siguiente_fase := 'final';
-        ELSE
-            siguiente_fase := NULL;
-        END IF;
-
-        -- Solo avanzar si hay un ganador y hay siguiente fase
-        IF ganador IS NOT NULL AND siguiente_fase IS NOT NULL THEN
-            -- Obtener los cod_par de los partidos de cuartos, ordenados
-            SELECT array_agg(cod_par ORDER BY cod_par ASC) INTO cuartos_ids FROM Partidos WHERE fase = 'cuartos';
-
-            -- Buscar el índice del partido actual en el array
-            FOR idx IN 1..array_length(cuartos_ids, 1) LOOP
-                IF cuartos_ids[idx] = NEW.cod_par THEN
-                    EXIT;
-                END IF;
-            END LOOP;
-
-            -- Calcular a qué semifinal corresponde (1 o 2, etc.)
-            semifinal_num := CEIL(idx::NUMERIC / 2);
-
-            -- Buscar el partido de semifinal correspondiente (por orden de cod_par)
-            SELECT * INTO partido_semifinal
-            FROM Partidos
-            WHERE fase = siguiente_fase
-            ORDER BY cod_par ASC
-            OFFSET semifinal_num - 1 LIMIT 1;
-
-            -- Si no existe, crear el partido de semifinal con el ganador como local
-            IF NOT FOUND THEN
-                INSERT INTO Partidos (fecha, hora, cod_cancha, equ_local, equ_visitante, estado, fase)
-                VALUES (CURRENT_DATE + INTERVAL '1 day', '18:00', NEW.cod_cancha, ganador, NULL, 'programado', siguiente_fase);
+            -- En caso de empate, verificamos si hay algún gol en absoluto
+            IF (goles_local + goles_visitante) = 0 THEN
+                RAISE NOTICE '⚠️ No hay goles registrados, no se puede determinar un ganador';
+                -- Intentar verificar si alguno de los equipos tiene jugadores que anotaron goles
+                DECLARE
+                    total_goles_del_partido INT;
+                BEGIN
+                    SELECT COUNT(*) INTO total_goles_del_partido FROM Goles WHERE cod_par = NEW.cod_par;
+                    IF total_goles_del_partido > 0 THEN
+                        -- Hay goles pero el cálculo dio 0-0, algo está mal con los jugadores
+                        RAISE NOTICE '⚠️ Hay % goles registrados pero el cálculo dio 0-0. Revisar que los jugadores pertenezcan a los equipos correctos', total_goles_del_partido;
+                    END IF;
+                END;
             ELSE
-                -- Si existe, asignar el ganador como visitante si el local ya está asignado y el visitante está NULL
-                IF partido_semifinal.equ_local IS NOT NULL AND partido_semifinal.equ_visitante IS NULL THEN
-                    UPDATE Partidos SET equ_visitante = ganador WHERE cod_par = partido_semifinal.cod_par;
-                END IF;
+                -- Hay un empate con goles, necesitamos un desempate
+                RAISE NOTICE '⚠️ Empate %-%: necesitamos un desempate', goles_local, goles_visitante;
+                -- En un torneo real esto podría ser por penales, pero para este caso, decidimos por el equipo local
+                ganador := NEW.equ_local;
+                ganador_decidido := TRUE;
+                RAISE NOTICE '🏆 Ganador por desempate: equipo local %', ganador;
             END IF;
         END IF;
+
+        -- Solo proceder si hay un ganador
+        IF ganador_decidido THEN
+            -- Buscar el bracket actual que contiene este partido
+            SELECT * INTO bracket_actual FROM Brackets WHERE cod_par = NEW.cod_par;
+            
+            -- Si encontramos el bracket actual, proceder con la actualización
+            IF FOUND THEN
+                RAISE NOTICE '📋 Bracket actual: %, fase: %', bracket_actual.bracket_id, bracket_actual.fase;
+                
+                -- Guardar información para la siguiente fase
+                bracket_siguiente_var := bracket_actual.bracket_siguiente;
+                posicion_en_siguiente := bracket_actual.posicion_siguiente;
+                
+                RAISE NOTICE '📋 Bracket siguiente: %, posición: %', bracket_siguiente_var, posicion_en_siguiente;
+                
+                -- Si hay un bracket siguiente, actualizarlo
+                IF bracket_siguiente_var IS NOT NULL THEN
+                    -- Buscar si ya existe un partido en el bracket siguiente
+                    SELECT b.*, p.* INTO partido_siguiente 
+                    FROM Brackets b 
+                    LEFT JOIN Partidos p ON b.cod_par = p.cod_par 
+                    WHERE b.bracket_id = bracket_siguiente_var;
+                    
+                    -- Usar la misma cancha para el siguiente partido o elegir la primera disponible
+                    id_nueva_cancha := NEW.cod_cancha;
+                    
+                    -- Establecer fecha y hora para el siguiente partido (7 días después a la misma hora)
+                    fecha_siguiente := CURRENT_DATE + INTERVAL '7 days';
+                    hora_siguiente := NEW.hora;
+                    
+                    RAISE NOTICE '🔍 Verificando si ya existe partido en el bracket siguiente';
+                    
+                    -- Si no existe partido en el bracket siguiente, verificar si ambos equipos están disponibles
+                    IF partido_siguiente.cod_par IS NULL THEN
+                        RAISE NOTICE '🆕 No existe partido en el bracket siguiente';
+                        
+                        -- Buscar el otro bracket que alimenta al mismo bracket_siguiente
+                        SELECT * INTO otro_bracket
+                        FROM Brackets 
+                        WHERE bracket_siguiente = bracket_siguiente_var 
+                          AND bracket_id != bracket_actual.bracket_id;
+                        
+                        IF FOUND THEN
+                            RAISE NOTICE '📋 Otro bracket encontrado: %', otro_bracket.bracket_id;
+                            
+                            -- Verificar si el otro bracket ya tiene un partido asignado
+                            IF otro_bracket.cod_par IS NOT NULL THEN
+                                RAISE NOTICE '🔍 Otro bracket tiene partido asignado: %', otro_bracket.cod_par;
+                                
+                                -- Buscar el partido del otro bracket
+                                SELECT * INTO otro_partido
+                                FROM Partidos
+                                WHERE cod_par = otro_bracket.cod_par;
+                                
+                                IF FOUND THEN
+                                    RAISE NOTICE '🔍 Otro partido encontrado, estado: %', otro_partido.estado;
+                                    
+                                    -- Verificar si el otro partido está finalizado
+                                    IF otro_partido.estado = 'finalizado' THEN
+                                        RAISE NOTICE '🏁 Otro partido está finalizado';
+                                        
+                                        -- Calcular goles para el otro partido
+                                        SELECT 
+                                            COALESCE((SELECT COUNT(*) FROM Goles WHERE cod_par = otro_partido.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = otro_partido.equ_local) AND tipo IN ('normal', 'penal')), 0)
+                                            + COALESCE((SELECT COUNT(*) FROM Goles WHERE cod_par = otro_partido.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = otro_partido.equ_visitante) AND tipo = 'autogol'), 0)
+                                        INTO goles_otro_local;
+                                        
+                                        SELECT 
+                                            COALESCE((SELECT COUNT(*) FROM Goles WHERE cod_par = otro_partido.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = otro_partido.equ_visitante) AND tipo IN ('normal', 'penal')), 0)
+                                            + COALESCE((SELECT COUNT(*) FROM Goles WHERE cod_par = otro_partido.cod_par AND cod_jug IN (SELECT cod_jug FROM Jugadores WHERE cod_equ = otro_partido.equ_local) AND tipo = 'autogol'), 0)
+                                        INTO goles_otro_visitante;
+                                        
+                                        RAISE NOTICE '📊 Marcador otro partido: Local % - Visitante %', goles_otro_local, goles_otro_visitante;
+                                        
+                                        -- Determinar el ganador del otro partido
+                                        IF goles_otro_local > goles_otro_visitante THEN
+                                            otro_ganador := otro_partido.equ_local;
+                                            RAISE NOTICE '🏆 Otro ganador: equipo local %', otro_ganador;
+                                        ELSIF goles_otro_visitante > goles_otro_local THEN
+                                            otro_ganador := otro_partido.equ_visitante;
+                                            RAISE NOTICE '🏆 Otro ganador: equipo visitante %', otro_ganador;
+                                        ELSIF (goles_otro_local + goles_otro_visitante) > 0 THEN
+                                            -- En caso de empate con goles, decidimos por el local
+                                            otro_ganador := otro_partido.equ_local;
+                                            RAISE NOTICE '🏆 Otro ganador por desempate: equipo local %', otro_ganador;
+                                        ELSE
+                                            otro_ganador := NULL;
+                                            RAISE NOTICE '⚠️ Empate en el otro partido: no hay ganador definido';
+                                        END IF;
+                                    END IF;
+                                END IF;
+                            END IF;
+                        END IF;
+                        
+                        -- Crear el partido solo si tenemos ambos ganadores
+                        IF otro_ganador IS NOT NULL THEN
+                            RAISE NOTICE '✅ Creando partido con ganadores: % y %', ganador, otro_ganador;
+                            
+                            -- Crear un nuevo partido con ambos ganadores en las posiciones correspondientes
+                            IF posicion_en_siguiente = 'local' THEN
+                                RAISE NOTICE '➡️ Insertando: local=%, visitante=%', ganador, otro_ganador;
+                                INSERT INTO Partidos (fecha, hora, cod_cancha, equ_local, equ_visitante, estado)
+                                VALUES (fecha_siguiente, hora_siguiente, id_nueva_cancha, ganador, otro_ganador, 'programado')
+                                RETURNING cod_par INTO partido_siguiente.cod_par;
+                            ELSE -- 'visitante'
+                                RAISE NOTICE '➡️ Insertando: local=%, visitante=%', otro_ganador, ganador;
+                                INSERT INTO Partidos (fecha, hora, cod_cancha, equ_local, equ_visitante, estado)
+                                VALUES (fecha_siguiente, hora_siguiente, id_nueva_cancha, otro_ganador, ganador, 'programado')
+                                RETURNING cod_par INTO partido_siguiente.cod_par;
+                            END IF;
+                            
+                            -- Actualizar el bracket siguiente con el nuevo partido
+                            UPDATE Brackets SET cod_par = partido_siguiente.cod_par WHERE bracket_id = bracket_siguiente_var;
+                            RAISE NOTICE '✅ Partido creado y asignado al bracket %', bracket_siguiente_var;
+                        ELSE
+                            RAISE NOTICE '⚠️ No se creó partido porque falta el otro ganador';
+                        END IF;
+                    ELSE
+                        RAISE NOTICE '🔄 Ya existe partido en el bracket siguiente: %', partido_siguiente.cod_par;
+                        
+                        -- Si ya existe un partido, actualizar el equipo correspondiente
+                        IF posicion_en_siguiente = 'local' THEN
+                            UPDATE Partidos SET equ_local = ganador WHERE cod_par = partido_siguiente.cod_par;
+                            RAISE NOTICE '✅ Actualizado equipo local del partido existente';
+                        ELSE -- 'visitante'
+                            UPDATE Partidos SET equ_visitante = ganador WHERE cod_par = partido_siguiente.cod_par;
+                            RAISE NOTICE '✅ Actualizado equipo visitante del partido existente';
+                        END IF;
+                    END IF;
+                END IF;
+            ELSE
+                RAISE NOTICE '⚠️ No se encontró el bracket actual';
+                
+                -- Si no encontramos el bracket actual, intentar asociar este partido a un bracket
+                -- basándonos en el orden (los primeros partidos en cada fase)
+                SELECT * INTO bracket_actual FROM Brackets 
+                WHERE cod_par IS NULL 
+                ORDER BY bracket_id LIMIT 1;
+                
+                IF FOUND THEN
+                    -- Asociar este partido al bracket
+                    UPDATE Brackets SET cod_par = NEW.cod_par WHERE bracket_id = bracket_actual.bracket_id;
+                    RAISE NOTICE '✅ Partido asociado al bracket %', bracket_actual.bracket_id;
+                END IF;
+            END IF;
+        ELSE
+            RAISE NOTICE '⚠️ No hay ganador definido, no se puede avanzar de fase';
+        END IF;
+    ELSE
+        RAISE NOTICE '⚠️ No se procesó el partido porque no cumple las condiciones (estado viejo: %, nuevo: %)', 
+                     COALESCE(OLD.estado, 'NULL'), 
+                     COALESCE(NEW.estado, 'NULL');
     END IF;
+    
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS trigger_avanzar_fase ON Partidos;
 CREATE TRIGGER trigger_avanzar_fase
 AFTER UPDATE ON Partidos
 FOR EACH ROW
-WHEN (OLD.estado IS DISTINCT FROM NEW.estado)
 EXECUTE FUNCTION avanzar_fase();

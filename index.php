@@ -68,7 +68,7 @@ Prepárate para vivir una experiencia deportiva de alto nivel, con partidos vibr
 </section>
 
 <!-- Esta sección se mostrará solo si hay jugadores con goles o asistencias -->
-<section class="featured-players" style="display: none;">
+<section class="featured-players">
     <h2>Jugadores Destacados</h2>
     <div class="players-container" id="jugadores-destacados">
         <div class="loading-players">Cargando jugadores destacados...</div>

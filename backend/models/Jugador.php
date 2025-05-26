@@ -95,7 +95,6 @@ class Jugador {
             
             return $jugadores;
         } catch (Exception $e) {
-            error_log("Error en obtenerTodosConEstadisticas: " . $e->getMessage());
             throw new Exception("Error al obtener jugadores con estadísticas: " . $e->getMessage());
         }
     }
@@ -146,7 +145,6 @@ class Jugador {
             
             return $jugadores;
         } catch (PDOException $e) {
-            error_log("Error en obtenerPorEquipo: " . $e->getMessage());
             throw new Exception("Error al obtener jugadores del equipo: " . $e->getMessage());
         }
     }
@@ -212,7 +210,6 @@ class Jugador {
             
             return $jugador;
         } catch (PDOException $e) {
-            error_log("Error en obtenerDetalleCompleto: " . $e->getMessage());
             throw new Exception("Error al obtener detalle del jugador: " . $e->getMessage());
         }
     }
@@ -472,6 +469,9 @@ class Jugador {
                 $goleador['escudo_equipo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
             }
             
+            // Añadir el campo 'goles' para que coincida con lo que espera el frontend
+            $goleador['goles'] = $goleador['total_goles'];
+            
             return $goleador;
         } catch (PDOException $e) {
             return null;
@@ -512,6 +512,9 @@ class Jugador {
                 // Usar ruta absoluta para la imagen por defecto
                 $asistidor['escudo_equipo_base64'] = '/PROYECTO/frontend/assets/images/team.png';
             }
+            
+            // Añadir el campo 'asistencias' para que coincida con lo que espera el frontend
+            $asistidor['asistencias'] = $asistidor['total_asistencias'];
             
             return $asistidor;
         } catch (PDOException $e) {

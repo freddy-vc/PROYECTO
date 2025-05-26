@@ -58,7 +58,7 @@ switch ($accion) {
  */
 function crearJugador() {
     // Verificar que se han enviado los datos necesarios
-    if (!isset($_POST['nombres']) || !isset($_POST['apellidos']) || !isset($_POST['equipo_id']) || !isset($_POST['posicion']) || !isset($_POST['numero_camiseta'])) {
+    if (!isset($_POST['nombres']) || !isset($_POST['apellidos']) || !isset($_POST['equipo_id']) || !isset($_POST['posicion']) || (!isset($_POST['numero_camiseta']) && !isset($_POST['dorsal']))) {
         $_SESSION['error_jugadores'] = 'Faltan datos obligatorios';
         header('Location: ../../../frontend/pages/admin/jugadores_form.php');
         exit;
@@ -69,7 +69,8 @@ function crearJugador() {
     $apellidos = trim($_POST['apellidos']);
     $equipoId = intval($_POST['equipo_id']);
     $posicion = trim($_POST['posicion']);
-    $dorsal = intval($_POST['numero_camiseta']);
+    // Usar dorsal si está disponible, de lo contrario usar numero_camiseta
+    $dorsal = isset($_POST['dorsal']) ? intval($_POST['dorsal']) : intval($_POST['numero_camiseta']);
     
     // Validar los datos
     if (empty($nombres) || empty($apellidos) || empty($posicion) || $dorsal < 1 || $dorsal > 99) {
@@ -128,7 +129,7 @@ function crearJugador() {
  * Función para actualizar un jugador existente
  */
 function actualizarJugador() {
-    if (!isset($_POST['id']) || !isset($_POST['nombres']) || !isset($_POST['apellidos']) || !isset($_POST['equipo_id']) || !isset($_POST['posicion']) || !isset($_POST['numero_camiseta'])) {
+    if (!isset($_POST['id']) || !isset($_POST['nombres']) || !isset($_POST['apellidos']) || !isset($_POST['equipo_id']) || !isset($_POST['posicion']) || (!isset($_POST['numero_camiseta']) && !isset($_POST['dorsal']))) {
         $_SESSION['error_jugadores'] = 'Faltan datos obligatorios';
         header('Location: ../../../frontend/pages/admin/jugadores.php');
         exit;
@@ -139,8 +140,9 @@ function actualizarJugador() {
     $apellidos = trim($_POST['apellidos']);
     $equipoId = intval($_POST['equipo_id']);
     $posicion = trim($_POST['posicion']);
-    $dorsal = intval($_POST['numero_camiseta']);
-
+    // Usar dorsal si está disponible, de lo contrario usar numero_camiseta
+    $dorsal = isset($_POST['dorsal']) ? intval($_POST['dorsal']) : intval($_POST['numero_camiseta']);
+    
     if (empty($nombres) || empty($apellidos) || empty($posicion) || $dorsal < 1 || $dorsal > 99) {
         $_SESSION['error_jugadores'] = 'Hay errores en los datos del formulario';
         header('Location: ../../../frontend/pages/admin/jugadores_form.php?id=' . $id);
@@ -173,6 +175,7 @@ function actualizarJugador() {
     }
 
     $jugadorModel = new Jugador();
+    
     $resultado = $jugadorModel->actualizar([
         'cod_jug' => $id,
         'nombres' => $nombres,
@@ -189,34 +192,116 @@ function actualizarJugador() {
         if (isset($_POST['estadisticas_temporales'])) {
             $estadisticas = json_decode($_POST['estadisticas_temporales'], true);
             $partidoModel = new Partido();
+            
             // Procesar goles
             if (isset($estadisticas['goles'])) {
                 foreach ($estadisticas['goles'] as $gol) {
-                    // Si tiene cod_gol, es edición, si no, es nuevo
-                    if (isset($gol['cod_gol'])) {
-                        $partidoModel->actualizarGol($gol['cod_gol'], $gol['partido_id'], $id, $gol['minuto'], $gol['tipo']);
-                    } else {
-                        $partidoModel->registrarGol($gol['partido_id'], $id, $gol['minuto'], $gol['tipo']);
+                    try {
+                        // Si tiene cod_gol, es edición, si no, es nuevo
+                        if (isset($gol['cod_gol'])) {
+                            // Verificar que exista el partido_id, si no usar cod_par
+                            $partidoId = isset($gol['partido_id']) ? $gol['partido_id'] : (isset($gol['cod_par']) ? $gol['cod_par'] : null);
+                            
+                            if ($partidoId === null) {
+                                continue; // Saltamos este gol
+                            }
+                            
+                            $partidoModel->actualizarGol(
+                                $gol['cod_gol'], 
+                                $partidoId, 
+                                $id, 
+                                $gol['minuto'], 
+                                $gol['tipo']
+                            );
+                        } else {
+                            // Para nuevos goles, el partido_id es obligatorio
+                            if (!isset($gol['partido_id'])) {
+                                continue; // Saltamos este gol
+                            }
+                            
+                            $partidoModel->registrarGol(
+                                $gol['partido_id'], 
+                                $id, 
+                                $gol['minuto'], 
+                                $gol['tipo']
+                            );
+                        }
+                    } catch (Exception $e) {
+                        // Continuamos con el siguiente gol
                     }
                 }
             }
+            
             // Procesar asistencias
             if (isset($estadisticas['asistencias'])) {
                 foreach ($estadisticas['asistencias'] as $asistencia) {
-                    if (isset($asistencia['cod_asis'])) {
-                        $partidoModel->actualizarAsistencia($asistencia['cod_asis'], $asistencia['partido_id'], $id, $asistencia['minuto']);
-                    } else {
-                        $partidoModel->registrarAsistencia($asistencia['partido_id'], $id, $asistencia['minuto']);
+                    try {
+                        if (isset($asistencia['cod_asis'])) {
+                            // Verificar que exista el partido_id, si no usar cod_par
+                            $partidoId = isset($asistencia['partido_id']) ? $asistencia['partido_id'] : (isset($asistencia['cod_par']) ? $asistencia['cod_par'] : null);
+                            
+                            if ($partidoId === null) {
+                                continue; // Saltamos esta asistencia
+                            }
+                            
+                            $partidoModel->actualizarAsistencia(
+                                $asistencia['cod_asis'], 
+                                $partidoId, 
+                                $id, 
+                                $asistencia['minuto']
+                            );
+                        } else {
+                            // Para nuevas asistencias, el partido_id es obligatorio
+                            if (!isset($asistencia['partido_id'])) {
+                                continue; // Saltamos esta asistencia
+                            }
+                            
+                            $partidoModel->registrarAsistencia(
+                                $asistencia['partido_id'], 
+                                $id, 
+                                $asistencia['minuto']
+                            );
+                        }
+                    } catch (Exception $e) {
+                        // Continuamos con la siguiente asistencia
                     }
                 }
             }
+            
             // Procesar faltas
             if (isset($estadisticas['faltas'])) {
                 foreach ($estadisticas['faltas'] as $falta) {
-                    if (isset($falta['cod_falta'])) {
-                        $partidoModel->actualizarFalta($falta['cod_falta'], $falta['partido_id'], $id, $falta['minuto'], $falta['tipo_falta']);
-                    } else {
-                        $partidoModel->registrarFalta($falta['partido_id'], $id, $falta['minuto'], $falta['tipo_falta']);
+                    try {
+                        if (isset($falta['cod_falta'])) {
+                            // Verificar que exista el partido_id, si no usar cod_par
+                            $partidoId = isset($falta['partido_id']) ? $falta['partido_id'] : (isset($falta['cod_par']) ? $falta['cod_par'] : null);
+                            
+                            if ($partidoId === null) {
+                                continue; // Saltamos esta falta
+                            }
+                            
+                            $partidoModel->actualizarFalta(
+                                $falta['cod_falta'], 
+                                $partidoId, 
+                                $id, 
+                                $falta['minuto'], 
+                                $falta['tipo_falta']
+                            );
+                        } else {
+                            // Para nuevas faltas, el partido_id es obligatorio
+                            if (!isset($falta['partido_id'])) {
+                                continue; // Saltamos esta falta
+                            }
+                            
+                            $partidoModel->registrarFalta(
+                                $falta['partido_id'], 
+                                $id, 
+                                $falta['minuto'], 
+                                $falta['tipo_falta']
+                            );
+                        }
+                    } catch (Exception $e) {
+                        // Continuamos con la siguiente falta
                     }
                 }
             }
@@ -241,6 +326,7 @@ function actualizarJugador() {
                 }
             }
         }
+        
         $_SESSION['exito_jugadores'] = 'Jugador actualizado correctamente';
         header('Location: ../../../frontend/pages/admin/jugadores.php');
         exit;

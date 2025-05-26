@@ -22,7 +22,7 @@ require_once '../../../backend/models/Equipo.php';
 
 // Obtener todos los jugadores
 $jugadorModel = new Jugador();
-$jugadores = $jugadorModel->obtenerTodos();
+$jugadores = $jugadorModel->obtenerTodosConEstadisticas();
 
 // Obtener todos los equipos para el filtro
 $equipoModel = new Equipo();

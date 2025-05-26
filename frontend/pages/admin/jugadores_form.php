@@ -98,25 +98,25 @@ if (isset($_GET['id'])) {
                     <div class="form-col">
                         <div class="admin-form-group">
                             <label for="nombres">Nombres</label>
-                            <input type="text" id="nombres" name="nombres" value="<?php echo isset($jugador) ? $jugador['nombres'] : ''; ?>" required>
+                            <input type="text" id="nombres" name="nombres" value="<?php echo isset($jugador) ? htmlspecialchars($jugador['nombres']) : ''; ?>" required>
                         </div>
                     </div>
                     <div class="form-col">
                         <div class="admin-form-group">
                             <label for="apellidos">Apellidos</label>
-                            <input type="text" id="apellidos" name="apellidos" value="<?php echo isset($jugador) ? $jugador['apellidos'] : ''; ?>" required>
+                            <input type="text" id="apellidos" name="apellidos" value="<?php echo isset($jugador) ? htmlspecialchars($jugador['apellidos']) : ''; ?>" required>
                         </div>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-col">
                         <div class="admin-form-group">
-                            <label for="equipo">Equipo</label>
-                            <select id="equipo" name="equipo_id" required>
+                            <label for="equipo_id">Equipo</label>
+                            <select id="equipo_id" name="equipo_id" required>
                                 <option value="">Seleccione un equipo</option>
                                 <?php foreach ($equipos as $equipo): ?>
                                     <option value="<?php echo $equipo['cod_equ']; ?>" <?php echo (isset($jugador) && $jugador['cod_equ'] == $equipo['cod_equ']) ? 'selected' : ''; ?>>
-                                        <?php echo $equipo['nombre']; ?>
+                                        <?php echo htmlspecialchars($equipo['nombre']); ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -139,7 +139,9 @@ if (isset($_GET['id'])) {
                     <div class="form-col">
                         <div class="admin-form-group">
                             <label for="dorsal">Número de Camiseta</label>
-                            <input type="number" id="dorsal" name="numero_camiseta" min="1" max="99" value="<?php echo isset($jugador) ? $jugador['dorsal'] : ''; ?>" required>
+                            <input type="number" id="dorsal" name="dorsal" min="1" max="99" value="<?php echo isset($jugador) ? htmlspecialchars($jugador['dorsal']) : ''; ?>" required>
+                            <!-- Agregar campo alternativo para compatibilidad -->
+                            <input type="hidden" name="numero_camiseta" value="<?php echo isset($jugador) ? htmlspecialchars($jugador['dorsal']) : ''; ?>">
                         </div>
                     </div>
                     <div class="form-col">
@@ -211,7 +213,7 @@ if (isset($_GET['id'])) {
                 <?php endif; ?>
                 <div class="admin-form-actions">
                     <a href="./jugadores.php" class="btn cancel-btn">Cancelar</a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="btn-guardar-jugador">
                         <?php echo isset($_GET['id']) ? 'Actualizar Jugador' : 'Registrar Jugador'; ?>
                     </button>
                 </div>

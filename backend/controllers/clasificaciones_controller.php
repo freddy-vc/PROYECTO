@@ -104,25 +104,38 @@ function obtenerCuadroTorneo() {
         // Obtener todos los equipos
         $equipos = $equipoModel->obtenerTodos();
         
+        // Obtener la estructura de brackets con sus partidos asociados
+        $brackets = $partidoModel->obtenerEstructuraBrackets();
+        
         // Obtener los partidos de las fases eliminatorias
         $partidos = $partidoModel->obtenerPartidosPorFases(['cuartos', 'semis', 'final']);
         
-        // Obtener información de las fases
-        $fases = $equipoModel->obtenerFases();
+        // Asignar número de bracket como orden a cada partido
+        foreach ($partidos as &$partido) {
+            // Buscar el bracket asociado a este partido
+            foreach ($brackets as $bracket) {
+                if ($bracket['cod_par'] == $partido['cod_par']) {
+                    $partido['orden'] = $bracket['bracket_id'];
+                    $partido['bracket_id'] = $bracket['bracket_id'];
+                    break;
+                }
+            }
+        }
         
         // Enviar los datos
         echo json_encode([
             'estado' => true,
             'equipos' => $equipos,
             'partidos' => $partidos,
-            'fases' => $fases
+            'brackets' => $brackets
         ]);
     } catch (Exception $e) {
         echo json_encode([
-            'estado' => true,
+            'estado' => false,
+            'mensaje' => 'Error al obtener datos del torneo: ' . $e->getMessage(),
             'equipos' => [],
             'partidos' => [],
-            'fases' => []
+            'brackets' => []
         ]);
     }
 }

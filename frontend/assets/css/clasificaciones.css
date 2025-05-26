@@ -6,69 +6,144 @@
     font-family: 'Segoe UI', Arial, sans-serif;
     gap: 40px;
 }
-.clasificaciones-col {
+
+/* Estilos para el cuadro de eliminatorias */
+.bracket-container {
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 20px 0;
+}
+
+.tournament-bracket {
+    display: flex;
+    justify-content: center;
+    min-width: 900px;
+}
+
+.round {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    min-width: 320px;
     margin: 0 10px;
+    min-width: 320px;
+    align-items: center;
     gap: 40px;
 }
-.clasificaciones-match {
-    background: #fff;
-    border-radius: 8px;
+
+.round-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.25em;
+    color: #1976d2;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.match-container {
+    position: relative;
+    margin-bottom: 0;
+}
+
+.match {
+    background: #ededed;
+    border-radius: 12px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    padding: 12px 18px;
+    padding: 16px 18px;
     min-width: 300px;
     max-width: 320px;
     min-height: 80px;
-    max-height: 90px;
-    text-align: left;
-    position: relative;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    gap: 12px;
     justify-content: center;
-}
-/* Centrado de semis y final */
-.clasificaciones-col.semis {
-    justify-content: space-between;
-    gap: 50px;
-}
-.clasificaciones-col.final {
-    justify-content: center;
-    gap: 0; /* Remove extra gap */
-    margin-top: 170px; /* Adjust to center between semis */
-    position: relative; /* Ensure positioning for the title */
-}
-.clasificaciones-col.final::before {
-    content: 'Final'; /* Add title for the final column */
-    position: absolute;
-    top: -40px; /* Adjust position above the column */
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 1.25em;
-    font-weight: bold;
-    color: #1976d2;
-    text-transform: uppercase;
-    text-align: center;
-}
-.clasificaciones-col.semis .clasificaciones-match {
-    margin-top: 80px;
-}
-.clasificaciones-col.final .clasificaciones-match {
-    margin-top: 120px;
-}
-/* Ajustar la posición de los partidos de semifinales */
-.clasificaciones-col.semis .clasificaciones-match.semi-1 {
-    margin-top: 60px; /* Ajustar para centrar entre los dos primeros partidos de cuartos */
 }
 
-.clasificaciones-col.semis .clasificaciones-match.semi-2 {
-    margin-top: 140px; /* Ajustar para centrar entre los dos últimos partidos de cuartos */
+.team {
+    display: flex;
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 38px;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #111;
+    background: none;
+    border-radius: 6px;
+    padding: 0 2px;
+    gap: 0;
 }
-/* Líneas de conexión */
-.clasificaciones-match.semi-1::before {
+
+.team > * {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.team.winner {
+    font-weight: bold;
+}
+
+.team-logo {
+    width: 15px;
+    height: 15px;
+    object-fit: contain;
+    margin-right: 12px;
+    margin-left: 2px;
+}
+
+.team-name {
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+.team-score {
+    font-weight: bold;
+    font-size: 1.1em;
+    min-width: 18px;
+    text-align: right;
+    color: #111;
+    margin-left: 10px;
+}
+
+/* Posicionamiento específico para cada bracket */
+/* Cuartos de final - brackets 1, 2, 3, 4 */
+.match-container[data-bracket-id="1"] {
+    margin-top: 20px;
+}
+
+.match-container[data-bracket-id="2"] {
+    margin-top: 5px;
+}
+
+.match-container[data-bracket-id="3"] {
+    margin-top: 40px;
+}
+
+.match-container[data-bracket-id="4"] {
+    margin-top: 5px;
+}
+
+/* Semifinales - brackets 5, 6 */
+.match-container[data-bracket-id="5"] {
+    margin-top: 105px;
+}
+
+.match-container[data-bracket-id="6"] {
+    margin-top: 205px; /* Aquí puedes ajustar la posición del bracket 6 */
+}
+
+/* Final - bracket 7 */
+.match-container[data-bracket-id="7"] {
+    margin-top: 300px; /* Ajusta la posición del bracket final */
+}
+
+/* Líneas de conexión entre partidos */
+.round:nth-child(2) .match-container::before {
     content: '';
     position: absolute;
     left: -40px;
@@ -78,17 +153,8 @@
     background: #bdbdbd;
     z-index: 1;
 }
-.clasificaciones-match.semi-2::before {
-    content: '';
-    position: absolute;
-    left: -40px;
-    top: 50%;
-    width: 40px;
-    height: 2px;
-    background: #bdbdbd;
-    z-index: 1;
-}
-.clasificaciones-match.final::before {
+
+.round:nth-child(3) .match-container::before {
     content: '';
     position: absolute;
     left: -60px;
@@ -98,62 +164,96 @@
     background: #1976d2;
     z-index: 2;
 }
-.clasificaciones-teams-vertical {
+
+/* Estilos para el campeón */
+.champion {
     display: flex;
     flex-direction: column;
-    width: 100%;
-    gap: 8px;
-}
-.clasificaciones-team-row {
-    display: flex;
-    flex-direction: row;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
-}
-.clasificaciones-team {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 500;
-    font-size: 1em;
-    color: #222;
-    max-width: 180px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.clasificaciones-escudo {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
-    margin-right: 6px;
-}
-.clasificaciones-score {
-    font-weight: bold;
-    font-size: 1.1em;
-    min-width: 32px;
-    text-align: right;
-    color: #1976d2;
-}
-.clasificaciones-pending {
-    color: #bbb;
-    font-style: italic;
-}
-.clasificaciones-final {
+    margin-top: 30px;
+    padding: 15px;
     background: #ffe082;
+    border-radius: 8px;
     border: 2px solid #ffd600;
+    min-width: 300px;
+    max-width: 320px;
 }
-.clasificaciones-fase-title {
-    font-size: 1.25em;
+
+.champion-title {
     font-weight: bold;
-    color: #1976d2;
-    margin-bottom: 18px;
-    letter-spacing: 1px;
-    text-align: center;
+    color: #f57c00;
+    margin-bottom: 10px;
     text-transform: uppercase;
+    font-size: 1.25em;
 }
+
+.champion-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.champion-logo {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 8px;
+    object-fit: contain;
+}
+
+.champion-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+}
+
+.champion-placeholder {
+    font-style: italic;
+    color: #888;
+    padding: 8px 15px;
+    font-size: 0.9em;
+}
+
+/* Partidos vacíos */
+.empty-match {
+    background-color: #f9f9f9;
+}
+
+.empty-match .team-name {
+    font-style: italic;
+    color: #bbb;
+}
+
+/* Responsividad */
+@media (max-width: 1100px) {
+    .tournament-bracket {
+        min-width: 700px;
+    }
+    
+    .round {
+        min-width: 240px;
+        margin: 0 10px;
+    }
+    
+    .match {
+        min-width: 220px;
+    }
+}
+
 @media (max-width: 900px) {
-    #clasificaciones-container { flex-direction: column; align-items: stretch; }
-    .clasificaciones-col { flex-direction: row; min-width: unset; }
+    #clasificaciones-container {
+        margin: 20px 0;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .bracket-container {
+        overflow-x: auto;
+        padding: 10px;
+        margin: 0 -10px;
+    }
+    
+    .round {
+        flex-direction: row;
+        min-width: unset;
+    }
 }

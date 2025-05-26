@@ -91,18 +91,18 @@ if (isset($_GET['id'])) {
                     <div class="form-col">
                         <div class="admin-form-group">
                             <label for="nombre">Nombre del Equipo</label>
-                            <input type="text" id="nombre" name="nombre" value="<?php echo isset($equipo) ? $equipo['nombre'] : ''; ?>" required>
+                            <input type="text" id="nombre" name="nombre" value="<?php echo isset($equipo) ? htmlspecialchars($equipo['nombre']) : ''; ?>" required>
                         </div>
                     </div>
                     
                     <div class="form-col">
                         <div class="admin-form-group">
-                            <label for="ciudad">Ciudad</label>
-                            <select id="ciudad" name="ciudad_id" required>
+                            <label for="ciudad_id">Ciudad</label>
+                            <select id="ciudad_id" name="ciudad_id" required>
                                 <option value="">Seleccione una ciudad</option>
                                 <?php foreach ($ciudades as $ciudad): ?>
                                     <option value="<?php echo $ciudad['cod_ciu']; ?>" <?php echo (isset($equipo) && $equipo['cod_ciu'] == $ciudad['cod_ciu']) ? 'selected' : ''; ?>>
-                                        <?php echo $ciudad['nombre']; ?>
+                                        <?php echo htmlspecialchars($ciudad['nombre']); ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -113,12 +113,12 @@ if (isset($_GET['id'])) {
                 <div class="form-row">
                     <div class="form-col">
                         <div class="admin-form-group">
-                            <label for="director">Director Técnico</label>
-                            <select id="director" name="director_id">
+                            <label for="director_id">Director Técnico</label>
+                            <select id="director_id" name="director_id">
                                 <option value="">Sin director asignado</option>
                                 <?php foreach ($directores as $director): ?>
                                     <option value="<?php echo $director['cod_dt']; ?>" <?php echo (isset($equipo) && $equipo['cod_dt'] == $director['cod_dt']) ? 'selected' : ''; ?>>
-                                        <?php echo $director['nombres'] . ' ' . $director['apellidos']; ?>
+                                        <?php echo htmlspecialchars($director['nombres'] . ' ' . $director['apellidos']); ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -132,12 +132,6 @@ if (isset($_GET['id'])) {
                                 <div class="current-image">
                                     <img src="<?php echo $equipo['escudo_base64']; ?>" alt="Escudo actual" style="max-width: 100px; margin-bottom: 10px;">
                                     <p>Escudo actual</p>
-                                    <form action="../../../backend/controllers/admin/eliminar_escudo.php" method="POST" style="display: inline-block; margin-top: 10px;">
-                                        <input type="hidden" name="equipo_id" value="<?php echo $equipo['cod_equ']; ?>">
-                                        <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('¿Está seguro de eliminar el escudo?')">
-                                            <i class="fas fa-trash"></i> Eliminar escudo
-                                        </button>
-                                    </form>
                                 </div>
                             <?php endif; ?>
                             <input type="file" id="escudo" name="escudo" accept="image/*">
