@@ -142,7 +142,7 @@ function actualizarJugador() {
     $posicion = trim($_POST['posicion']);
     // Usar dorsal si está disponible, de lo contrario usar numero_camiseta
     $dorsal = isset($_POST['dorsal']) ? intval($_POST['dorsal']) : intval($_POST['numero_camiseta']);
-    
+
     if (empty($nombres) || empty($apellidos) || empty($posicion) || $dorsal < 1 || $dorsal > 99) {
         $_SESSION['error_jugadores'] = 'Hay errores en los datos del formulario';
         header('Location: ../../../frontend/pages/admin/jugadores_form.php?id=' . $id);
@@ -197,8 +197,8 @@ function actualizarJugador() {
             if (isset($estadisticas['goles'])) {
                 foreach ($estadisticas['goles'] as $gol) {
                     try {
-                        // Si tiene cod_gol, es edición, si no, es nuevo
-                        if (isset($gol['cod_gol'])) {
+                    // Si tiene cod_gol, es edición, si no, es nuevo
+                    if (isset($gol['cod_gol'])) {
                             // Verificar que exista el partido_id, si no usar cod_par
                             $partidoId = isset($gol['partido_id']) ? $gol['partido_id'] : (isset($gol['cod_par']) ? $gol['cod_par'] : null);
                             
@@ -213,7 +213,7 @@ function actualizarJugador() {
                                 $gol['minuto'], 
                                 $gol['tipo']
                             );
-                        } else {
+                    } else {
                             // Para nuevos goles, el partido_id es obligatorio
                             if (!isset($gol['partido_id'])) {
                                 continue; // Saltamos este gol
@@ -236,7 +236,7 @@ function actualizarJugador() {
             if (isset($estadisticas['asistencias'])) {
                 foreach ($estadisticas['asistencias'] as $asistencia) {
                     try {
-                        if (isset($asistencia['cod_asis'])) {
+                    if (isset($asistencia['cod_asis'])) {
                             // Verificar que exista el partido_id, si no usar cod_par
                             $partidoId = isset($asistencia['partido_id']) ? $asistencia['partido_id'] : (isset($asistencia['cod_par']) ? $asistencia['cod_par'] : null);
                             
@@ -250,7 +250,7 @@ function actualizarJugador() {
                                 $id, 
                                 $asistencia['minuto']
                             );
-                        } else {
+                    } else {
                             // Para nuevas asistencias, el partido_id es obligatorio
                             if (!isset($asistencia['partido_id'])) {
                                 continue; // Saltamos esta asistencia
@@ -272,7 +272,7 @@ function actualizarJugador() {
             if (isset($estadisticas['faltas'])) {
                 foreach ($estadisticas['faltas'] as $falta) {
                     try {
-                        if (isset($falta['cod_falta'])) {
+                    if (isset($falta['cod_falta'])) {
                             // Verificar que exista el partido_id, si no usar cod_par
                             $partidoId = isset($falta['partido_id']) ? $falta['partido_id'] : (isset($falta['cod_par']) ? $falta['cod_par'] : null);
                             
@@ -287,7 +287,7 @@ function actualizarJugador() {
                                 $falta['minuto'], 
                                 $falta['tipo_falta']
                             );
-                        } else {
+                    } else {
                             // Para nuevas faltas, el partido_id es obligatorio
                             if (!isset($falta['partido_id'])) {
                                 continue; // Saltamos esta falta

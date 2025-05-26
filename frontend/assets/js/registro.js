@@ -3,106 +3,134 @@
  */
 document.addEventListener('DOMContentLoaded', function() {
     const registroForm = document.querySelector('form');
-    const nombreInput = document.getElementById('nombre');
+    const usernameInput = document.getElementById('username');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const confirmarPasswordInput = document.getElementById('confirmar_password');
     const fotoPerfil = document.getElementById('foto_perfil');
     
-    // Enfocar el campo de nombre al cargar la página
-    nombreInput.focus();
+    // Enfocar el campo de usuario al cargar la página
+    if (usernameInput) {
+        usernameInput.focus();
+    }
     
     // Validación específica para el formulario de registro
-    registroForm.addEventListener('submit', function(event) {
-        let esValido = true;
-        
-        // Validar nombre
-        if (nombreInput.value.trim().length < 3) {
-            mostrarError(nombreInput, 'El nombre debe tener al menos 3 caracteres');
-            esValido = false;
-        } else {
-            limpiarError(nombreInput);
-        }
-        
-        // Validar email
-        if (!validarEmail(emailInput.value)) {
-            mostrarError(emailInput, 'Por favor, introduce un email válido');
-            esValido = false;
-        } else {
-            limpiarError(emailInput);
-        }
-        
-        // Validar contraseña
-        if (passwordInput.value.length < 6) {
-            mostrarError(passwordInput, 'La contraseña debe tener al menos 6 caracteres');
-            esValido = false;
-        } else {
-            limpiarError(passwordInput);
-        }
-        
-        // Validar confirmación de contraseña
-        if (passwordInput.value !== confirmarPasswordInput.value) {
-            mostrarError(confirmarPasswordInput, 'Las contraseñas no coinciden');
-            esValido = false;
-        } else {
-            limpiarError(confirmarPasswordInput);
-        }
-        
-        // Validar foto de perfil si se ha seleccionado
-        if (fotoPerfil.files.length > 0) {
-            const file = fotoPerfil.files[0];
-            const fileSize = file.size / 1024 / 1024; // tamaño en MB
-            const fileType = file.type;
+    if (registroForm) {
+        registroForm.addEventListener('submit', function(event) {
+            let esValido = true;
             
-            const tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif'];
-            
-            if (!tiposPermitidos.includes(fileType)) {
-                mostrarError(fotoPerfil, 'El formato de la imagen no es válido. Sólo se permiten JPG, PNG y GIF');
-                esValido = false;
-            } else if (fileSize > 2) {
-                mostrarError(fotoPerfil, 'La imagen es demasiado grande. El tamaño máximo es 2MB');
+            // Validar nombre de usuario
+            if (!usernameInput || usernameInput.value.trim().length < 3) {
+                mostrarError(usernameInput, 'El nombre de usuario debe tener al menos 3 caracteres');
                 esValido = false;
             } else {
-                limpiarError(fotoPerfil);
+                limpiarError(usernameInput);
             }
-        }
-        
-        if (!esValido) {
-            event.preventDefault();
-            return false;
-        }
-        
-        return true;
-    });
-    
-    // Eventos para limpiar errores mientras se escribe
-    nombreInput.addEventListener('input', function() {
-        limpiarError(this);
-    });
-    
-    emailInput.addEventListener('input', function() {
-        limpiarError(this);
-    });
-    
-    passwordInput.addEventListener('input', function() {
-        limpiarError(this);
-        // Si hay una confirmación de contraseña, validar si coinciden
-        if (confirmarPasswordInput.value.length > 0) {
-            if (passwordInput.value !== confirmarPasswordInput.value) {
+            
+            // Validar email
+            if (!emailInput || !validarEmail(emailInput.value)) {
+                mostrarError(emailInput, 'Por favor, introduce un email válido con formato usuario@dominio.com');
+                esValido = false;
+            } else {
+                limpiarError(emailInput);
+            }
+            
+            // Validar contraseña
+            if (!passwordInput || passwordInput.value.length < 6) {
+                mostrarError(passwordInput, 'La contraseña debe tener al menos 6 caracteres');
+                esValido = false;
+            } else {
+                limpiarError(passwordInput);
+            }
+            
+            // Validar confirmación de contraseña
+            if (!confirmarPasswordInput || confirmarPasswordInput.value.length < 6) {
+                mostrarError(confirmarPasswordInput, 'La confirmación de contraseña debe tener al menos 6 caracteres');
+                esValido = false;
+            } else if (passwordInput.value !== confirmarPasswordInput.value) {
                 mostrarError(confirmarPasswordInput, 'Las contraseñas no coinciden');
+                esValido = false;
             } else {
                 limpiarError(confirmarPasswordInput);
             }
-        }
-    });
+            
+            // Validar foto de perfil si se ha seleccionado
+            if (fotoPerfil.files.length > 0) {
+                const file = fotoPerfil.files[0];
+                const fileSize = file.size / 1024 / 1024; // tamaño en MB
+                const fileType = file.type;
+                
+                const tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif'];
+                
+                if (!tiposPermitidos.includes(fileType)) {
+                    mostrarError(fotoPerfil, 'El formato de la imagen no es válido. Sólo se permiten JPG, PNG y GIF');
+                    esValido = false;
+                } else if (fileSize > 2) {
+                    mostrarError(fotoPerfil, 'La imagen es demasiado grande. El tamaño máximo es 2MB');
+                    esValido = false;
+                } else {
+                    limpiarError(fotoPerfil);
+                }
+            }
+            
+            if (!esValido) {
+                event.preventDefault();
+                return false;
+            }
+            
+            return true;
+        });
+    }
     
-    confirmarPasswordInput.addEventListener('input', function() {
-        if (passwordInput.value !== confirmarPasswordInput.value) {
-            mostrarError(confirmarPasswordInput, 'Las contraseñas no coinciden');
-        } else {
-            limpiarError(confirmarPasswordInput);
-        }
-    });
+    // Eventos para limpiar errores mientras se escribe
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function() {
+            limpiarError(this);
+        });
+    }
+    
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            limpiarError(this);
+            // Validación en tiempo real del email
+            if (this.value && !validarEmail(this.value)) {
+                mostrarError(this, 'Por favor, introduce un email válido con formato usuario@dominio.com');
+            }
+        });
+    }
+    
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            limpiarError(this);
+            
+            // Validación en tiempo real de la contraseña
+            if (this.value.length > 0 && this.value.length < 6) {
+                mostrarError(this, 'La contraseña debe tener al menos 6 caracteres');
+            }
+            
+            // Si hay una confirmación de contraseña, validar si coinciden
+            if (confirmarPasswordInput && confirmarPasswordInput.value.length > 0) {
+                if (passwordInput.value !== confirmarPasswordInput.value) {
+                    mostrarError(confirmarPasswordInput, 'Las contraseñas no coinciden');
+                } else {
+                    limpiarError(confirmarPasswordInput);
+                }
+            }
+        });
+    }
+    
+    if (confirmarPasswordInput) {
+        confirmarPasswordInput.addEventListener('input', function() {
+            limpiarError(this);
+            
+            // Validación en tiempo real de la confirmación
+            if (this.value.length > 0 && this.value.length < 6) {
+                mostrarError(this, 'La confirmación de contraseña debe tener al menos 6 caracteres');
+            } else if (passwordInput && passwordInput.value !== this.value) {
+                mostrarError(this, 'Las contraseñas no coinciden');
+            }
+        });
+    }
     
     fotoPerfil.addEventListener('change', function() {
         if (this.files.length > 0) {
@@ -154,6 +182,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Funciones para mostrar y limpiar errores
     function mostrarError(campo, mensaje) {
+        if (!campo) return;
+        
         limpiarError(campo); // Limpiamos primero para evitar duplicados
         
         const contenedorCampo = campo.parentElement;
@@ -161,6 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         mensajeError.textContent = mensaje;
         mensajeError.className = 'mensaje-error';
+        mensajeError.style.color = 'red';
         mensajeError.style.fontSize = '0.8rem';
         mensajeError.style.marginTop = '5px';
         
@@ -170,6 +201,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function limpiarError(campo) {
+        if (!campo) return;
+        
         const contenedorCampo = campo.parentElement;
         const mensajeError = contenedorCampo.querySelector('.mensaje-error');
         

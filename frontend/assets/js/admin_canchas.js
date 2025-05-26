@@ -154,3 +154,123 @@ function clearError(input) {
         input.classList.remove('input-error');
     }
 } 
+
+/**
+ * JavaScript específico para la gestión de canchas en el panel de administración
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuración del formulario de cancha
+    setupCanchaForm();
+});
+
+/**
+ * Configura el formulario de cancha con validaciones específicas
+ */
+function setupCanchaForm() {
+    const canchaForm = document.getElementById('cancha-form');
+    if (!canchaForm) return;
+    
+    // Obtener referencias a los campos
+    const nombreInput = document.getElementById('nombre');
+    const direccionInput = document.getElementById('direccion');
+    const capacidadInput = document.getElementById('capacidad');
+    
+    // Validación en tiempo real para el campo de capacidad
+    if (capacidadInput) {
+        capacidadInput.addEventListener('input', function() {
+            if (this.value === '') {
+                showError(this, 'La capacidad es obligatoria');
+            } else if (isNaN(this.value)) {
+                showError(this, 'La capacidad debe ser un valor numérico');
+            } else if (parseInt(this.value) < 0) {
+                showError(this, 'La capacidad no puede ser negativa');
+                this.value = 0; // Corregir automáticamente a valor mínimo permitido
+            } else if (parseInt(this.value) > 100000) {
+                showError(this, 'La capacidad parece demasiado alta');
+            } else {
+                clearError(this);
+            }
+        });
+    }
+    
+    // Validación en tiempo real para el campo de nombre
+    if (nombreInput) {
+        nombreInput.addEventListener('input', function() {
+            if (this.value.trim() === '') {
+                showError(this, 'El nombre de la cancha es obligatorio');
+            } else if (this.value.trim().length < 3) {
+                showError(this, 'El nombre debe tener al menos 3 caracteres');
+            } else {
+                clearError(this);
+            }
+        });
+    }
+    
+    // Validación en tiempo real para el campo de dirección
+    if (direccionInput) {
+        direccionInput.addEventListener('input', function() {
+            if (this.value.trim() === '') {
+                showError(this, 'La dirección es obligatoria');
+            } else if (this.value.trim().length < 5) {
+                showError(this, 'La dirección debe ser más específica');
+            } else {
+                clearError(this);
+            }
+        });
+    }
+    
+    // Validar el formulario completo antes de enviar
+    canchaForm.addEventListener('submit', function(e) {
+        if (!validarFormulario()) {
+            e.preventDefault();
+        }
+    });
+    
+    /**
+     * Valida todos los campos del formulario
+     */
+    function validarFormulario() {
+        let isValid = true;
+        
+        // Validar nombre
+        if (!nombreInput.value.trim()) {
+            showError(nombreInput, 'El nombre de la cancha es obligatorio');
+            isValid = false;
+        } else if (nombreInput.value.trim().length < 3) {
+            showError(nombreInput, 'El nombre debe tener al menos 3 caracteres');
+            isValid = false;
+        } else {
+            clearError(nombreInput);
+        }
+        
+        // Validar dirección
+        if (!direccionInput.value.trim()) {
+            showError(direccionInput, 'La dirección es obligatoria');
+            isValid = false;
+        } else if (direccionInput.value.trim().length < 5) {
+            showError(direccionInput, 'La dirección debe ser más específica');
+            isValid = false;
+        } else {
+            clearError(direccionInput);
+        }
+        
+        // Validar capacidad
+        if (!capacidadInput.value) {
+            showError(capacidadInput, 'La capacidad es obligatoria');
+            isValid = false;
+        } else if (isNaN(capacidadInput.value)) {
+            showError(capacidadInput, 'La capacidad debe ser un valor numérico');
+            isValid = false;
+        } else if (parseInt(capacidadInput.value) < 0) {
+            showError(capacidadInput, 'La capacidad no puede ser negativa');
+            isValid = false;
+        } else if (parseInt(capacidadInput.value) > 100000) {
+            showError(capacidadInput, 'La capacidad parece demasiado alta, por favor verifica');
+            isValid = false;
+        } else {
+            clearError(capacidadInput);
+        }
+        
+        return isValid;
+    }
+} 

@@ -21,6 +21,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
+    // Validar longitud del nombre de usuario
+    if (strlen($username) < 3) {
+        $_SESSION['error_registro'] = 'El nombre de usuario debe tener al menos 3 caracteres';
+        header('Location: ../../frontend/pages/registro.php');
+        exit;
+    }
+    
     // Validar que las contraseñas coincidan
     if ($password !== $confirmar_password) {
         $_SESSION['error_registro'] = 'Las contraseñas no coinciden';
@@ -28,9 +35,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
+    // Validar longitud de la contraseña
+    if (strlen($password) < 6) {
+        $_SESSION['error_registro'] = 'La contraseña debe tener al menos 6 caracteres';
+        header('Location: ../../frontend/pages/registro.php');
+        exit;
+    }
+    
     // Validar formato de email
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $_SESSION['error_registro'] = 'El formato del correo electrónico es inválido';
+        $_SESSION['error_registro'] = 'El formato del correo electrónico es inválido. Debe tener el formato usuario@dominio.com';
         header('Location: ../../frontend/pages/registro.php');
         exit;
     }
@@ -38,7 +52,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Procesar la foto de perfil si se ha subido
     $foto_perfil = null;
     if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['size'] > 0) {
-        // Procesar la imagen (puedes agregar más validaciones)
+        // Validar el tipo de archivo
+        $tipo_archivo = $_FILES['foto_perfil']['type'];
+        $tipos_permitidos = ['image/jpeg', 'image/png', 'image/gif'];
+        
+        if (!in_array($tipo_archivo, $tipos_permitidos)) {
+            $_SESSION['error_registro'] = 'El formato de la imagen no es válido. Solo se permiten JPG, PNG y GIF';
+            header('Location: ../../frontend/pages/registro.php');
+            exit;
+        }
+        
+        // Validar el tamaño del archivo (máximo 2MB)
+        $tamano_archivo = $_FILES['foto_perfil']['size'] / (1024 * 1024); // Tamaño en MB
+        if ($tamano_archivo > 2) {
+            $_SESSION['error_registro'] = 'La imagen es demasiado grande. El tamaño máximo permitido es 2MB';
+            header('Location: ../../frontend/pages/registro.php');
+            exit;
+        }
+        
+        // Procesar la imagen
         $foto_perfil = file_get_contents($_FILES['foto_perfil']['tmp_name']);
     }
     

@@ -3,52 +3,61 @@
  */
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.querySelector('form');
-    const emailInput = document.getElementById('email');
+    const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     
-    // Enfocar el campo de email al cargar la página
-    emailInput.focus();
+    // Enfocar el campo de usuario al cargar la página
+    if (usernameInput) {
+        usernameInput.focus();
+    }
     
     // Validación específica para el formulario de login
-    loginForm.addEventListener('submit', function(event) {
-        // Validar email
-        if (!validarEmail(emailInput.value)) {
-            mostrarError(emailInput, 'Por favor, introduce un email válido');
-            event.preventDefault();
-            return false;
-        } else {
-            limpiarError(emailInput);
-        }
-        
-        // Validar contraseña
-        if (passwordInput.value.length < 1) {
-            mostrarError(passwordInput, 'Por favor, introduce tu contraseña');
-            event.preventDefault();
-            return false;
-        } else {
-            limpiarError(passwordInput);
-        }
-        
-        return true;
-    });
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(event) {
+            let formValid = true;
+            
+            // Validar nombre de usuario
+            if (!usernameInput || usernameInput.value.trim().length < 3) {
+                mostrarError(usernameInput, 'El nombre de usuario debe tener al menos 3 caracteres');
+                formValid = false;
+            } else {
+                limpiarError(usernameInput);
+            }
+            
+            // Validar contraseña
+            if (!passwordInput || passwordInput.value.length < 6) {
+                mostrarError(passwordInput, 'La contraseña debe tener al menos 6 caracteres');
+                formValid = false;
+            } else {
+                limpiarError(passwordInput);
+            }
+            
+            if (!formValid) {
+                event.preventDefault();
+                return false;
+            }
+            
+            return true;
+        });
+    }
     
     // Limpiar mensajes de error al escribir
-    emailInput.addEventListener('input', function() {
-        limpiarError(this);
-    });
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function() {
+            limpiarError(this);
+        });
+    }
     
-    passwordInput.addEventListener('input', function() {
-        limpiarError(this);
-    });
-    
-    // Función para validar email
-    function validarEmail(email) {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(email);
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            limpiarError(this);
+        });
     }
     
     // Funciones para mostrar y limpiar errores
     function mostrarError(campo, mensaje) {
+        if (!campo) return;
+        
         limpiarError(campo); // Limpiamos primero para evitar duplicados
         
         const contenedorCampo = campo.parentElement;
@@ -56,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         mensajeError.textContent = mensaje;
         mensajeError.className = 'mensaje-error';
+        mensajeError.style.color = 'red';
         mensajeError.style.fontSize = '0.8rem';
         mensajeError.style.marginTop = '5px';
         
@@ -65,6 +75,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function limpiarError(campo) {
+        if (!campo) return;
+        
         const contenedorCampo = campo.parentElement;
         const mensajeError = contenedorCampo.querySelector('.mensaje-error');
         

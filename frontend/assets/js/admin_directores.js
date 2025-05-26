@@ -5,45 +5,96 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicializar el elemento del formulario si existe
     const form = document.getElementById('director-form');
     if (form) {
-        initializeFormValidation();
+        setupDirectorForm();
     }
     
     // No inicializar los botones de eliminación aquí, se hace en admin.js
 });
 
 /**
- * Inicializar la validación del formulario
+ * Configura el formulario de director técnico con validaciones específicas
  */
-function initializeFormValidation() {
-    const form = document.getElementById('director-form');
+function setupDirectorForm() {
+    const directorForm = document.getElementById('director-form');
+    if (!directorForm) return;
     
-    // Validar el formulario antes de enviarlo
-    form.addEventListener('submit', function(e) {
-        let isValid = true;
-        
-        // Validar nombres
-        const nombres = document.getElementById('nombres');
-        if (!nombres.value.trim()) {
-            showError(nombres, 'Los nombres son obligatorios');
-            isValid = false;
-        } else {
-            clearError(nombres);
-        }
-        
-        // Validar apellidos
-        const apellidos = document.getElementById('apellidos');
-        if (!apellidos.value.trim()) {
-            showError(apellidos, 'Los apellidos son obligatorios');
-            isValid = false;
-        } else {
-            clearError(apellidos);
-        }
-        
-        // Prevenir el envío del formulario si hay errores
-        if (!isValid) {
+    // Obtener referencias a los campos
+    const nombresInput = document.getElementById('nombres');
+    const apellidosInput = document.getElementById('apellidos');
+    
+    // Validación en tiempo real para el campo de nombres
+    if (nombresInput) {
+        nombresInput.addEventListener('input', function() {
+            if (this.value.trim() === '') {
+                showError(this, 'El nombre del director técnico es obligatorio');
+            } else if (this.value.trim().length < 2) {
+                showError(this, 'El nombre debe tener al menos 2 caracteres');
+            } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(this.value.trim())) {
+                showError(this, 'El nombre solo debe contener letras y espacios');
+            } else {
+                clearError(this);
+            }
+        });
+    }
+    
+    // Validación en tiempo real para el campo de apellidos
+    if (apellidosInput) {
+        apellidosInput.addEventListener('input', function() {
+            if (this.value.trim() === '') {
+                showError(this, 'Los apellidos del director técnico son obligatorios');
+            } else if (this.value.trim().length < 2) {
+                showError(this, 'Los apellidos deben tener al menos 2 caracteres');
+            } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(this.value.trim())) {
+                showError(this, 'Los apellidos solo deben contener letras y espacios');
+            } else {
+                clearError(this);
+            }
+        });
+    }
+    
+    // Validar el formulario completo antes de enviar
+    directorForm.addEventListener('submit', function(e) {
+        if (!validarFormulario()) {
             e.preventDefault();
         }
     });
+    
+    /**
+     * Valida todos los campos del formulario
+     */
+    function validarFormulario() {
+        let isValid = true;
+        
+        // Validar nombres
+        if (!nombresInput.value.trim()) {
+            showError(nombresInput, 'El nombre del director técnico es obligatorio');
+            isValid = false;
+        } else if (nombresInput.value.trim().length < 2) {
+            showError(nombresInput, 'El nombre debe tener al menos 2 caracteres');
+            isValid = false;
+        } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(nombresInput.value.trim())) {
+            showError(nombresInput, 'El nombre solo debe contener letras y espacios');
+            isValid = false;
+        } else {
+            clearError(nombresInput);
+        }
+        
+        // Validar apellidos
+        if (!apellidosInput.value.trim()) {
+            showError(apellidosInput, 'Los apellidos del director técnico son obligatorios');
+            isValid = false;
+        } else if (apellidosInput.value.trim().length < 2) {
+            showError(apellidosInput, 'Los apellidos deben tener al menos 2 caracteres');
+            isValid = false;
+        } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(apellidosInput.value.trim())) {
+            showError(apellidosInput, 'Los apellidos solo deben contener letras y espacios');
+            isValid = false;
+        } else {
+            clearError(apellidosInput);
+        }
+        
+        return isValid;
+        }
 }
 
 /**

@@ -287,7 +287,17 @@ function initializeFormValidation() {
             showError(fecha, 'La fecha es obligatoria');
             isValid = false;
         } else {
+            // Validar que la fecha no sea anterior a la fecha actual
+            const fechaSeleccionada = new Date(fecha.value);
+            const fechaActual = new Date();
+            fechaActual.setHours(0, 0, 0, 0); // Resetear la hora para comparar solo fechas
+            
+            if (fechaSeleccionada < fechaActual) {
+                showError(fecha, 'La fecha no puede ser anterior a la fecha actual');
+                isValid = false;
+            } else {
             clearError(fecha);
+            }
         }
         
         // Validar hora
@@ -354,10 +364,65 @@ function initializeFormValidation() {
             clearError(estado);
         }
         
+        // Validar campos numéricos para goles (si existen)
+        const golesLocal = document.querySelector('input[name="goles_local"]');
+        const golesVisitante = document.querySelector('input[name="goles_visitante"]');
+        
+        if (golesLocal) {
+            if (golesLocal.value === '') {
+                showError(golesLocal, 'Debes ingresar la cantidad de goles');
+                isValid = false;
+            } else if (parseInt(golesLocal.value) < 0) {
+                showError(golesLocal, 'La cantidad de goles no puede ser negativa');
+                isValid = false;
+            } else {
+                clearError(golesLocal);
+            }
+        }
+        
+        if (golesVisitante) {
+            if (golesVisitante.value === '') {
+                showError(golesVisitante, 'Debes ingresar la cantidad de goles');
+                isValid = false;
+            } else if (parseInt(golesVisitante.value) < 0) {
+                showError(golesVisitante, 'La cantidad de goles no puede ser negativa');
+                isValid = false;
+            } else {
+                clearError(golesVisitante);
+            }
+        }
+        
         if (!isValid) {
             e.preventDefault();
         }
     });
+    
+    // Validación en tiempo real para campos numéricos
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value < 0) {
+                showError(this, 'El valor no puede ser negativo');
+            } else {
+                clearError(this);
+            }
+        });
+    });
+    
+    // Validación en tiempo real para la fecha
+    const fechaInput = document.getElementById('fecha');
+    if (fechaInput) {
+        fechaInput.addEventListener('change', function() {
+            const fechaSeleccionada = new Date(this.value);
+            const fechaActual = new Date();
+            fechaActual.setHours(0, 0, 0, 0); // Resetear la hora para comparar solo fechas
+            
+            if (fechaSeleccionada < fechaActual) {
+                showError(this, 'La fecha no puede ser anterior a la fecha actual');
+            } else {
+                clearError(this);
+            }
+        });
+    }
 }
 
 /**

@@ -29,6 +29,9 @@ function setupJugadorForm() {
     const jugadorForm = document.getElementById('jugador-form');
     const dorsalInput = document.getElementById('dorsal');
     const numeroCamisetaInput = document.getElementById('numero_camiseta');
+    const nombresInput = document.getElementById('nombres');
+    const apellidosInput = document.getElementById('apellidos');
+    const fotoInput = document.getElementById('foto');
     
     // Sincronizar el campo numero_camiseta con el campo dorsal
     if (dorsalInput && numeroCamisetaInput) {
@@ -42,6 +45,93 @@ function setupJugadorForm() {
         
         dorsalInput.addEventListener('input', function() {
             numeroCamisetaInput.value = this.value;
+            
+            // Validación en tiempo real para el dorsal
+            if (this.value === '') {
+                showError(this, 'El número de camiseta es obligatorio');
+            } else if (isNaN(this.value)) {
+                showError(this, 'El número de camiseta debe ser un valor numérico');
+            } else if (parseInt(this.value) < 1) {
+                showError(this, 'El número de camiseta no puede ser negativo o cero');
+                this.value = 1; // Corregir automáticamente a valor mínimo permitido
+            } else if (parseInt(this.value) > 99) {
+                showError(this, 'El número de camiseta no puede ser mayor a 99');
+                this.value = 99; // Corregir automáticamente a valor máximo permitido
+            } else {
+                clearError(this);
+            }
+        });
+    }
+    
+    // Validación en tiempo real para los campos de texto
+    if (nombresInput) {
+        nombresInput.addEventListener('input', function() {
+            if (this.value.trim() === '') {
+                showError(this, 'El nombre del jugador es obligatorio');
+            } else if (this.value.trim().length < 2) {
+                showError(this, 'El nombre debe tener al menos 2 caracteres');
+            } else {
+                clearError(this);
+            }
+        });
+    }
+    
+    if (apellidosInput) {
+        apellidosInput.addEventListener('input', function() {
+            if (this.value.trim() === '') {
+                showError(this, 'Los apellidos del jugador son obligatorios');
+            } else if (this.value.trim().length < 2) {
+                showError(this, 'Los apellidos deben tener al menos 2 caracteres');
+            } else {
+                clearError(this);
+            }
+        });
+    }
+    
+    // Validación en tiempo real para la imagen
+    if (fotoInput) {
+        fotoInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                const fileSize = file.size / 1024 / 1024; // tamaño en MB
+                const validExtensions = ['image/jpeg', 'image/png', 'image/gif'];
+                
+                if (!validExtensions.includes(file.type)) {
+                    showError(this, 'El formato de imagen no es válido. Sólo se permiten JPG, PNG o GIF');
+                } else if (fileSize > 2) {
+                    showError(this, 'La imagen es demasiado grande. El tamaño máximo permitido es 2MB');
+                } else {
+                    clearError(this);
+                }
+            }
+            
+            const previewContainer = document.getElementById('foto-preview');
+            
+            // Crear el contenedor de vista previa si no existe
+            if (!previewContainer) {
+                const container = document.createElement('div');
+                container.id = 'foto-preview';
+                container.className = 'image-preview';
+                this.parentNode.insertBefore(container, this.nextSibling);
+            }
+            
+            const preview = document.getElementById('foto-preview');
+            
+            // Limpiar vista previa anterior
+            preview.innerHTML = '';
+            
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.alt = 'Vista previa';
+                    preview.appendChild(img);
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            }
         });
     }
     
@@ -123,6 +213,9 @@ function setupJugadorForm() {
         if (!nombres.value.trim()) {
             showError(nombres, 'El nombre del jugador es obligatorio');
             isValid = false;
+        } else if (nombres.value.trim().length < 2) {
+            showError(nombres, 'El nombre debe tener al menos 2 caracteres');
+            isValid = false;
         } else {
             clearError(nombres);
         }
@@ -130,6 +223,9 @@ function setupJugadorForm() {
         // Validar apellidos del jugador
         if (!apellidos.value.trim()) {
             showError(apellidos, 'Los apellidos del jugador son obligatorios');
+            isValid = false;
+        } else if (apellidos.value.trim().length < 2) {
+            showError(apellidos, 'Los apellidos deben tener al menos 2 caracteres');
             isValid = false;
         } else {
             clearError(apellidos);
@@ -155,8 +251,14 @@ function setupJugadorForm() {
         if (!dorsal.value) {
             showError(dorsal, 'El número de camiseta es obligatorio');
             isValid = false;
-        } else if (isNaN(dorsal.value) || dorsal.value < 1 || dorsal.value > 99) {
-            showError(dorsal, 'El número de camiseta debe estar entre 1 y 99');
+        } else if (isNaN(dorsal.value)) {
+            showError(dorsal, 'El número de camiseta debe ser un valor numérico');
+            isValid = false;
+        } else if (parseInt(dorsal.value) < 1) {
+            showError(dorsal, 'El número de camiseta no puede ser negativo o cero');
+            isValid = false;
+        } else if (parseInt(dorsal.value) > 99) {
+            showError(dorsal, 'El número de camiseta no puede ser mayor a 99');
             isValid = false;
         } else {
             clearError(dorsal);
@@ -171,12 +273,12 @@ function setupJugadorForm() {
             
             // Verificar tipo de archivo
             if (!validExtensions.includes(file.type)) {
-                showError(foto, 'El archivo debe ser una imagen (JPG, PNG o GIF)');
+                showError(foto, 'El formato de imagen no es válido. Sólo se permiten JPG, PNG o GIF');
                 isValid = false;
             } 
             // Verificar tamaño de archivo
             else if (fileSize > 2) {
-                showError(foto, 'La imagen no debe superar los 2MB');
+                showError(foto, 'La imagen es demasiado grande. El tamaño máximo permitido es 2MB');
                 isValid = false;
             } else {
                 clearError(foto);
@@ -184,40 +286,6 @@ function setupJugadorForm() {
         }
         
         return isValid;
-    }
-    
-    // Mostrar vista previa de la imagen
-    const fotoInput = document.getElementById('foto');
-    if (fotoInput) {
-        fotoInput.addEventListener('change', function() {
-            const previewContainer = document.getElementById('foto-preview');
-            
-            // Crear el contenedor de vista previa si no existe
-            if (!previewContainer) {
-                const container = document.createElement('div');
-                container.id = 'foto-preview';
-                container.className = 'image-preview';
-                fotoInput.parentNode.insertBefore(container, fotoInput.nextSibling);
-            }
-            
-            const preview = document.getElementById('foto-preview');
-            
-            // Limpiar vista previa anterior
-            preview.innerHTML = '';
-            
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.alt = 'Vista previa';
-                    preview.appendChild(img);
-                }
-                
-                reader.readAsDataURL(this.files[0]);
-            }
-        });
     }
 }
 
@@ -323,8 +391,22 @@ function setupStatsForms() {
     // Formulario de goles
     const formGol = document.getElementById('form-add-gol');
     if (formGol) {
+        // Validación en tiempo real para el minuto del gol
+        const minutoGolInput = formGol.querySelector('input[name="minuto"]');
+        if (minutoGolInput) {
+            minutoGolInput.addEventListener('input', function() {
+                validateMinutoInput(this, 'gol');
+            });
+        }
+        
         formGol.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Validar el formulario antes de procesar
+            if (!validarFormularioEstadistica(this, 'gol')) {
+                return;
+            }
+            
             const formData = new FormData(this);
             const data = {};
             formData.forEach((value, key) => data[key] = value);
@@ -361,8 +443,22 @@ function setupStatsForms() {
     // Formulario de asistencias
     const formAsistencia = document.getElementById('form-add-asistencia');
     if (formAsistencia) {
+        // Validación en tiempo real para el minuto de la asistencia
+        const minutoAsistenciaInput = formAsistencia.querySelector('input[name="minuto"]');
+        if (minutoAsistenciaInput) {
+            minutoAsistenciaInput.addEventListener('input', function() {
+                validateMinutoInput(this, 'asistencia');
+            });
+        }
+        
         formAsistencia.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Validar el formulario antes de procesar
+            if (!validarFormularioEstadistica(this, 'asistencia')) {
+                return;
+            }
+            
             const formData = new FormData(this);
             const data = {};
             formData.forEach((value, key) => data[key] = value);
@@ -397,8 +493,22 @@ function setupStatsForms() {
     // Formulario de faltas
     const formFalta = document.getElementById('form-add-falta');
     if (formFalta) {
+        // Validación en tiempo real para el minuto de la falta
+        const minutoFaltaInput = formFalta.querySelector('input[name="minuto"]');
+        if (minutoFaltaInput) {
+            minutoFaltaInput.addEventListener('input', function() {
+                validateMinutoInput(this, 'falta');
+            });
+        }
+        
         formFalta.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Validar el formulario antes de procesar
+            if (!validarFormularioEstadistica(this, 'falta')) {
+                return;
+            }
+            
             const formData = new FormData(this);
             const data = {};
             formData.forEach((value, key) => data[key] = value);
@@ -429,6 +539,120 @@ function setupStatsForms() {
             this.reset();
         });
     }
+}
+
+/**
+ * Valida un campo de minuto de una estadística
+ */
+function validateMinutoInput(input, tipo) {
+    // Asegurarse de que sea un número
+    if (input.value === '') {
+        showErrorInModal(input, `El minuto del ${tipo} es obligatorio`);
+        return false;
+    } else if (isNaN(input.value)) {
+        showErrorInModal(input, `El minuto debe ser un valor numérico`);
+        return false;
+    }
+    
+    // Convertir a número
+    const minuto = parseInt(input.value);
+    
+    // Verificar rango válido (entre 0 y 50 para fútbol sala/futsala)
+    if (minuto < 0) {
+        showErrorInModal(input, `El minuto no puede ser negativo`);
+        input.value = 0; // Corregir automáticamente
+        return false;
+    } else if (minuto > 50) {
+        showErrorInModal(input, `El minuto no puede ser mayor a 50 (duración máxima del partido)`);
+        input.value = 50; // Corregir automáticamente
+        return false;
+    }
+    
+    // Si llega aquí, es válido
+    clearErrorInModal(input);
+    return true;
+}
+
+/**
+ * Muestra un mensaje de error en los formularios de modal
+ */
+function showErrorInModal(input, message) {
+    // Crear o actualizar el mensaje de error
+    let errorElement = input.parentNode.querySelector('.error-message');
+    if (!errorElement) {
+        errorElement = document.createElement('div');
+        errorElement.className = 'error-message';
+        errorElement.style.color = 'red';
+        errorElement.style.fontSize = '12px';
+        errorElement.style.marginTop = '5px';
+        input.parentNode.appendChild(errorElement);
+    }
+    
+    errorElement.textContent = message;
+    input.classList.add('input-error');
+}
+
+/**
+ * Limpia un mensaje de error en los formularios de modal
+ */
+function clearErrorInModal(input) {
+    const errorElement = input.parentNode.querySelector('.error-message');
+    if (errorElement) {
+        errorElement.remove();
+    }
+    input.classList.remove('input-error');
+}
+
+/**
+ * Valida un formulario de estadística completo
+ */
+function validarFormularioEstadistica(form, tipo) {
+    let isValid = true;
+    
+    // Validar selección de partido
+    const partidoSelect = form.querySelector('select[name="partido_id"]');
+    if (!partidoSelect.value) {
+        showErrorInModal(partidoSelect, `Debe seleccionar un partido para registrar el ${tipo}`);
+        isValid = false;
+    } else {
+        clearErrorInModal(partidoSelect);
+    }
+    
+    // Validar jugador
+    const jugadorSelect = form.querySelector('select[name="jugador_id"]');
+    if (!jugadorSelect.value) {
+        showErrorInModal(jugadorSelect, `Debe seleccionar un jugador para registrar el ${tipo}`);
+        isValid = false;
+    } else {
+        clearErrorInModal(jugadorSelect);
+    }
+    
+    // Validar minuto
+    const minutoInput = form.querySelector('input[name="minuto"]');
+    if (!validateMinutoInput(minutoInput, tipo)) {
+        isValid = false;
+    }
+    
+    // Validar tipo específico si aplica
+    if (tipo === 'gol') {
+        const tipoSelect = form.querySelector('select[name="tipo"]');
+        if (!tipoSelect.value) {
+            showErrorInModal(tipoSelect, 'Debe seleccionar un tipo de gol');
+            isValid = false;
+        } else {
+            clearErrorInModal(tipoSelect);
+        }
+    } else if (tipo === 'falta') {
+        const tipoFaltaSelect = form.querySelector('select[name="tipo_falta"]');
+        if (!tipoFaltaSelect.value) {
+            showErrorInModal(tipoFaltaSelect, 'Debe seleccionar un tipo de tarjeta');
+            isValid = false;
+        } else {
+            clearErrorInModal(tipoFaltaSelect);
+        }
+    }
+    
+    return isValid;
 }
 
 // Función para actualizar la tabla de estadísticas
@@ -505,147 +729,4 @@ function createStatsRow(item, tipo) {
             break;
     }
     return row;
-}
-
-// Función para editar estadística temporal
-function editTempStat(id, tipo) {
-    const stat = tempStats[tipo].find(item => item.id == id);
-    if (!stat) return;
-    editingStat = { id, tipo };
-    // Llenar el formulario con los datos
-    let form, modalId;
-    if (tipo === 'goles') {
-        form = document.getElementById('form-add-gol');
-        modalId = 'modal-gol';
-        if (form) {
-            // Llenar campos
-            Object.keys(stat).forEach(key => {
-                const input = form.querySelector(`[name="${key}"]`);
-                if (input) input.value = stat[key];
-            });
-            // Cambiar texto del botón
-            const btn = form.querySelector('button[type="submit"]');
-            if (btn) btn.textContent = 'Actualizar';
-            openModal(modalId);
-        }
-    } else if (tipo === 'asistencias') {
-        form = document.getElementById('form-add-asistencia');
-        modalId = 'modal-asistencia';
-        if (form) {
-            Object.keys(stat).forEach(key => {
-                const input = form.querySelector(`[name="${key}"]`);
-                if (input) input.value = stat[key];
-            });
-            const btn = form.querySelector('button[type="submit"]');
-            if (btn) btn.textContent = 'Actualizar';
-            openModal(modalId);
-        }
-    } else if (tipo === 'faltas') {
-        form = document.getElementById('form-add-falta');
-        modalId = 'modal-falta';
-        if (form) {
-            Object.keys(stat).forEach(key => {
-                const input = form.querySelector(`[name="${key}"]`);
-                if (input) input.value = stat[key];
-            });
-            const btn = form.querySelector('button[type="submit"]');
-            if (btn) btn.textContent = 'Actualizar';
-            openModal(modalId);
-        }
-    }
-}
-
-// Restaurar el texto del botón y limpiar el formulario al cerrar/agregar/editar
-['modal-gol','modal-asistencia','modal-falta'].forEach(function(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal')) {
-                const form = modal.querySelector('form');
-                if (form) {
-                    form.reset();
-                    const btn = form.querySelector('button[type="submit"]');
-                    if (btn) btn.textContent = 'Guardar';
-                }
-                editingStat = { id: null, tipo: null };
-            }
-        });
-    }
-});
-
-// Función para eliminar estadística temporal
-function deleteTempStat(id, tipo, showMsg = false) {
-    const stat = tempStats[tipo].find(item => item.id == id);
-    if (stat && (stat.cod_gol || stat.cod_asis || stat.cod_falta)) {
-        // Es de la BD
-        if (tipo === 'goles' && stat.cod_gol) deletedStats.goles.push(stat.cod_gol);
-        if (tipo === 'asistencias' && stat.cod_asis) deletedStats.asistencias.push(stat.cod_asis);
-        if (tipo === 'faltas' && stat.cod_falta) deletedStats.faltas.push(stat.cod_falta);
-    }
-    tempStats[tipo] = tempStats[tipo].filter(item => item.id != id);
-    updateStatsTable(tipo);
-    // Solo mostrar notificación si se solicita explícitamente
-    if (showMsg) showNotification('success', `${tipo.charAt(0).toUpperCase() + tipo.slice(1)} eliminado`);
-}
-
-// Función para mostrar notificaciones
-function showNotification(type, message) {
-    // Utilizar la función centralizada si está disponible
-    if (typeof window.showNotification === 'function') {
-        window.showNotification(type, message);
-    } else {
-        // Fallback por si el script centralizado no está cargado
-        // Verificar si el mensaje está relacionado con goles, asistencias o faltas
-        // Si es así, no mostrar la notificación
-        if (message.includes('Gol') || 
-            message.includes('gol') || 
-            message.includes('Asistencia') || 
-            message.includes('asistencia') || 
-            message.includes('Falta') || 
-            message.includes('falta') ||
-            message.includes('Tarjeta') ||
-            message.includes('tarjeta')) {
-            return; // No mostrar notificación para estas operaciones
-        }
-        
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
-}
-
-// Función para abrir un modal
-function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'block';
-    }
-}
-
-// Función para cerrar un modal
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
-// Cerrar modal cuando se hace clic fuera de él
-window.onclick = function(event) {
-    if (event.target.classList.contains('modal')) {
-        event.target.style.display = 'none';
-    }
-}
-
-// Renderizar todas las tablas al cargar
-function renderAllStatsTables() {
-    updateStatsTable('goles');
-    updateStatsTable('asistencias');
-    updateStatsTable('faltas');
 } 
