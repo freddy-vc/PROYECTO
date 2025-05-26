@@ -26,16 +26,16 @@ document.addEventListener('DOMContentLoaded', function() {
  * Configura el formulario de jugador con validaciones específicas
  */
 function setupJugadorForm() {
-    const jugadorForm = document.getElementById('form-jugador');
-    if (!jugadorForm) return;
-    
-    // Asegurarse de que el campo numero_camiseta tenga el mismo valor que dorsal al cargar la página
+    const jugadorForm = document.getElementById('jugador-form');
     const dorsalInput = document.getElementById('dorsal');
-    const numeroCamisetaInput = document.querySelector('input[name="numero_camiseta"]');
+    const numeroCamisetaInput = document.getElementById('numero_camiseta');
+    
+    // Sincronizar el campo numero_camiseta con el campo dorsal
     if (dorsalInput && numeroCamisetaInput) {
+        // Inicializar el valor
         numeroCamisetaInput.value = dorsalInput.value;
         
-        // También actualizar el campo oculto cuando cambie el dorsal
+        // Sincronizar al cambiar
         dorsalInput.addEventListener('change', function() {
             numeroCamisetaInput.value = this.value;
         });

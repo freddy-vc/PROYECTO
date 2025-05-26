@@ -41,9 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Placeholder para cargar datos vía AJAX (para implementar después)
     function cargarDatosRecientes() {
-        // Aquí se implementará la carga de datos recientes mediante AJAX
         console.log('Función para cargar datos recientes');
     }
     

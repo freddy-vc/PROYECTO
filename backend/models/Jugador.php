@@ -434,7 +434,7 @@ class Jugador {
     }
     
     /**
-     * Obtiene al jugador con más goles (goleador del torneo)
+     * Obtiene al jugador con más goles
      */
     public function obtenerGoleador() {
         try {
