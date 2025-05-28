@@ -44,7 +44,7 @@ CREATE TABLE Jugadores (
     cod_equ INT NOT NULL,
     foto BYTEA DEFAULT NULL, 
     FOREIGN KEY (cod_equ) REFERENCES Equipos(cod_equ)
-        ON DELETE CASCADE
+        ON DELETE RESTRICT
         ON UPDATE CASCADE,
     CHECK (posicion IN ('delantero', 'defensa', 'mediocampista', 'arquero'))
 );

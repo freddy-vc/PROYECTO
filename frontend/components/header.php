@@ -1,6 +1,4 @@
 <?php
-// Inicia la sesión en cada página
-session_start();
 
 // Definir parámetros de conexión a la base de datos directamente
 define('DB_HOST', 'localhost');
@@ -21,6 +19,9 @@ session_set_cookie_params([
     'secure' => false, // Cambia a true si usas HTTPS
     'httponly' => true
 ]);
+
+// Inicia la sesión en cada página
+session_start();
 
 // Si no está definida la ruta raíz, determinarla según la ubicación del archivo
 if (!isset($ruta_raiz)) {
